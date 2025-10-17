@@ -1,0 +1,170 @@
+{
+  "language": "python",
+  "metadata": {
+    "file_path": "stage1/test_code/simple_order.py"
+  },
+  "functions": [
+    {
+      "name": "process_order",
+      "parameters": [
+        "order_total",
+        "items"
+      ],
+      "returns": null,
+      "docstring": null,
+      "metadata": {
+        "async": false
+      },
+      "nodes": [
+        {
+          "id": "n0",
+          "kind": "start",
+          "label": "Start",
+          "metadata": {},
+          "location": {
+            "file_path": "stage1/test_code/simple_order.py",
+            "line": 1,
+            "column": 0
+          }
+        },
+        {
+          "id": "n1",
+          "kind": "end",
+          "label": "End",
+          "metadata": {
+            "reason": "function_terminator"
+          },
+          "location": {
+            "file_path": "stage1/test_code/simple_order.py",
+            "line": 1,
+            "column": 0
+          }
+        },
+        {
+          "id": "n2",
+          "kind": "statement",
+          "label": "invoice = []",
+          "metadata": {},
+          "location": {
+            "file_path": "stage1/test_code/simple_order.py",
+            "line": 2,
+            "column": 4
+          }
+        },
+        {
+          "id": "n3",
+          "kind": "conditional",
+          "label": "if order_total > 100",
+          "metadata": {},
+          "location": {
+            "file_path": "stage1/test_code/simple_order.py",
+            "line": 3,
+            "column": 7
+          }
+        },
+        {
+          "id": "n4",
+          "kind": "statement",
+          "label": "invoice.append(\"apply_discount\")",
+          "metadata": {},
+          "location": {
+            "file_path": "stage1/test_code/simple_order.py",
+            "line": 4,
+            "column": 8
+          }
+        },
+        {
+          "id": "n5",
+          "kind": "statement",
+          "label": "invoice.append(\"standard_pricing\")",
+          "metadata": {},
+          "location": {
+            "file_path": "stage1/test_code/simple_order.py",
+            "line": 6,
+            "column": 8
+          }
+        },
+        {
+          "id": "n6",
+          "kind": "loop",
+          "label": "for item in items",
+          "metadata": {},
+          "location": {
+            "file_path": "stage1/test_code/simple_order.py",
+            "line": 8,
+            "column": 4
+          }
+        },
+        {
+          "id": "n7",
+          "kind": "statement",
+          "label": "invoice.append(f\"ship_{item}\")",
+          "metadata": {},
+          "location": {
+            "file_path": "stage1/test_code/simple_order.py",
+            "line": 9,
+            "column": 8
+          }
+        },
+        {
+          "id": "n8",
+          "kind": "return",
+          "label": "return invoice",
+          "metadata": {},
+          "location": {
+            "file_path": "stage1/test_code/simple_order.py",
+            "line": 11,
+            "column": 4
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "n0",
+          "target": "n2"
+        },
+        {
+          "source": "n3",
+          "target": "n4",
+          "label": "True"
+        },
+        {
+          "source": "n3",
+          "target": "n5",
+          "label": "False"
+        },
+        {
+          "source": "n2",
+          "target": "n3"
+        },
+        {
+          "source": "n6",
+          "target": "n7",
+          "label": "Loop body"
+        },
+        {
+          "source": "n7",
+          "target": "n6",
+          "label": "Iterate"
+        },
+        {
+          "source": "n4",
+          "target": "n6"
+        },
+        {
+          "source": "n5",
+          "target": "n6"
+        },
+        {
+          "source": "n8",
+          "target": "n1",
+          "label": "Return"
+        },
+        {
+          "source": "n6",
+          "target": "n8"
+        }
+      ]
+    }
+  ]
+}

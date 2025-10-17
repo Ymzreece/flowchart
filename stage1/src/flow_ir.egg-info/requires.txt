@@ -1,0 +1,5 @@
+typing-extensions>=4.7.0
+
+[treesitter]
+tree_sitter>=0.20.0
+tree_sitter_languages>=1.7.0

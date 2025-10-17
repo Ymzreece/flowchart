@@ -1,0 +1,25 @@
+[project]
+name = "flow-ir"
+version = "0.1.0"
+description = "Language-agnostic IR generator for the bidirectional code–flowchart system (Stage 1)."
+authors = [
+    {name = "Flowcode Team"}
+]
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "typing-extensions>=4.7.0",
+]
+
+[project.optional-dependencies]
+treesitter = [
+    "tree_sitter>=0.20.0",
+    "tree_sitter_languages>=1.7.0",
+]
+
+[project.scripts]
+flow-ir = "flow_ir.cli:main"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
