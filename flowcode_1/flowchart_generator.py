@@ -13,7 +13,7 @@ except ImportError as exc:  # pragma: no cover - dependency missing at runtime o
     raise SystemExit("Missing dependency 'openai'. Install it with `pip install openai`.") from exc
 
 
-DEFAULT_MODEL = "gpt-5"
+DEFAULT_MODEL = "gpt-5-nano"
 
 
 TEXT_SYSTEM_PROMPT = """You are a senior software architect tasked with documenting codebases for cross-functional teams.

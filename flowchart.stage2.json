@@ -1,164 +1,362 @@
 {
   "language": "text",
   "metadata": {
-    "title": "STM32L431 Smart Door/Radar UI - State and Menu Flow",
-    "summary": "Structured flowchart of system idle, main menu, radar config, calibration, and Do Not Disturb paths with flash-config save and status updates.",
+    "title": "Door Control Firmware - Flash_Task State Machine Flow",
+    "summary": "Structured flow reflecting the Flash_Task loop, menus, states, and background activities including config, do-not-disturb, calibration, and delete flows.",
     "language": "text"
   },
   "functions": [
     {
-      "name": "STM32L431 Smart Door/Radar UI - State and Menu Flow",
+      "name": "Door Control Firmware - Flash_Task State Machine Flow",
       "nodes": [
         {
-          "id": "n_start",
+          "id": "start",
           "kind": "start",
-          "label": "System powers up, initializes, and enters SYSTEM_IDLE, preparing for low-power mode after startup.",
-          "summary": "System powers up, initializes, and enters SYSTEM_IDLE, preparing for low-power mode after startup.",
+          "label": "Firmware boot and initial entry into the Flash_Task loop",
+          "summary": "Firmware boot and initial entry into the Flash_Task loop",
           "metadata": {
-            "title": "System boot and idle initialization",
+            "title": "System Start",
             "detail": null,
             "type": "start"
           }
         },
         {
-          "id": "n_idle",
+          "id": "main_dispatch",
           "kind": "statement",
-          "label": "Idle display off; after ~2 seconds: disconnect BLE, gate NMOS, enter low power, and clear OLED.",
-          "summary": "Idle display off; after ~2 seconds: disconnect BLE, gate NMOS, enter low power, and clear OLED.",
+          "label": "Continually checks system_state and delegates to menus or services",
+          "summary": "Continually checks system_state and delegates to menus or services",
+          "metadata": {
+            "title": "Flash_Task Main Dispatcher",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "system_idle",
+          "kind": "loop",
+          "label": "Idle state: wait for input, then possibly enter low-power mode",
+          "summary": "Idle state: wait for input, then possibly enter low-power mode",
           "metadata": {
             "title": "SYSTEM_IDLE",
-            "detail": null,
-            "type": "process"
+            "detail": "After ~2 seconds of inactivity, initiate low-power power-down sequence (BT disconnects, display off, NMOS gating, etc.)",
+            "type": "loop"
           }
         },
         {
-          "id": "n_menu_active",
+          "id": "top_menu",
           "kind": "statement",
-          "label": "Displays the three-icon main menu and processes user navigation/selection.",
-          "summary": "Displays the three-icon main menu and processes user navigation/selection.",
+          "label": "Icon choices: Config, Else Mode, Back; supports navigation and long-press actions",
+          "summary": "Icon choices: Config, Else Mode, Back; supports navigation and long-press actions",
           "metadata": {
-            "title": "MENU_ACTIVE - Main icon menu",
-            "detail": "Navigation: Key1 left, Key3 right, Key2 to confirm. Long-press Key3 enters Do Not Disturb (silent). Long-press Key2 opens Door Calibration flow.",
+            "title": "Top-level Icon Menu (menu1)",
+            "detail": "Short presses rotate selection; long-press on key3 enters Do Not Disturb; long-press on key2 enters Door Calibration",
             "type": "process"
           }
         },
         {
-          "id": "n_dnd_silent",
-          "kind": "statement",
-          "label": "Silent DND mode with no on-screen notice; exit on any key press; HC15 may send status messages.",
-          "summary": "Silent DND mode with no on-screen notice; exit on any key press; HC15 may send status messages.",
-          "metadata": {
-            "title": "Do Not Disturb (Silent)",
-            "detail": null,
-            "type": "process"
-          }
-        },
-        {
-          "id": "n_dnd_active",
-          "kind": "statement",
-          "label": "Non-silent DND with on-screen Do Not Disturb notice shown after PIR motion; exit on any key press.",
-          "summary": "Non-silent DND with on-screen Do Not Disturb notice shown after PIR motion; exit on any key press.",
-          "metadata": {
-            "title": "Do Not Disturb (Active with motion notice)",
-            "detail": null,
-            "type": "process"
-          }
-        },
-        {
-          "id": "n_config_menu",
-          "kind": "statement",
-          "label": "Begin radar parameter configuration for user_id = 1 (load defaults if needed).",
-          "summary": "Begin radar parameter configuration for user_id = 1 (load defaults if needed).",
-          "metadata": {
-            "title": "Radar Config Menu",
-            "detail": null,
-            "type": "process"
-          }
-        },
-        {
-          "id": "n_angle_speed_menu",
-          "kind": "statement",
-          "label": "Edit angle (3 levels), speed (3 levels), and Auto Close flag; provide Save/Exit options.",
-          "summary": "Edit angle (3 levels), speed (3 levels), and Auto Close flag; provide Save/Exit options.",
-          "metadata": {
-            "title": "Radar Config - Angle/Speed/Auto Close",
-            "detail": null,
-            "type": "process"
-          }
-        },
-        {
-          "id": "n_saving_progress",
+          "id": "top_menu_nav_loop",
           "kind": "loop",
-          "label": "Show progress while writing user config to internal flash (CRC verification performed).",
-          "summary": "Show progress while writing user config to internal flash (CRC verification performed).",
+          "label": "Handles Key1/Key3 navigation; updates selected icon; wraps around",
+          "summary": "Handles Key1/Key3 navigation; updates selected icon; wraps around",
           "metadata": {
-            "title": "Saving radar config to flash",
+            "title": "Top Menu Navigation Loop",
             "detail": null,
             "type": "loop"
           }
         },
         {
-          "id": "n_face_enroll_success",
+          "id": "menu_config",
           "kind": "statement",
-          "label": "Config saved successfully; show success message and return to main menu.",
-          "summary": "Config saved successfully; show success message and return to main menu.",
+          "label": "Launch Radar Config flow and user config editing",
+          "summary": "Launch Radar Config flow and user config editing",
           "metadata": {
-            "title": "Radar Config Save - Success",
+            "title": "Handle Config Menu (menu1 -> 1)",
             "detail": null,
             "type": "process"
           }
         },
         {
-          "id": "n_face_enroll_fail",
+          "id": "menu_else_mode",
           "kind": "statement",
-          "label": "Config save failed (CRC or flash error); return to main menu.",
-          "summary": "Config save failed (CRC or flash error); return to main menu.",
+          "label": "Do Not Disturb, Door Calibration (hidden), Back",
+          "summary": "Do Not Disturb, Door Calibration (hidden), Back",
           "metadata": {
-            "title": "Radar Config Save - Failure",
+            "title": "Handle Else Mode Menu (menu1 -> 2)",
             "detail": null,
             "type": "process"
           }
         },
         {
-          "id": "n_door_calibration_entry",
-          "kind": "statement",
-          "label": "Begin maximum-open calibration flow: notify user to open door to max angle and press a key.",
-          "summary": "Begin maximum-open calibration flow: notify user to open door to max angle and press a key.",
-          "metadata": {
-            "title": "Door Calibration Entry",
-            "detail": null,
-            "type": "process"
-          }
-        },
-        {
-          "id": "n_door_calibration_progress",
+          "id": "do_not_disturb",
           "kind": "loop",
-          "label": "Blocking 10-second progress bar while calibrating; a follow-up success tick is shown.",
-          "summary": "Blocking 10-second progress bar while calibrating; a follow-up success tick is shown.",
+          "label": "Suppress outputs; exit on key press; optionally silent; PIC/Motion triggers display if not silent",
+          "summary": "Suppress outputs; exit on key press; optionally silent; PIC/Motion triggers display if not silent",
           "metadata": {
-            "title": "Door Calibration Progress",
+            "title": "Do Not Disturb State",
+            "detail": "Sends AA0055 each loop; if LoRa flag set, send AARF55; PIR triggers display when not silent",
+            "type": "loop"
+          }
+        },
+        {
+          "id": "door_calibration_flow",
+          "kind": "statement",
+          "label": "Notify Bluetooth, prompt user, wait for key, run calibration progress, then return",
+          "summary": "Notify Bluetooth, prompt user, wait for key, run calibration progress, then return",
+          "metadata": {
+            "title": "Hidden Door Calibration Flow",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "delete_menu",
+          "kind": "statement",
+          "label": "Options to Reset All or Reset Single (not fully implemented)",
+          "summary": "Options to Reset All or Reset Single (not fully implemented)",
+          "metadata": {
+            "title": "Reset/Delete Menu",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "delete_all_flow",
+          "kind": "statement",
+          "label": "Progress bar; clear all users; determine success/fail",
+          "summary": "Progress bar; clear all users; determine success/fail",
+          "metadata": {
+            "title": "Reset All Flow",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "face_op_progress",
+          "kind": "statement",
+          "label": "Face enrollment/verification/delete progress states",
+          "summary": "Face enrollment/verification/delete progress states",
+          "metadata": {
+            "title": "Face Operation Progress",
+            "detail": "Includes FACE_VERIFYING, FACE_ENROLL_SUCCESS/FAIL, FACE_DELETE_SUCCESS/FAIL",
+            "type": "process"
+          }
+        },
+        {
+          "id": "face_verify_in_progress",
+          "kind": "statement",
+          "label": "Face verification in progress",
+          "summary": "Face verification in progress",
+          "metadata": {
+            "title": "FACE_VERIFYING",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "face_verify_success",
+          "kind": "statement",
+          "label": "Face verification succeeded",
+          "summary": "Face verification succeeded",
+          "metadata": {
+            "title": "FACE_VERIFY_SUCCESS",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "face_verify_fail",
+          "kind": "statement",
+          "label": "Face verification failed",
+          "summary": "Face verification failed",
+          "metadata": {
+            "title": "FACE_VERIFY_FAIL",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "face_enroll_success",
+          "kind": "statement",
+          "label": "Face enroll completed",
+          "summary": "Face enroll completed",
+          "metadata": {
+            "title": "FACE_ENROLL_SUCCESS",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "face_enroll_fail",
+          "kind": "statement",
+          "label": "Face enroll failed",
+          "summary": "Face enroll failed",
+          "metadata": {
+            "title": "FACE_ENROLL_FAIL",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "face_delete_in_progress",
+          "kind": "statement",
+          "label": "Deleting face data in progress",
+          "summary": "Deleting face data in progress",
+          "metadata": {
+            "title": "FACE_DELETE_IN_PROGRESS",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "face_delete_success",
+          "kind": "statement",
+          "label": "All face data deleted successfully",
+          "summary": "All face data deleted successfully",
+          "metadata": {
+            "title": "FACE_DELETE_SUCCESS",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "face_delete_fail",
+          "kind": "statement",
+          "label": "Face delete operation failed",
+          "summary": "Face delete operation failed",
+          "metadata": {
+            "title": "FACE_DELETE_FAIL",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "config_menu",
+          "kind": "statement",
+          "label": "Radar Config \u2192 user config \u2192 angle/speed editing",
+          "summary": "Radar Config \u2192 user config \u2192 angle/speed editing",
+          "metadata": {
+            "title": "Configuration Workflow (config menu)",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "config_radar_anim",
+          "kind": "statement",
+          "label": "Slide-in animation during config",
+          "summary": "Slide-in animation during config",
+          "metadata": {
+            "title": "Radar Config Animation",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "config_user_load",
+          "kind": "statement",
+          "label": "Attempt to load from flash; fall back to defaults",
+          "summary": "Attempt to load from flash; fall back to defaults",
+          "metadata": {
+            "title": "Load or Defaults for User Config",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "config_angle_speed_screen",
+          "kind": "statement",
+          "label": "5 options: Angle, Speed, Auto Close, Save, Exit",
+          "summary": "5 options: Angle, Speed, Auto Close, Save, Exit",
+          "metadata": {
+            "title": "Angle/Speed/Auto Close Screen",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "config_saving_progress",
+          "kind": "loop",
+          "label": "Progress bar ~2 seconds while erasing/writing flash and CRC",
+          "summary": "Progress bar ~2 seconds while erasing/writing flash and CRC",
+          "metadata": {
+            "title": "Saving config...",
             "detail": null,
             "type": "loop"
           }
         },
         {
-          "id": "n_door_calibration_complete",
+          "id": "config_flash_write",
           "kind": "statement",
-          "label": "Calibration complete; return to main menu.",
-          "summary": "Calibration complete; return to main menu.",
+          "label": "Erase necessary pages; write 8-byte aligned; CRC",
+          "summary": "Erase necessary pages; write 8-byte aligned; CRC",
           "metadata": {
-            "title": "Door Calibration Complete",
+            "title": "Flash Write for User Config",
             "detail": null,
             "type": "process"
           }
         },
         {
-          "id": "n_end",
+          "id": "config_crc_verify",
+          "kind": "statement",
+          "label": "Reload and verify CRC after write",
+          "summary": "Reload and verify CRC after write",
+          "metadata": {
+            "title": "CRC Verification",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "config_back_to_menu",
+          "kind": "statement",
+          "label": "After configuration, return to top-level menu",
+          "summary": "After configuration, return to top-level menu",
+          "metadata": {
+            "title": "Return to Top Menu",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "lora_rx_handling",
+          "kind": "statement",
+          "label": "Respond to packets with AARI55 / AARF55 as appropriate",
+          "summary": "Respond to packets with AARI55 / AARF55 as appropriate",
+          "metadata": {
+            "title": "LoRa RX Handling",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "battery_update_loop",
+          "kind": "loop",
+          "label": "Periodically refresh battery status and UI",
+          "summary": "Periodically refresh battery status and UI",
+          "metadata": {
+            "title": "Battery Update Background",
+            "detail": null,
+            "type": "loop"
+          }
+        },
+        {
+          "id": "pir_check",
+          "kind": "statement",
+          "label": "Poll PIR and trigger Do Not Disturb messages if active",
+          "summary": "Poll PIR and trigger Do Not Disturb messages if active",
+          "metadata": {
+            "title": "PIR Motion Check",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "end",
           "kind": "end",
-          "label": "Optional termination/shutdown point for the flow (not used in regular operation).",
-          "summary": "Optional termination/shutdown point for the flow (not used in regular operation).",
+          "label": "Flow termination point (not typically reached in normal operation)",
+          "summary": "Flow termination point (not typically reached in normal operation)",
           "metadata": {
-            "title": "End of flow (optional shutdown)",
+            "title": "End",
             "detail": null,
             "type": "end"
           }
@@ -166,101 +364,241 @@
       ],
       "edges": [
         {
-          "source": "n_start",
-          "target": "n_idle",
-          "label": "Boot completed"
+          "source": "start",
+          "target": "system_idle",
+          "label": "boot / power-on"
         },
         {
-          "source": "n_idle",
-          "target": "n_menu_active",
-          "label": "Enter UI / after idle timeout (MENU_ACTIVE)"
+          "source": "system_idle",
+          "target": "top_menu",
+          "label": "Key press to wake / user activity"
         },
         {
-          "source": "n_idle",
-          "target": "n_end",
-          "label": "Optional power-down"
+          "source": "top_menu",
+          "target": "top_menu_nav_loop",
+          "label": "Key1 short press (navigate left)"
         },
         {
-          "source": "n_menu_active",
-          "target": "n_config_menu",
-          "label": "Select Config (Icon 1)"
+          "source": "top_menu",
+          "target": "top_menu_nav_loop",
+          "label": "Key3 short press (navigate right)"
         },
         {
-          "source": "n_menu_active",
-          "target": "n_dnd_silent",
-          "label": "Long-press Key3 (silent DND)"
+          "source": "top_menu_nav_loop",
+          "target": "top_menu",
+          "label": "Navigation updated (loop)"
         },
         {
-          "source": "n_menu_active",
-          "target": "n_door_calibration_entry",
-          "label": "Long-press Key2 (Door Calibration)"
+          "source": "top_menu",
+          "target": "menu_config",
+          "label": "Key2 pressed with selection = Config"
         },
         {
-          "source": "n_menu_active",
-          "target": "n_idle",
-          "label": "Back / Exit to idle"
+          "source": "top_menu",
+          "target": "menu_else_mode",
+          "label": "Key2 pressed with selection = Else Mode"
         },
         {
-          "source": "n_config_menu",
-          "target": "n_angle_speed_menu",
-          "label": "Proceed to Radar Config"
+          "source": "top_menu",
+          "target": "system_idle",
+          "label": "Key2 pressed with selection = Back"
         },
         {
-          "source": "n_angle_speed_menu",
-          "target": "n_saving_progress",
-          "label": "Save"
+          "source": "top_menu",
+          "target": "do_not_disturb",
+          "label": "Long press on Key3 -> Do Not Disturb"
         },
         {
-          "source": "n_saving_progress",
-          "target": "n_face_enroll_success",
-          "label": "Save success (CRC OK)"
+          "source": "top_menu",
+          "target": "door_calibration_flow",
+          "label": "Long press on Key2 -> Door Calibration"
         },
         {
-          "source": "n_saving_progress",
-          "target": "n_face_enroll_fail",
-          "label": "Save failure (CRC mismatch)"
+          "source": "menu_config",
+          "target": "config_menu",
+          "label": "Enter Radar Config / Config flow"
         },
         {
-          "source": "n_face_enroll_success",
-          "target": "n_menu_active",
-          "label": "Return to Menu"
+          "source": "config_menu",
+          "target": "config_radar_anim",
+          "label": "Start Radar Config animation"
         },
         {
-          "source": "n_face_enroll_fail",
-          "target": "n_menu_active",
-          "label": "Return to Menu"
+          "source": "config_radar_anim",
+          "target": "config_user_load",
+          "label": "Select user_id=1 and load config"
         },
         {
-          "source": "n_dnd_silent",
-          "target": "n_idle",
-          "label": "Any key press to exit DND"
+          "source": "config_user_load",
+          "target": "config_angle_speed_screen",
+          "label": "Load existing or defaults -> go to Angle/Speed screen"
         },
         {
-          "source": "n_dnd_active",
-          "target": "n_idle",
-          "label": "Any key press to exit DND"
+          "source": "config_angle_speed_screen",
+          "target": "config_saving_progress",
+          "label": "Choose Save"
         },
         {
-          "source": "n_door_calibration_entry",
-          "target": "n_door_calibration_progress",
-          "label": "Open door to max; press key to continue"
+          "source": "config_angle_speed_screen",
+          "target": "config_back_to_menu",
+          "label": "Choose Exit without saving"
         },
         {
-          "source": "n_door_calibration_progress",
-          "target": "n_door_calibration_complete",
-          "label": "Calibration complete after 10s"
+          "source": "config_saving_progress",
+          "target": "face_enroll_success",
+          "label": "Save success (CRC ok)"
         },
         {
-          "source": "n_door_calibration_complete",
-          "target": "n_menu_active",
-          "label": "Return to Menu"
+          "source": "config_saving_progress",
+          "target": "face_enroll_fail",
+          "label": "Save failure (CRC error)"
+        },
+        {
+          "source": "face_enroll_success",
+          "target": "top_menu",
+          "label": "Return to Top Menu"
+        },
+        {
+          "source": "face_enroll_fail",
+          "target": "top_menu",
+          "label": "Return to Top Menu"
+        },
+        {
+          "source": "menu_else_mode",
+          "target": "do_not_disturb",
+          "label": "Select Do Not Disturb"
+        },
+        {
+          "source": "menu_else_mode",
+          "target": "door_calibration_flow",
+          "label": "Select Door Reset (Calibration)"
+        },
+        {
+          "source": "menu_else_mode",
+          "target": "top_menu",
+          "label": "Select Back"
+        },
+        {
+          "source": "door_calibration_flow",
+          "target": "door_calibration_flow",
+          "label": "Start calibration"
+        },
+        {
+          "source": "door_calibration_flow",
+          "target": "door_calibration_flow",
+          "label": "Open door to max angle and press key (step)"
+        },
+        {
+          "source": "door_calibration_flow",
+          "target": "door_calibration_flow",
+          "label": "Bluetooth notify AARE55 / AA0055 sequence"
+        },
+        {
+          "source": "door_calibration_flow",
+          "target": "top_menu",
+          "label": "Calibration Complete -> Return to Top Menu"
+        },
+        {
+          "source": "delete_menu",
+          "target": "delete_all_flow",
+          "label": "Reset All selected"
+        },
+        {
+          "source": "delete_menu",
+          "target": "delete_all_flow",
+          "label": "Reset All selected (alternate path)"
+        },
+        {
+          "source": "delete_menu",
+          "target": "top_menu",
+          "label": "Back selected"
+        },
+        {
+          "source": "delete_all_flow",
+          "target": "face_delete_success",
+          "label": "Delete success"
+        },
+        {
+          "source": "delete_all_flow",
+          "target": "face_delete_fail",
+          "label": "Delete fail"
+        },
+        {
+          "source": "face_delete_success",
+          "target": "top_menu",
+          "label": "Return to Top Menu"
+        },
+        {
+          "source": "face_delete_fail",
+          "target": "top_menu",
+          "label": "Return to Top Menu"
+        },
+        {
+          "source": "face_op_progress",
+          "target": "face_verify_success",
+          "label": "Verification success"
+        },
+        {
+          "source": "face_verify_in_progress",
+          "target": "face_verify_success",
+          "label": "Success"
+        },
+        {
+          "source": "face_verify_in_progress",
+          "target": "face_verify_fail",
+          "label": "Fail"
+        },
+        {
+          "source": "face_verify_success",
+          "target": "top_menu",
+          "label": "Return to Top Menu"
+        },
+        {
+          "source": "face_verify_fail",
+          "target": "top_menu",
+          "label": "Return to Top Menu"
+        },
+        {
+          "source": "lora_rx_handling",
+          "target": "face_verify_success",
+          "label": "AARI55 (verify) received"
+        },
+        {
+          "source": "lora_rx_handling",
+          "target": "face_enroll_success",
+          "label": "AARF55 (hard/Do Not Disturb context) received"
+        },
+        {
+          "source": "battery_update_loop",
+          "target": "top_menu",
+          "label": "Battery status updated"
+        },
+        {
+          "source": "pir_check",
+          "target": "do_not_disturb",
+          "label": "PIR detected (not silent)"
+        },
+        {
+          "source": "do_not_disturb",
+          "target": "top_menu",
+          "label": "Any short press exits Do Not Disturb"
+        },
+        {
+          "source": "do_not_disturb",
+          "target": "do_not_disturb",
+          "label": "PIR motion during silent keeps display blank"
+        },
+        {
+          "source": "top_menu",
+          "target": "end",
+          "label": "End of flow (idle termination not typical)"
         }
       ],
       "parameters": [],
       "metadata": {
-        "entry_node": "n_start"
+        "entry_node": "start"
       },
-      "docstring": "Structured flowchart of system idle, main menu, radar config, calibration, and Do Not Disturb paths with flash-config save and status updates."
+      "docstring": "Structured flow reflecting the Flash_Task loop, menus, states, and background activities including config, do-not-disturb, calibration, and delete flows."
     }
   ]
 }
