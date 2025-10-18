@@ -1,0 +1,266 @@
+{
+  "language": "text",
+  "metadata": {
+    "title": "STM32L431 Smart Door/Radar UI - State and Menu Flow",
+    "summary": "Structured flowchart of system idle, main menu, radar config, calibration, and Do Not Disturb paths with flash-config save and status updates.",
+    "language": "text"
+  },
+  "functions": [
+    {
+      "name": "STM32L431 Smart Door/Radar UI - State and Menu Flow",
+      "nodes": [
+        {
+          "id": "n_start",
+          "kind": "start",
+          "label": "System powers up, initializes, and enters SYSTEM_IDLE, preparing for low-power mode after startup.",
+          "summary": "System powers up, initializes, and enters SYSTEM_IDLE, preparing for low-power mode after startup.",
+          "metadata": {
+            "title": "System boot and idle initialization",
+            "detail": null,
+            "type": "start"
+          }
+        },
+        {
+          "id": "n_idle",
+          "kind": "statement",
+          "label": "Idle display off; after ~2 seconds: disconnect BLE, gate NMOS, enter low power, and clear OLED.",
+          "summary": "Idle display off; after ~2 seconds: disconnect BLE, gate NMOS, enter low power, and clear OLED.",
+          "metadata": {
+            "title": "SYSTEM_IDLE",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "n_menu_active",
+          "kind": "statement",
+          "label": "Displays the three-icon main menu and processes user navigation/selection.",
+          "summary": "Displays the three-icon main menu and processes user navigation/selection.",
+          "metadata": {
+            "title": "MENU_ACTIVE - Main icon menu",
+            "detail": "Navigation: Key1 left, Key3 right, Key2 to confirm. Long-press Key3 enters Do Not Disturb (silent). Long-press Key2 opens Door Calibration flow.",
+            "type": "process"
+          }
+        },
+        {
+          "id": "n_dnd_silent",
+          "kind": "statement",
+          "label": "Silent DND mode with no on-screen notice; exit on any key press; HC15 may send status messages.",
+          "summary": "Silent DND mode with no on-screen notice; exit on any key press; HC15 may send status messages.",
+          "metadata": {
+            "title": "Do Not Disturb (Silent)",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "n_dnd_active",
+          "kind": "statement",
+          "label": "Non-silent DND with on-screen Do Not Disturb notice shown after PIR motion; exit on any key press.",
+          "summary": "Non-silent DND with on-screen Do Not Disturb notice shown after PIR motion; exit on any key press.",
+          "metadata": {
+            "title": "Do Not Disturb (Active with motion notice)",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "n_config_menu",
+          "kind": "statement",
+          "label": "Begin radar parameter configuration for user_id = 1 (load defaults if needed).",
+          "summary": "Begin radar parameter configuration for user_id = 1 (load defaults if needed).",
+          "metadata": {
+            "title": "Radar Config Menu",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "n_angle_speed_menu",
+          "kind": "statement",
+          "label": "Edit angle (3 levels), speed (3 levels), and Auto Close flag; provide Save/Exit options.",
+          "summary": "Edit angle (3 levels), speed (3 levels), and Auto Close flag; provide Save/Exit options.",
+          "metadata": {
+            "title": "Radar Config - Angle/Speed/Auto Close",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "n_saving_progress",
+          "kind": "loop",
+          "label": "Show progress while writing user config to internal flash (CRC verification performed).",
+          "summary": "Show progress while writing user config to internal flash (CRC verification performed).",
+          "metadata": {
+            "title": "Saving radar config to flash",
+            "detail": null,
+            "type": "loop"
+          }
+        },
+        {
+          "id": "n_face_enroll_success",
+          "kind": "statement",
+          "label": "Config saved successfully; show success message and return to main menu.",
+          "summary": "Config saved successfully; show success message and return to main menu.",
+          "metadata": {
+            "title": "Radar Config Save - Success",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "n_face_enroll_fail",
+          "kind": "statement",
+          "label": "Config save failed (CRC or flash error); return to main menu.",
+          "summary": "Config save failed (CRC or flash error); return to main menu.",
+          "metadata": {
+            "title": "Radar Config Save - Failure",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "n_door_calibration_entry",
+          "kind": "statement",
+          "label": "Begin maximum-open calibration flow: notify user to open door to max angle and press a key.",
+          "summary": "Begin maximum-open calibration flow: notify user to open door to max angle and press a key.",
+          "metadata": {
+            "title": "Door Calibration Entry",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "n_door_calibration_progress",
+          "kind": "loop",
+          "label": "Blocking 10-second progress bar while calibrating; a follow-up success tick is shown.",
+          "summary": "Blocking 10-second progress bar while calibrating; a follow-up success tick is shown.",
+          "metadata": {
+            "title": "Door Calibration Progress",
+            "detail": null,
+            "type": "loop"
+          }
+        },
+        {
+          "id": "n_door_calibration_complete",
+          "kind": "statement",
+          "label": "Calibration complete; return to main menu.",
+          "summary": "Calibration complete; return to main menu.",
+          "metadata": {
+            "title": "Door Calibration Complete",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "n_end",
+          "kind": "end",
+          "label": "Optional termination/shutdown point for the flow (not used in regular operation).",
+          "summary": "Optional termination/shutdown point for the flow (not used in regular operation).",
+          "metadata": {
+            "title": "End of flow (optional shutdown)",
+            "detail": null,
+            "type": "end"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "n_start",
+          "target": "n_idle",
+          "label": "Boot completed"
+        },
+        {
+          "source": "n_idle",
+          "target": "n_menu_active",
+          "label": "Enter UI / after idle timeout (MENU_ACTIVE)"
+        },
+        {
+          "source": "n_idle",
+          "target": "n_end",
+          "label": "Optional power-down"
+        },
+        {
+          "source": "n_menu_active",
+          "target": "n_config_menu",
+          "label": "Select Config (Icon 1)"
+        },
+        {
+          "source": "n_menu_active",
+          "target": "n_dnd_silent",
+          "label": "Long-press Key3 (silent DND)"
+        },
+        {
+          "source": "n_menu_active",
+          "target": "n_door_calibration_entry",
+          "label": "Long-press Key2 (Door Calibration)"
+        },
+        {
+          "source": "n_menu_active",
+          "target": "n_idle",
+          "label": "Back / Exit to idle"
+        },
+        {
+          "source": "n_config_menu",
+          "target": "n_angle_speed_menu",
+          "label": "Proceed to Radar Config"
+        },
+        {
+          "source": "n_angle_speed_menu",
+          "target": "n_saving_progress",
+          "label": "Save"
+        },
+        {
+          "source": "n_saving_progress",
+          "target": "n_face_enroll_success",
+          "label": "Save success (CRC OK)"
+        },
+        {
+          "source": "n_saving_progress",
+          "target": "n_face_enroll_fail",
+          "label": "Save failure (CRC mismatch)"
+        },
+        {
+          "source": "n_face_enroll_success",
+          "target": "n_menu_active",
+          "label": "Return to Menu"
+        },
+        {
+          "source": "n_face_enroll_fail",
+          "target": "n_menu_active",
+          "label": "Return to Menu"
+        },
+        {
+          "source": "n_dnd_silent",
+          "target": "n_idle",
+          "label": "Any key press to exit DND"
+        },
+        {
+          "source": "n_dnd_active",
+          "target": "n_idle",
+          "label": "Any key press to exit DND"
+        },
+        {
+          "source": "n_door_calibration_entry",
+          "target": "n_door_calibration_progress",
+          "label": "Open door to max; press key to continue"
+        },
+        {
+          "source": "n_door_calibration_progress",
+          "target": "n_door_calibration_complete",
+          "label": "Calibration complete after 10s"
+        },
+        {
+          "source": "n_door_calibration_complete",
+          "target": "n_menu_active",
+          "label": "Return to Menu"
+        }
+      ],
+      "parameters": [],
+      "metadata": {
+        "entry_node": "n_start"
+      },
+      "docstring": "Structured flowchart of system idle, main menu, radar config, calibration, and Do Not Disturb paths with flash-config save and status updates."
+    }
+  ]
+}

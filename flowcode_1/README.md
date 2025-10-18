@@ -1,16 +1,10 @@
 # Flowcode Text Flowchart Generator (Prototype 1)
 
-This prototype wires an LLM into the workflow so we can turn source code (or any textual brief) into a natural-language flowchart. It reads prompts from `prompt.md`, sends them to the OpenAI API, and saves the model response.
+This prototype wires an LLM into the workflow so we can turn source code (or any textual brief) into a **natural-language explanation**. It reads prompts from `prompt.md`, sends them to the OpenAI API, and saves the model response as rich text. Stage 2 tooling can then transform that text into a structured flowchart.
 
 ## Model Choice
 
-For the first pass, the script targets **`gpt-4.1-mini`**:
-
-- Produces richer, step-by-step reasoning than `gpt-4o-mini`, while still being faster/cheaper than the larger `gpt-4.1`.
-- Handles long prompts (project overviews, code snippets) comfortably.
-- Supports JSON/text output if we later choose to structure responses.
-
-You can change the `MODEL_NAME` constant in `flowchart_generator.py` if you want to try `gpt-4.1` (higher quality) or `gpt-4o-mini` (cheaper, leaner).
+For the first pass, the script targets **`gpt-4.1-mini`**—a good balance between reasoning quality and cost. Use the `--model` flag if you want to try `gpt-4o`, `gpt-4o-mini`, or other available models.
 
 ## Project Structure
 
@@ -40,18 +34,18 @@ Alternatively, you can place it in a `.env` file and load it manually, or edit `
 ## Usage
 
 1. Edit `prompt.md` with the text you want the model to use (e.g., copy/paste code, describe a repo, etc.).
-2. Run the generator:
+2. Run the generator (defaults to rich-text output):
 
    ```bash
    python flowchart_generator.py \
      --prompt prompt.md \
-     --output flowchart.txt
+      --output flow_explanation.txt
    ```
 
-3. The response is written to `flowchart.txt`. You can add a `--format json` flag to request structured JSON (the script adjusts the prompt accordingly).
+3. The response is written to `flow_explanation.txt`. Keep this file for Stage 2 (`flowcode_2/graph_generator.py`) to turn into a structured flowchart.
 
 ## Next Steps
 
-- Experiment with prompt engineering inside `prompt.md` to steer the model toward the tone you want.
+- Experiment with prompt engineering inside `prompt.md` to emphasise the details you need (menu breakdowns, branching, etc.).
 - Wrap the script in a backend service or VS Code command for direct integration.
-- Feed the LLM output back into Stage 2 to render a natural-language flowchart (e.g., using React Flow with textual nodes).
+- Pass the generated text to Stage 2 tooling to produce a graph for React Flow or Graphviz visualisation.
