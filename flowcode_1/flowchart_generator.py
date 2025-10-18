@@ -26,6 +26,10 @@ Given raw source code or a textual project description, produce a flowchart-styl
 If the user requests JSON, return an array of stages, each with a 'title' and 'steps' list.
 """
 
+JSON_INSTRUCTION = """
+Return the result as a JSON object with an array named "stages". Each stage must include a "title" string and a "steps" array of natural-language sentences. The JSON must be valid.
+"""
+
 
 def read_prompt(path: Path) -> str:
     try:
@@ -52,16 +56,18 @@ def call_model(prompt: str, *, response_format: str) -> str:
 
     client = OpenAI(api_key=api_key)
 
-    extra = {}
+    full_prompt = prompt
     if response_format == "json":
-        extra["response_format"] = {"type": "json_object"}
+        full_prompt = f"{prompt}\n\n{JSON_INSTRUCTION.strip()}"
 
     response = client.responses.create(
         model=MODEL_NAME,
-        input=prompt,
-        system=SYSTEM_PROMPT,
-        **extra,
+        instructions=SYSTEM_PROMPT,
+        input=full_prompt,
     )
+
+    if hasattr(response, "output_text"):
+        return response.output_text  # type: ignore[attr-defined]
 
     try:
         return response.output[0].content[0].text  # type: ignore[attr-defined]
@@ -96,6 +102,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
         default=MODEL_NAME,
         help=f"Override the model name (default: {MODEL_NAME}).",
     )
+    parser.add_argument(
+        "--show-prompt",
+        action="store_true",
+        help="Print the prompt content before sending it to the model.",
+    )
     return parser
 
 
@@ -116,6 +127,10 @@ def main(argv: Optional[list[str]] = None) -> None:
     print(f"Using model: {MODEL_NAME}")
     if output_path:
         print(f"Will write output to: {output_path}")
+    if args.show_prompt:
+        print("--- Prompt being sent ---")
+        print(prompt_text)
+        print("--------------------------")
 
     result = call_model(prompt_text, response_format=args.format)
     write_output(output_path, result)
