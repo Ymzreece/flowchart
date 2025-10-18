@@ -20,6 +20,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/simple_order.py",
@@ -31,6 +32,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -44,6 +46,7 @@
           "id": "n2",
           "kind": "statement",
           "label": "invoice = []",
+          "summary": "Set invoice to [].",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/simple_order.py",
@@ -55,6 +58,7 @@
           "id": "n3",
           "kind": "conditional",
           "label": "if order_total > 100",
+          "summary": "Check whether order_total is greater than 100.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/simple_order.py",
@@ -66,6 +70,7 @@
           "id": "n4",
           "kind": "statement",
           "label": "invoice.append(\"apply_discount\")",
+          "summary": "Call invoice append with \"apply discount\".",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/simple_order.py",
@@ -77,6 +82,7 @@
           "id": "n5",
           "kind": "statement",
           "label": "invoice.append(\"standard_pricing\")",
+          "summary": "Call invoice append with \"standard pricing\".",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/simple_order.py",
@@ -88,6 +94,7 @@
           "id": "n6",
           "kind": "loop",
           "label": "for item in items",
+          "summary": "Repeat for each item in items.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/simple_order.py",
@@ -99,6 +106,7 @@
           "id": "n7",
           "kind": "statement",
           "label": "invoice.append(f\"ship_{item}\")",
+          "summary": "Call invoice append with f\"ship {item}\".",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/simple_order.py",
@@ -110,6 +118,7 @@
           "id": "n8",
           "kind": "return",
           "label": "return invoice",
+          "summary": "Return invoice.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/simple_order.py",

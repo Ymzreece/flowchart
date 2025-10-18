@@ -20,6 +20,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -31,6 +32,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -44,6 +46,7 @@
           "id": "n2",
           "kind": "statement",
           "label": "uint8_t crc = 0x00;",
+          "summary": "Set uint8_t crc to 0x00.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -55,6 +58,7 @@
           "id": "n3",
           "kind": "loop",
           "label": "for (uint8_t i = 0; i < len; i++)",
+          "summary": "Repeat according to for (uint8_t i = 0; i < len; i++).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -66,6 +70,7 @@
           "id": "n4",
           "kind": "statement",
           "label": "crc ^= data[i];",
+          "summary": "Set crc ^ to data[i].",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -77,6 +82,7 @@
           "id": "n5",
           "kind": "loop",
           "label": "for (uint8_t j = 0; j < 8; j++)",
+          "summary": "Repeat according to for (uint8_t j = 0; j < 8; j++).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -88,6 +94,7 @@
           "id": "n6",
           "kind": "statement",
           "label": "crc = (crc & 0x01) ? (crc >> 1) ^ 0x8C : (crc >> 1);",
+          "summary": "Set crc to (crc & 0x01) ? (crc >> 1) ^ 0x8C : (crc >> 1).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -99,6 +106,7 @@
           "id": "n7",
           "kind": "return",
           "label": "return crc;",
+          "summary": "Return crc.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -169,6 +177,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -180,6 +189,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -193,6 +203,7 @@
           "id": "n2",
           "kind": "statement",
           "label": "uint8_t frm[7];",
+          "summary": "uint8 t frm 7",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -204,6 +215,7 @@
           "id": "n3",
           "kind": "statement",
           "label": "frm[0] = 0xFA;",
+          "summary": "Set frm[0] to 0xFA.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -215,6 +227,7 @@
           "id": "n4",
           "kind": "statement",
           "label": "frm[1] = 0xCE;",
+          "summary": "Set frm[1] to 0xCE.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -226,6 +239,7 @@
           "id": "n5",
           "kind": "statement",
           "label": "frm[2] = (uint8_t)(uid & 0xFF);",
+          "summary": "Set frm[2] to (uint8_t)(uid & 0xFF).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -237,6 +251,7 @@
           "id": "n6",
           "kind": "statement",
           "label": "frm[3] = (uint8_t)((uid >> 8) & 0xFF);",
+          "summary": "Set frm[3] to (uint8_t)((uid >> 8) & 0xFF).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -248,6 +263,7 @@
           "id": "n7",
           "kind": "statement",
           "label": "frm[4] = (uint8_t)((speed_idx & 0x0F) << 4) | (uint8_t)(angle_idx & 0x0F);",
+          "summary": "Set frm[4] to (uint8_t)((speed_idx & 0x0F) << 4) | (uint8_t)(angle_idx & 0x0F).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -259,6 +275,7 @@
           "id": "n8",
           "kind": "statement",
           "label": "frm[5] = open_flag & 0xFF;",
+          "summary": "Set frm[5] to open_flag & 0xFF.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -270,6 +287,7 @@
           "id": "n9",
           "kind": "statement",
           "label": "frm[6] = crc8_maxim_calc_flash(frm, 6);",
+          "summary": "Set frm[6] to crc8_maxim_calc_flash(frm, 6).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -281,6 +299,7 @@
           "id": "n10",
           "kind": "statement",
           "label": "HAL_UART_Transmit_IT(&huart2, frm, sizeof(frm));",
+          "summary": "Call HAL UART Transmit IT with &huart2, frm, sizeoffrm.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -347,6 +366,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -358,6 +378,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -371,6 +392,7 @@
           "id": "n2",
           "kind": "statement",
           "label": "s_key_scan_external = enable;",
+          "summary": "Set s_key_scan_external to enable.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -405,6 +427,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -416,6 +439,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -429,6 +453,7 @@
           "id": "n2",
           "kind": "conditional",
           "label": "if (s_key_evt_count == 0)",
+          "summary": "Check whether (s_key_evt_count equals 0).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -440,6 +465,7 @@
           "id": "n3",
           "kind": "statement",
           "label": "return false;",
+          "summary": "Return false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -451,6 +477,7 @@
           "id": "n4",
           "kind": "statement",
           "label": "taskENTER_CRITICAL();",
+          "summary": "Call task ENTER CRITICAL.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -462,6 +489,7 @@
           "id": "n5",
           "kind": "conditional",
           "label": "if (s_key_evt_count == 0)",
+          "summary": "Check whether (s_key_evt_count equals 0).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -473,6 +501,7 @@
           "id": "n6",
           "kind": "statement",
           "label": "taskEXIT_CRITICAL();",
+          "summary": "Call task EXIT CRITICAL.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -484,6 +513,7 @@
           "id": "n7",
           "kind": "return",
           "label": "return false;",
+          "summary": "Return false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -495,6 +525,7 @@
           "id": "n8",
           "kind": "statement",
           "label": "int val = s_key_evt_queue[s_key_evt_tail];",
+          "summary": "Set int val to s_key_evt_queue[s_key_evt_tail].",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -506,6 +537,7 @@
           "id": "n9",
           "kind": "statement",
           "label": "s_key_evt_tail = (uint8_t)((s_key_evt_tail + 1U) & 0x0F);",
+          "summary": "Set s_key_evt_tail to (uint8_t)((s_key_evt_tail plus 1U) & 0x0F).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -517,6 +549,7 @@
           "id": "n10",
           "kind": "statement",
           "label": "s_key_evt_count--;",
+          "summary": "s key evt count--",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -528,6 +561,7 @@
           "id": "n11",
           "kind": "statement",
           "label": "taskEXIT_CRITICAL();",
+          "summary": "Call task EXIT CRITICAL.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -539,6 +573,7 @@
           "id": "n12",
           "kind": "conditional",
           "label": "if (out)",
+          "summary": "Check whether (out).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -550,6 +585,7 @@
           "id": "n13",
           "kind": "statement",
           "label": "*out = val;",
+          "summary": "Set multiplied by out to val.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -561,6 +597,7 @@
           "id": "n14",
           "kind": "return",
           "label": "return true;",
+          "summary": "Return true.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -660,6 +697,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -671,6 +709,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -684,6 +723,7 @@
           "id": "n2",
           "kind": "conditional",
           "label": "if (code == 0)",
+          "summary": "Check whether (code equals 0).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -695,6 +735,7 @@
           "id": "n3",
           "kind": "statement",
           "label": "return;",
+          "summary": "Return from the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -706,6 +747,7 @@
           "id": "n4",
           "kind": "statement",
           "label": "taskENTER_CRITICAL();",
+          "summary": "Call task ENTER CRITICAL.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -717,6 +759,7 @@
           "id": "n5",
           "kind": "conditional",
           "label": "if (s_key_evt_count < (uint8_t)(sizeof(s_key_evt_queue)/sizeof(s_key_evt_queue[0])))",
+          "summary": "Check whether (s_key_evt_count is less than (uint8_t)(sizeof(s_key_evt_queue)/sizeof(s_key_evt_queue[0]))).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -728,6 +771,7 @@
           "id": "n6",
           "kind": "statement",
           "label": "s_key_evt_queue[s_key_evt_head] = code;",
+          "summary": "Set s_key_evt_queue[s_key_evt_head] to code.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -739,6 +783,7 @@
           "id": "n7",
           "kind": "statement",
           "label": "s_key_evt_head = (uint8_t)((s_key_evt_head + 1U) & 0x0F);",
+          "summary": "Set s_key_evt_head to (uint8_t)((s_key_evt_head plus 1U) & 0x0F).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -750,6 +795,7 @@
           "id": "n8",
           "kind": "statement",
           "label": "s_key_evt_count++;",
+          "summary": "s key evt count++",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -761,6 +807,7 @@
           "id": "n9",
           "kind": "statement",
           "label": "s_key_evt_tail = (uint8_t)((s_key_evt_tail + 1U) & 0x0F);",
+          "summary": "Set s_key_evt_tail to (uint8_t)((s_key_evt_tail plus 1U) & 0x0F).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -772,6 +819,7 @@
           "id": "n10",
           "kind": "statement",
           "label": "s_key_evt_queue[s_key_evt_head] = code;",
+          "summary": "Set s_key_evt_queue[s_key_evt_head] to code.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -783,6 +831,7 @@
           "id": "n11",
           "kind": "statement",
           "label": "s_key_evt_head = (uint8_t)((s_key_evt_head + 1U) & 0x0F);",
+          "summary": "Set s_key_evt_head to (uint8_t)((s_key_evt_head plus 1U) & 0x0F).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -794,6 +843,7 @@
           "id": "n12",
           "kind": "statement",
           "label": "taskEXIT_CRITICAL();",
+          "summary": "Call task EXIT CRITICAL.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -879,6 +929,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -890,6 +941,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -903,6 +955,7 @@
           "id": "n2",
           "kind": "statement",
           "label": "int ev = 0;",
+          "summary": "Set int ev to 0.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -914,6 +967,7 @@
           "id": "n3",
           "kind": "conditional",
           "label": "if (keyevt_pop(&ev))",
+          "summary": "Check whether (keyevt_pop(&ev)).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -925,6 +979,7 @@
           "id": "n4",
           "kind": "statement",
           "label": "return ev;",
+          "summary": "Return ev.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -936,6 +991,7 @@
           "id": "n5",
           "kind": "conditional",
           "label": "if (!s_key_scan_external)",
+          "summary": "Check whether (!s_key_scan_external).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -947,6 +1003,7 @@
           "id": "n6",
           "kind": "return",
           "label": "return Get_key_Num();",
+          "summary": "Return Get_key_Num().",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -958,6 +1015,7 @@
           "id": "n7",
           "kind": "return",
           "label": "return 0;",
+          "summary": "Return 0.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1024,6 +1082,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1035,6 +1094,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -1048,6 +1108,7 @@
           "id": "n2",
           "kind": "statement",
           "label": "const int16_t bar_width = 108;",
+          "summary": "Set const int16_t bar_width to 108.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1059,6 +1120,7 @@
           "id": "n3",
           "kind": "statement",
           "label": "const int16_t bar_height = PROGRESS_BAR_HEIGHT;",
+          "summary": "Set const int16_t bar_height to PROGRESS_BAR_HEIGHT.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1070,6 +1132,7 @@
           "id": "n4",
           "kind": "statement",
           "label": "const int16_t x = (int16_t)((OLED_WIDTH - bar_width) / 2);",
+          "summary": "Set const int16_t x to (int16_t)((OLED_WIDTH minus bar_width) divided by 2).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1081,6 +1144,7 @@
           "id": "n5",
           "kind": "statement",
           "label": "const int16_t y = (int16_t)((OLED_HEIGHT - bar_height) / 2);",
+          "summary": "Set const int16_t y to (int16_t)((OLED_HEIGHT minus bar_height) divided by 2).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1092,6 +1156,7 @@
           "id": "n6",
           "kind": "statement",
           "label": "OLED_Clear();",
+          "summary": "Call OLED Clear.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1103,6 +1168,7 @@
           "id": "n7",
           "kind": "statement",
           "label": "OLED_ShowStringCentered(y - 14, \"Calibrating...\", OLED_6X8_HALF);",
+          "summary": "Call OLED Show String Centered with y - 14, \"Calibrating \", OLED 6 X8 HALF.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1114,6 +1180,7 @@
           "id": "n8",
           "kind": "statement",
           "label": "OLED_Update();",
+          "summary": "Call OLED Update.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1125,6 +1192,7 @@
           "id": "n9",
           "kind": "statement",
           "label": "uint32_t start = HAL_GetTick();",
+          "summary": "Set uint32_t start to HAL_GetTick().",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1136,6 +1204,7 @@
           "id": "n10",
           "kind": "statement",
           "label": "uint32_t now = start;",
+          "summary": "Set uint32_t now to start.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1147,6 +1216,7 @@
           "id": "n11",
           "kind": "statement",
           "label": "uint32_t last_draw = 0;",
+          "summary": "Set uint32_t last_draw to 0.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1158,6 +1228,7 @@
           "id": "n12",
           "kind": "loop",
           "label": "while ((now - start) < duration_ms)",
+          "summary": "Loop while ((now - start) is less than duration_ms).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1169,6 +1240,7 @@
           "id": "n13",
           "kind": "statement",
           "label": "now = HAL_GetTick();",
+          "summary": "Set now to HAL_GetTick().",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1180,6 +1252,7 @@
           "id": "n14",
           "kind": "statement",
           "label": "uint32_t elapsed = now - start;",
+          "summary": "Set uint32_t elapsed to now minus start.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1191,6 +1264,7 @@
           "id": "n15",
           "kind": "conditional",
           "label": "if (elapsed > duration_ms)",
+          "summary": "Check whether (elapsed is greater than duration_ms).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1202,6 +1276,7 @@
           "id": "n16",
           "kind": "statement",
           "label": "elapsed = duration_ms;",
+          "summary": "Set elapsed to duration_ms.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1213,6 +1288,7 @@
           "id": "n17",
           "kind": "statement",
           "label": "uint8_t progress = (uint8_t)((elapsed * 100U) / (duration_ms ? duration_ms : 1U));",
+          "summary": "Set uint8_t progress to (uint8_t)((elapsed multiplied by 100U) divided by (duration_ms ? duration_ms : 1U)).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1224,6 +1300,7 @@
           "id": "n18",
           "kind": "conditional",
           "label": "if ((now - last_draw) >= 20U || progress >= 100U)",
+          "summary": "Check whether ((now - last_draw) is at least 20U || progress is at least 100U).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1235,6 +1312,7 @@
           "id": "n19",
           "kind": "statement",
           "label": "OLED_ClearArea(x - 2, y - 2, bar_width + 4, bar_height + 4);",
+          "summary": "Call OLED Clear Area with x - 2, y - 2, bar width + 4, bar height + 4.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1246,6 +1324,7 @@
           "id": "n20",
           "kind": "statement",
           "label": "OLED_ShowProgressBar(x, y, bar_width, progress, PROGRESS_SPEED_FAST);",
+          "summary": "Call OLED Show Progress Bar with x, y, bar width, progress, PROGRESS SPEED FAST.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1257,6 +1336,7 @@
           "id": "n21",
           "kind": "statement",
           "label": "OLED_Update();",
+          "summary": "Call OLED Update.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1268,6 +1348,7 @@
           "id": "n22",
           "kind": "statement",
           "label": "last_draw = now;",
+          "summary": "Set last_draw to now.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1279,6 +1360,7 @@
           "id": "n23",
           "kind": "statement",
           "label": "osDelay(5);",
+          "summary": "Call os Delay with 5.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1413,6 +1495,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1424,6 +1507,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -1437,6 +1521,7 @@
           "id": "n2",
           "kind": "statement",
           "label": "Battery_Update();",
+          "summary": "Call Battery Update.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1448,6 +1533,7 @@
           "id": "n3",
           "kind": "statement",
           "label": "info = Battery_GetInfo();",
+          "summary": "Set info to Battery_GetInfo().",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1459,6 +1545,7 @@
           "id": "n4",
           "kind": "statement",
           "label": "OLED_Battery_SetLevel(info.percentage);",
+          "summary": "Call OLED Battery Set Level with info percentage.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1470,6 +1557,7 @@
           "id": "n5",
           "kind": "statement",
           "label": "HC15_SendMessage(\"AA0055\");",
+          "summary": "Call HC15 Send Message with \"AA0055\".",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1481,6 +1569,7 @@
           "id": "n6",
           "kind": "statement",
           "label": "static uint32_t last_scan_tick = 0;",
+          "summary": "Set static uint32_t last_scan_tick to 0.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1492,6 +1581,7 @@
           "id": "n7",
           "kind": "statement",
           "label": "uint32_t now = HAL_GetTick();",
+          "summary": "Set uint32_t now to HAL_GetTick().",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1503,6 +1593,7 @@
           "id": "n8",
           "kind": "conditional",
           "label": "if ((now - last_scan_tick) < KEY_SCAN_INTERVAL_MS)",
+          "summary": "Check whether ((now - last_scan_tick) is less than KEY_SCAN_INTERVAL_MS).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1514,6 +1605,7 @@
           "id": "n9",
           "kind": "return",
           "label": "return 0;",
+          "summary": "Return 0.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1525,6 +1617,7 @@
           "id": "n10",
           "kind": "statement",
           "label": "last_scan_tick = now;",
+          "summary": "Set last_scan_tick to now.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1536,6 +1629,7 @@
           "id": "n11",
           "kind": "statement",
           "label": "uint8_t raw[3] = {\n\t\t(HAL_GPIO_ReadPin(PIN1_GPIO_Port, PIN1_Pin) == GPIO_PIN_RESET) ? 1 : 0,\n\t\t(HAL_GPIO_ReadPin(PIN2_GPIO_Port, PIN2_Pin) == GPIO_PIN_RESET) ? 1 : 0,\n\t\t(HAL_GPIO_ReadPin(PIN3_GPIO_Port, PIN3_Pin) == GPIO_PIN_RESET) ? 1 : 0\n\t};",
+          "summary": "uint8 t raw 3 = { HAL GPIO Read PinPIN1 GPIO Port, PIN1 Pin == GPIO PIN RESET ? 1 : 0, HAL GPIO Read PinPIN2 GPIO Port, PIN2 Pin == GPIO PIN RESET ? 1 : 0, HAL GPIO Read PinPIN3 GPIO Port, PIN3 Pin == GPIO PIN RESET ? 1 : 0 }",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1547,6 +1641,7 @@
           "id": "n12",
           "kind": "loop",
           "label": "for (int i = 0; i < 3; ++i)",
+          "summary": "Repeat according to for (int i = 0; i < 3; ++i).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1558,6 +1653,7 @@
           "id": "n13",
           "kind": "statement",
           "label": "btn_fsm_t *f = &btn_fsm[i];",
+          "summary": "Set btn_fsm_t multiplied by f to &btn_fsm[i].",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1569,6 +1665,7 @@
           "id": "n14",
           "kind": "return",
           "label": "return 0;",
+          "summary": "Return 0.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1664,6 +1761,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1675,6 +1773,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -1688,6 +1787,7 @@
           "id": "n2",
           "kind": "statement",
           "label": "static uint8_t last_flag = 0;",
+          "summary": "Set static uint8_t last_flag to 0.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1699,6 +1799,7 @@
           "id": "n3",
           "kind": "statement",
           "label": "static bool first_draw = true;",
+          "summary": "Set static bool first_draw to true.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1710,6 +1811,7 @@
           "id": "n4",
           "kind": "statement",
           "label": "flag = 1;",
+          "summary": "Set flag to 1.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1721,6 +1823,7 @@
           "id": "n5",
           "kind": "statement",
           "label": "OLED_InitIconMenuCursor();",
+          "summary": "Call OLED Init Icon Menu Cursor.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1732,6 +1835,7 @@
           "id": "n6",
           "kind": "statement",
           "label": "last_flag = 0;",
+          "summary": "Set last_flag to 0.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1743,6 +1847,7 @@
           "id": "n7",
           "kind": "statement",
           "label": "first_draw = true;",
+          "summary": "Set first_draw to true.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1754,6 +1859,7 @@
           "id": "n8",
           "kind": "loop",
           "label": "while(1)",
+          "summary": "Repeat according to while(1).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1765,6 +1871,7 @@
           "id": "n9",
           "kind": "conditional",
           "label": "if (system_state == Do_not_disturb)",
+          "summary": "Check whether (system_state equals Do_not_disturb).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1776,6 +1883,7 @@
           "id": "n10",
           "kind": "statement",
           "label": "OLED_Clear();",
+          "summary": "Call OLED Clear.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1787,6 +1895,7 @@
           "id": "n11",
           "kind": "statement",
           "label": "OLED_Update();",
+          "summary": "Call OLED Update.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1798,6 +1907,7 @@
           "id": "n12",
           "kind": "return",
           "label": "return 0;",
+          "summary": "Return 0.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1809,6 +1919,7 @@
           "id": "n13",
           "kind": "statement",
           "label": "key_num = Key_GetEvent();",
+          "summary": "Set key_num to Key_GetEvent().",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1820,6 +1931,7 @@
           "id": "n14",
           "kind": "conditional",
           "label": "if (key_num == 1)",
+          "summary": "Check whether (key_num equals 1).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1831,6 +1943,7 @@
           "id": "n15",
           "kind": "statement",
           "label": "flag--;",
+          "summary": "flag--",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1842,6 +1955,7 @@
           "id": "n16",
           "kind": "conditional",
           "label": "if (flag == 0)",
+          "summary": "Check whether (flag equals 0).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1853,6 +1967,7 @@
           "id": "n17",
           "kind": "statement",
           "label": "flag = 3;",
+          "summary": "Set flag to 3.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1864,6 +1979,7 @@
           "id": "n18",
           "kind": "statement",
           "label": "if(key_num == 2 )\n\t\t{\n\t\t\tOLED_Clear();\n\t\t\tOLED_Update();\n\t\t\treturn flag;\n\t\t}\n\t\t// \u6309\u952e3\uff1a\u5411\u53f3\u9009\u62e9\n\t\telse if(key_num == 3 )\n\t\t{\n\t\t\tflag++;\n\t\t\tif(flag > 3 )\n\t\t\t{\n\t\t\t\t flag = 1;\n\t\t\t}\n\t\t}\n\t\t// \u957f\u6309\u6309\u952e3\uff1a\u8fdb\u5165\u9759\u9ed8\u52ff\u6270\u6a21\u5f0f\n\t\telse if(key_num == 13)\n\t\t{\n\t\t\tsilent_do_not_disturb = true;  // \u8bbe\u7f6e\u9759\u9ed8\u52ff\u6270\u6a21\u5f0f\u6807\u5fd7\n\t\t\tsystem_state = Do_not_disturb;  // \u8bbe\u7f6e\u7cfb\u7edf\u72b6\u6001\u4e3a\u52ff\u6270\u6a21\u5f0f\n\t\t\tOLED_Clear();\n\t\t\tOLED_Update();\n\t\t\treturn 0;  // \u9000\u51fa\u83dc\u5355\n\t\t}\n\t\telse if(key_num == 12)\n\t\t{\n\t\t\thandle_Reset_menu();\n\t\t}\n\n\t\t// \u7ed8\u5236\u56fe\u6807\u83dc\u5355\u754c\u9762\n\t\tbool force_redraw = (flag != last_flag) || first_draw;",
+          "summary": "ifkey num == 2 { OLED Clear; OLED Update; return flag; } // \u6309\u952e3\uff1a\u5411\u53f3\u9009\u62e9 else ifkey num == 3 { flag++; ifflag > 3 { flag = 1; } } // \u957f\u6309\u6309\u952e3\uff1a\u8fdb\u5165\u9759\u9ed8\u52ff\u6270\u6a21\u5f0f else ifkey num == 13 { silent do not disturb = true; // \u8bbe\u7f6e\u9759\u9ed8\u52ff\u6270\u6a21\u5f0f\u6807\u5fd7 system state = Do not disturb; // \u8bbe\u7f6e\u7cfb\u7edf\u72b6\u6001\u4e3a\u52ff\u6270\u6a21\u5f0f OLED Clear; OLED Update; return 0; // \u9000\u51fa\u83dc\u5355 } else ifkey num == 12 { handle Reset menu; } // \u7ed8\u5236\u56fe\u6807\u83dc\u5355\u754c\u9762 bool force redraw = flag != last flag || first draw",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1875,6 +1991,7 @@
           "id": "n19",
           "kind": "statement",
           "label": "OLED_DrawIconMenu(flag - 1, force_redraw);",
+          "summary": "Call OLED Draw Icon Menu with flag - 1, force redraw.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1886,6 +2003,7 @@
           "id": "n20",
           "kind": "statement",
           "label": "OLED_DrawBatteryIconTopRight();",
+          "summary": "Call OLED Draw Battery Icon Top Right.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1897,6 +2015,7 @@
           "id": "n21",
           "kind": "statement",
           "label": "OLED_BatteryLowNotifier_Update();",
+          "summary": "Call OLED Battery Low Notifier Update.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1908,6 +2027,7 @@
           "id": "n22",
           "kind": "statement",
           "label": "OLED_Update();",
+          "summary": "Call OLED Update.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1919,6 +2039,7 @@
           "id": "n23",
           "kind": "statement",
           "label": "last_flag = flag;",
+          "summary": "Set last_flag to flag.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1930,6 +2051,7 @@
           "id": "n24",
           "kind": "statement",
           "label": "first_draw = false;",
+          "summary": "Set first_draw to false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -1941,6 +2063,7 @@
           "id": "n25",
           "kind": "statement",
           "label": "osDelay(5);",
+          "summary": "Call os Delay with 5.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2090,6 +2213,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2101,6 +2225,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -2114,6 +2239,7 @@
           "id": "n2",
           "kind": "statement",
           "label": "flag_change = 1;",
+          "summary": "Set flag_change to 1.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2125,6 +2251,7 @@
           "id": "n3",
           "kind": "statement",
           "label": "OLED_Clear();",
+          "summary": "Call OLED Clear.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2136,6 +2263,7 @@
           "id": "n4",
           "kind": "statement",
           "label": "OLED_Display();",
+          "summary": "Call OLED Display.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2147,6 +2275,7 @@
           "id": "n5",
           "kind": "loop",
           "label": "while(1)",
+          "summary": "Repeat according to while(1).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2158,6 +2287,7 @@
           "id": "n6",
           "kind": "statement",
           "label": "key_num = Key_GetEvent();",
+          "summary": "Set key_num to Key_GetEvent().",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2169,6 +2299,7 @@
           "id": "n7",
           "kind": "conditional",
           "label": "if (key_num == 1)",
+          "summary": "Check whether (key_num equals 1).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2180,6 +2311,7 @@
           "id": "n8",
           "kind": "statement",
           "label": "flag_change--;",
+          "summary": "flag change--",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2191,6 +2323,7 @@
           "id": "n9",
           "kind": "conditional",
           "label": "if (flag_change == 0)",
+          "summary": "Check whether (flag_change equals 0).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2202,6 +2335,7 @@
           "id": "n10",
           "kind": "statement",
           "label": "flag_change = 2;",
+          "summary": "Set flag_change to 2.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2213,6 +2347,7 @@
           "id": "n11",
           "kind": "statement",
           "label": "OLED_Clear();",
+          "summary": "Call OLED Clear.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2224,6 +2359,7 @@
           "id": "n12",
           "kind": "statement",
           "label": "OLED_Display();",
+          "summary": "Call OLED Display.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2235,6 +2371,7 @@
           "id": "n13",
           "kind": "statement",
           "label": "if(key_num == 2 )\n\t\t{\n\t\t\tOLED_Clear();\n\t\t\tOLED_Display();\n\t\t\treturn flag_change;\n\t\t}\n\t\t// \u6309\u952e3\uff1a\u5411\u4e0b\u9009\u62e9\n\t\telse if(key_num == 3 )\n\t\t{\n\t\t\tflag_change++;\n\t\t\tif(flag_change > 2 )\n\t\t\t{\n\t\t\t\t flag_change = 1;\n\t\t\t}\n\t\t\tOLED_Clear();\n\t\t\tOLED_Display();\n\t\t}\n\t\t\n\t\t// \u663e\u793a\u5220\u9664\u9009\u9879\n\t\tswitch( flag_change )\n\t\t{\n\t\t\tcase 1: // \u91cd\u7f6e\u6240\u6709\n\t\t\t{\n\t\t\t\tOLED_ShowStringCentered(0, \"reset all\", OLED_6X8_HALF);\n\t\t\t\tOLED_ShowStringCentered(16, \"reset single\", OLED_6X8_HALF);\n\t\t\t\tOLED_ShowStringCentered(0, \"<-\", OLED_6X8_HALF);\n\t\t\t\tbreak;\n\t\t\t}\n\t\t\tcase 2: // \u91cd\u7f6e\u5355\u4e2a\n\t\t\t{\n\t\t\t\tOLED_ShowStringCentered(0, \"reset all\", OLED_6X8_HALF);\n\t\t\t\tOLED_ShowStringCentered(16, \"reset single\", OLED_6X8_HALF);\n\t\t\t\tOLED_ShowStringCentered(16, \"<-\", OLED_6X8_HALF);\n\t\t\t\tbreak;\n\t\t\t}\n\t\t}\n\t\tosDelay(5);",
+          "summary": "Call if with key num == 2 { OLED Clear; OLED Display; return flag change; } // \u6309\u952e3\uff1a\u5411\u4e0b\u9009\u62e9 else ifkey num == 3 { flag change++; ifflag change > 2 { flag change = 1; } OLED Clear; OLED Display; } // \u663e\u793a\u5220\u9664\u9009\u9879 switch flag change { case 1: // \u91cd\u7f6e\u6240\u6709 { OLED Show String Centered0, \"reset all\", OLED 6 X8 HALF; OLED Show String Centered16, \"reset single\", OLED 6 X8 HALF; OLED Show String Centered0, \"<-\", OLED 6 X8 HALF; break; } case 2: // \u91cd\u7f6e\u5355\u4e2a { OLED Show String Centered0, \"reset all\", OLED 6 X8 HALF; OLED Show String Centered16, \"reset single\", OLED 6 X8 HALF; OLED Show String Centered16, \"<-\", OLED 6 X8 HALF; break; } } os Delay5.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2331,6 +2468,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2342,6 +2480,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -2355,6 +2494,7 @@
           "id": "n2",
           "kind": "statement",
           "label": "static uint8_t last_flag_change = 0;",
+          "summary": "Set static uint8_t last_flag_change to 0.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2366,6 +2506,7 @@
           "id": "n3",
           "kind": "statement",
           "label": "flag_change = 1;",
+          "summary": "Set flag_change to 1.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2377,6 +2518,7 @@
           "id": "n4",
           "kind": "statement",
           "label": "last_flag_change = 0;",
+          "summary": "Set last_flag_change to 0.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2388,6 +2530,7 @@
           "id": "n5",
           "kind": "statement",
           "label": "OLED_Clear();",
+          "summary": "Call OLED Clear.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2399,6 +2542,7 @@
           "id": "n6",
           "kind": "statement",
           "label": "OLED_ShowStringCentered(16, \"Reset All\", OLED_6X8_HALF);",
+          "summary": "Call OLED Show String Centered with 16, \"Reset All\", OLED 6 X8 HALF.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2410,6 +2554,7 @@
           "id": "n7",
           "kind": "statement",
           "label": "OLED_ShowStringCentered(28, \"Reset Single\", OLED_6X8_HALF);",
+          "summary": "Call OLED Show String Centered with 28, \"Reset Single\", OLED 6 X8 HALF.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2421,6 +2566,7 @@
           "id": "n8",
           "kind": "statement",
           "label": "OLED_ShowStringCentered(40, \"Back\", OLED_6X8_HALF);",
+          "summary": "Call OLED Show String Centered with 40, \"Back\", OLED 6 X8 HALF.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2432,6 +2578,7 @@
           "id": "n9",
           "kind": "statement",
           "label": "OLED_HighlightMenuLine(flag_change - 1, true);",
+          "summary": "Call OLED Highlight Menu Line with flag change - 1, true.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2443,6 +2590,7 @@
           "id": "n10",
           "kind": "statement",
           "label": "OLED_DrawBatteryIconTopRight();",
+          "summary": "Call OLED Draw Battery Icon Top Right.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2454,6 +2602,7 @@
           "id": "n11",
           "kind": "statement",
           "label": "OLED_BatteryLowNotifier_Update();",
+          "summary": "Call OLED Battery Low Notifier Update.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2465,6 +2614,7 @@
           "id": "n12",
           "kind": "statement",
           "label": "OLED_Display();",
+          "summary": "Call OLED Display.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2476,6 +2626,7 @@
           "id": "n13",
           "kind": "statement",
           "label": "last_flag_change = 1;",
+          "summary": "Set last_flag_change to 1.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2487,6 +2638,7 @@
           "id": "n14",
           "kind": "loop",
           "label": "while(1)",
+          "summary": "Repeat according to while(1).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2498,6 +2650,7 @@
           "id": "n15",
           "kind": "statement",
           "label": "key_num = Key_GetEvent();",
+          "summary": "Set key_num to Key_GetEvent().",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2509,6 +2662,7 @@
           "id": "n16",
           "kind": "conditional",
           "label": "if (key_num == 1)",
+          "summary": "Check whether (key_num equals 1).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2520,6 +2674,7 @@
           "id": "n17",
           "kind": "statement",
           "label": "flag_change--;",
+          "summary": "flag change--",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2531,6 +2686,7 @@
           "id": "n18",
           "kind": "conditional",
           "label": "if (flag_change == 0)",
+          "summary": "Check whether (flag_change equals 0).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2542,6 +2698,7 @@
           "id": "n19",
           "kind": "statement",
           "label": "flag_change = 3;",
+          "summary": "Set flag_change to 3.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2553,6 +2710,7 @@
           "id": "n20",
           "kind": "statement",
           "label": "if(key_num == 2 )\n\t\t{\n\t\t\tOLED_Clear();\n\t\t\tOLED_Display();\n\t\t\tif(flag_change == 3) {\n\t\t\t\treturn 0; // \u8fd4\u56de\u4e0a\u4e00\u7ea7\n\t\t\t}\n\t\t\treturn flag_change;\n\t\t}\n\t\telse if(key_num == 3 )\n\t\t{\n\t\t\tflag_change++;\n\t\t\tif(flag_change > 3 )\n\t\t\t{\n\t\t\t\t flag_change = 1;\n\t\t\t}\n\t\t}\n\t\t\n\t\t// \u53ea\u6709\u5f53\u9009\u62e9\u53d1\u751f\u53d8\u5316\u65f6\u624d\u5237\u65b0\u663e\u793a\n\t\tif (flag_change != last_flag_change) {\n\t\t\t// \u663e\u793a\u83dc\u5355\u9879\uff08\u589e\u5f3a\u7248\u672c\uff0c\u4fdd\u6301\u539f\u6709\u903b\u8f91\uff09\n\t\t\tOLED_Clear();\n\t\t\t\n\t\t\tOLED_ShowStringCentered(16, \"Reset All\", OLED_6X8_HALF);\n\t\t\tOLED_ShowStringCentered(28, \"Reset Single\", OLED_6X8_HALF);\n\t\t\tOLED_ShowStringCentered(40, \"Back\", OLED_6X8_HALF);\n\t\t\t\n\t\t\t// \u9ad8\u4eae\u5f53\u524d\u9009\u4e2d\u7684\u884c\n\t\t\tOLED_HighlightMenuLine(flag_change - 1, true);\n\t\t\t// \u53e0\u52a0\u53f3\u4e0a\u89d2\u7535\u91cf\u4e0e\u4f4e\u7535\u63d0\u793a\n\t\t\tOLED_DrawBatteryIconTopRight();\n\t\t\tOLED_BatteryLowNotifier_Update();\n\t\t\t\n\t\t\tOLED_Display();\n\t\t\tlast_flag_change = flag_change;  // \u66f4\u65b0\u8bb0\u5f55\n\t\t}\n\t\t\n\t\tosDelay(10);",
+          "summary": "Call if with key num == 2 { OLED Clear; OLED Display; ifflag change == 3 { return 0; // \u8fd4\u56de\u4e0a\u4e00\u7ea7 } return flag change; } else ifkey num == 3 { flag change++; ifflag change > 3 { flag change = 1; } } // \u53ea\u6709\u5f53\u9009\u62e9\u53d1\u751f\u53d8\u5316\u65f6\u624d\u5237\u65b0\u663e\u793a if flag change != last flag change { // \u663e\u793a\u83dc\u5355\u9879\uff08\u589e\u5f3a\u7248\u672c\uff0c\u4fdd\u6301\u539f\u6709\u903b\u8f91\uff09 OLED Clear; OLED Show String Centered16, \"Reset All\", OLED 6 X8 HALF; OLED Show String Centered28, \"Reset Single\", OLED 6 X8 HALF; OLED Show String Centered40, \"Back\", OLED 6 X8 HALF; // \u9ad8\u4eae\u5f53\u524d\u9009\u4e2d\u7684\u884c OLED Highlight Menu Lineflag change - 1, true; // \u53e0\u52a0\u53f3\u4e0a\u89d2\u7535\u91cf\u4e0e\u4f4e\u7535\u63d0\u793a OLED Draw Battery Icon Top Right; OLED Battery Low Notifier Update; OLED Display; last flag change = flag change; // \u66f4\u65b0\u8bb0\u5f55 } os Delay10.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2678,6 +2836,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2689,6 +2848,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -2702,6 +2862,7 @@
           "id": "n2",
           "kind": "statement",
           "label": "static uint8_t last_flag_change = 0;",
+          "summary": "Set static uint8_t last_flag_change to 0.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2713,6 +2874,7 @@
           "id": "n3",
           "kind": "statement",
           "label": "flag_change = 1;",
+          "summary": "Set flag_change to 1.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2724,6 +2886,7 @@
           "id": "n4",
           "kind": "statement",
           "label": "debug_change_state = 1;",
+          "summary": "Set debug_change_state to 1.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2735,6 +2898,7 @@
           "id": "n5",
           "kind": "statement",
           "label": "debug_config_changed = false;",
+          "summary": "Set debug_config_changed to false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2746,6 +2910,7 @@
           "id": "n6",
           "kind": "statement",
           "label": "OLED_Clear();",
+          "summary": "Call OLED Clear.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2757,6 +2922,7 @@
           "id": "n7",
           "kind": "statement",
           "label": "OLED_Display();",
+          "summary": "Call OLED Display.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2768,6 +2934,7 @@
           "id": "n8",
           "kind": "statement",
           "label": "key_num = 0;",
+          "summary": "Set key_num to 0.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2779,6 +2946,7 @@
           "id": "n9",
           "kind": "loop",
           "label": "while(1)",
+          "summary": "Repeat according to while(1).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2790,6 +2958,7 @@
           "id": "n10",
           "kind": "statement",
           "label": "key_num = Key_GetEvent();",
+          "summary": "Set key_num to Key_GetEvent().",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2801,6 +2970,7 @@
           "id": "n11",
           "kind": "conditional",
           "label": "if (key_num == 1)",
+          "summary": "Check whether (key_num equals 1).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2812,6 +2982,7 @@
           "id": "n12",
           "kind": "statement",
           "label": "flag_change--;",
+          "summary": "flag change--",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2823,6 +2994,7 @@
           "id": "n13",
           "kind": "conditional",
           "label": "if (flag_change == 0)",
+          "summary": "Check whether (flag_change equals 0).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2834,6 +3006,7 @@
           "id": "n14",
           "kind": "statement",
           "label": "flag_change = 5;",
+          "summary": "Set flag_change to 5.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2845,6 +3018,7 @@
           "id": "n15",
           "kind": "statement",
           "label": "if(key_num == 2 )\n\t\t{\n\t\t\tif(flag_change == 1) {\n\t\t\t\t// \u9009\u62e9\u89d2\u5ea6\n\t\t\t\tdebug_temp_angle = (debug_temp_angle % 3) + 1;\n\t\t\t\tdebug_config_changed = true;\n\t\t\t}\n\t\t\telse if(flag_change == 2) {\n\t\t\t\t// \u9009\u62e9\u901f\u5ea6\n\t\t\t\tdebug_temp_speed = (debug_temp_speed % 3) + 1;\n\t\t\t\tdebug_config_changed = true;\n\t\t\t}\n\t\t\telse if(flag_change == 3) {\n\t\t\t\t// \u9009\u62e9\u5f00\u6216\u5173\n\t\t\t\tdebug_open_or_not_flag = (debug_open_or_not_flag % 2) + 1;\n\t\t\t\tdebug_config_changed = true;\n\t\t\t}\n\t\t\telse if(flag_change == 4) {\n\t\t\t\t// \u4fdd\u5b58\u914d\u7f6e\n\t\t\t\tdebug_change_state = 2;\n\t\t\t\treturn 1;  // \u4fdd\u5b58\n\t\t\t}\n\t\t\telse if(flag_change == 5) {\n\t\t\t\t// \u9000\u51fa\u4e0d\u4fdd\u5b58\n\t\t\t\treturn 0;  // \u9000\u51fa\n\t\t\t}\n\t\t}\n\t\telse if(key_num == 3 )\n\t\t{\n\t\t\tflag_change++;\n\t\t\tif(flag_change > 5 )\n\t\t\t{\n\t\t\t\t flag_change = 1;\n\t\t\t}\n\t\t}\n\t\t\n\t\t// \u53ea\u6709\u5f53\u9009\u62e9\u53d1\u751f\u53d8\u5316\u65f6\u624d\u5237\u65b0\u663e\u793a\n\t\tif (flag_change != last_flag_change || debug_config_changed) {\n\t\t\t// \u663e\u793a\u914d\u7f6e\u754c\u9762\uff08\u4fdd\u6301\u539f\u6709\u903b\u8f91\uff0c\u6dfb\u52a0\u89c6\u89c9\u589e\u5f3a\uff09\n\t\t\tOLED_Clear();\n\t\t\t\n\t\t\t// \u663e\u793a\u914d\u7f6e\u9879\n\t\t\tchar config_display[50];\n\t\t\t\n\t\t\t// \u89d2\u5ea6\u914d\u7f6e (\u4e09\u6321: \u5c0f/\u4e2d/\u5927)\n\t\t\tconst char* angle_names[] = {\"Small\", \"Medium\", \"Large\"};\n\t\t\tsprintf(config_display, \"Angle: %s\", angle_names[debug_temp_angle - 1]);\n\t\t\tOLED_ShowStringCentered(16, config_display, OLED_6X8_HALF);\n\t\t\t\n\t\t\t// \u901f\u5ea6\u914d\u7f6e  \n\t\t\tconst char* speed_names[] = {\"Slow\", \"Moderate\", \"Fast\"};\n\t\t\tsprintf(config_display, \"Speed: %s\", speed_names[debug_temp_speed - 1]);\n\t\t\tOLED_ShowStringCentered(28, config_display, OLED_6X8_HALF);\n\t\t\t\n\t\t\t// \u5f00\u5173\u914d\u7f6e\n\t\t\tsprintf(config_display, \"Auto Close: %s\", (debug_open_or_not_flag == 1) ? \"Yes\" : \"No\");\n\t\t\tOLED_ShowStringCentered(40, config_display, OLED_6X8_HALF);\n\t\t\t\n\t\t\t// \u64cd\u4f5c\u9009\u9879\n\t\t\tif (flag_change == 4) {\n\t\t\t\tOLED_ShowStringCentered(52, \"Save\", OLED_6X8_HALF);\n\t\t\t} else if (flag_change == 5) {\n\t\t\t\tOLED_ShowStringCentered(52, \"Exit\", OLED_6X8_HALF);\n\t\t\t}\n\t\t\t\n\t\t\t// \u9ad8\u4eae\u5f53\u524d\u9009\u62e9\u9879\n\t\t\tOLED_HighlightMenuLine(flag_change - 1, true);\n\t\t\t// \u53e0\u52a0\u53f3\u4e0a\u89d2\u7535\u91cf\u4e0e\u4f4e\u7535\u63d0\u793a\n\t\t\tOLED_DrawBatteryIconTopRight();\n\t\t\tOLED_BatteryLowNotifier_Update();\n\t\t\t\n\t\t\tOLED_Display();\n\t\t\tlast_flag_change = flag_change;  // \u66f4\u65b0\u8bb0\u5f55\n\t\t\tdebug_config_changed = false;    // \u91cd\u7f6e\u914d\u7f6e\u53d8\u5316\u6807\u5fd7\n\t\t}\n\t\t\n\t\tosDelay(10);",
+          "summary": "Call if with key num == 2 { ifflag change == 1 { // \u9009\u62e9\u89d2\u5ea6 debug temp angle = debug temp angle % 3 + 1; debug config changed = true; } else ifflag change == 2 { // \u9009\u62e9\u901f\u5ea6 debug temp speed = debug temp speed % 3 + 1; debug config changed = true; } else ifflag change == 3 { // \u9009\u62e9\u5f00\u6216\u5173 debug open or not flag = debug open or not flag % 2 + 1; debug config changed = true; } else ifflag change == 4 { // \u4fdd\u5b58\u914d\u7f6e debug change state = 2; return 1; // \u4fdd\u5b58 } else ifflag change == 5 { // \u9000\u51fa\u4e0d\u4fdd\u5b58 return 0; // \u9000\u51fa } } else ifkey num == 3 { flag change++; ifflag change > 5 { flag change = 1; } } // \u53ea\u6709\u5f53\u9009\u62e9\u53d1\u751f\u53d8\u5316\u65f6\u624d\u5237\u65b0\u663e\u793a if flag change != last flag change || debug config changed { // \u663e\u793a\u914d\u7f6e\u754c\u9762\uff08\u4fdd\u6301\u539f\u6709\u903b\u8f91\uff0c\u6dfb\u52a0\u89c6\u89c9\u589e\u5f3a\uff09 OLED Clear; // \u663e\u793a\u914d\u7f6e\u9879 char config display 50 ; // \u89d2\u5ea6\u914d\u7f6e \u4e09\u6321: \u5c0f/\u4e2d/\u5927 const char* angle names = {\"Small\", \"Medium\", \"Large\"}; sprintfconfig display, \"Angle: %s\", angle names debug temp angle - 1 ; OLED Show String Centered16, config display, OLED 6 X8 HALF; // \u901f\u5ea6\u914d\u7f6e const char* speed names = {\"Slow\", \"Moderate\", \"Fast\"}; sprintfconfig display, \"Speed: %s\", speed names debug temp speed - 1 ; OLED Show String Centered28, config display, OLED 6 X8 HALF; // \u5f00\u5173\u914d\u7f6e sprintfconfig display, \"Auto Close: %s\", debug open or not flag == 1 ? \"Yes\" : \"No\"; OLED Show String Centered40, config display, OLED 6 X8 HALF; // \u64cd\u4f5c\u9009\u9879 if flag change == 4 { OLED Show String Centered52, \"Save\", OLED 6 X8 HALF; } else if flag change == 5 { OLED Show String Centered52, \"Exit\", OLED 6 X8 HALF; } // \u9ad8\u4eae\u5f53\u524d\u9009\u62e9\u9879 OLED Highlight Menu Lineflag change - 1, true; // \u53e0\u52a0\u53f3\u4e0a\u89d2\u7535\u91cf\u4e0e\u4f4e\u7535\u63d0\u793a OLED Draw Battery Icon Top Right; OLED Battery Low Notifier Update; OLED Display; last flag change = flag change; // \u66f4\u65b0\u8bb0\u5f55 debug config changed = false; // \u91cd\u7f6e\u914d\u7f6e\u53d8\u5316\u6807\u5fd7 } os Delay10.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2950,6 +3124,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2961,6 +3136,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -2974,6 +3150,7 @@
           "id": "n2",
           "kind": "statement",
           "label": "HC15_SendMessage(\"AARE55\");",
+          "summary": "Call HC15 Send Message with \"AARE55\".",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2985,6 +3162,7 @@
           "id": "n3",
           "kind": "statement",
           "label": "OLED_Clear();",
+          "summary": "Call OLED Clear.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -2996,6 +3174,7 @@
           "id": "n4",
           "kind": "statement",
           "label": "OLED_DrawRectangle(2, 2, 124, 60, OLED_UNFILLED);",
+          "summary": "Call OLED Draw Rectangle with 2, 2, 124, 60, OLED UNFILLED.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3007,6 +3186,7 @@
           "id": "n5",
           "kind": "statement",
           "label": "OLED_DrawRectangle(3, 3, 122, 58, OLED_UNFILLED);",
+          "summary": "Call OLED Draw Rectangle with 3, 3, 122, 58, OLED UNFILLED.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3018,6 +3198,7 @@
           "id": "n6",
           "kind": "statement",
           "label": "OLED_ShowStringCentered(8, \"Door Calibration\", OLED_6X8_HALF);",
+          "summary": "Call OLED Show String Centered with 8, \"Door Calibration\", OLED 6 X8 HALF.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3029,6 +3210,7 @@
           "id": "n7",
           "kind": "statement",
           "label": "OLED_DrawLine(8, 18, 120, 18);",
+          "summary": "Call OLED Draw Line with 8, 18, 120, 18.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3040,6 +3222,7 @@
           "id": "n8",
           "kind": "statement",
           "label": "OLED_ShowStringCentered(24, \"Please open door\", OLED_6X8_HALF);",
+          "summary": "Call OLED Show String Centered with 24, \"Please open door\", OLED 6 X8 HALF.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3051,6 +3234,7 @@
           "id": "n9",
           "kind": "statement",
           "label": "OLED_ShowStringCentered(34, \"to maximum angle\", OLED_6X8_HALF);",
+          "summary": "Call OLED Show String Centered with 34, \"to maximum angle\", OLED 6 X8 HALF.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3062,6 +3246,7 @@
           "id": "n10",
           "kind": "statement",
           "label": "OLED_ShowStringCentered(48, \"Press KEY to confirm\", OLED_6X8_HALF);",
+          "summary": "Call OLED Show String Centered with 48, \"Press KEY to confirm\", OLED 6 X8 HALF.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3073,6 +3258,7 @@
           "id": "n11",
           "kind": "statement",
           "label": "OLED_Update();",
+          "summary": "Call OLED Update.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3084,6 +3270,7 @@
           "id": "n12",
           "kind": "loop",
           "label": "while (1)",
+          "summary": "Loop while (1).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3095,6 +3282,7 @@
           "id": "n13",
           "kind": "statement",
           "label": "int key = Key_GetEvent();",
+          "summary": "Set int key to Key_GetEvent().",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3106,6 +3294,7 @@
           "id": "n14",
           "kind": "conditional",
           "label": "if (key != 0)",
+          "summary": "Check whether (key does not equal 0).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3117,6 +3306,7 @@
           "id": "n15",
           "kind": "statement",
           "label": "break;",
+          "summary": "break",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3128,6 +3318,7 @@
           "id": "n16",
           "kind": "statement",
           "label": "osDelay(10);",
+          "summary": "Call os Delay with 10.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3139,6 +3330,7 @@
           "id": "n17",
           "kind": "statement",
           "label": "HC15_SendMessage(\"AA0055\");",
+          "summary": "Call HC15 Send Message with \"AA0055\".",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3150,6 +3342,7 @@
           "id": "n18",
           "kind": "statement",
           "label": "Flash_ShowBlockingProgress(10000U);",
+          "summary": "Call Flash Show Blocking Progress with 10000 U.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3161,6 +3354,7 @@
           "id": "n19",
           "kind": "statement",
           "label": "OLED_Clear();",
+          "summary": "Call OLED Clear.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3172,6 +3366,7 @@
           "id": "n20",
           "kind": "statement",
           "label": "OLED_DrawRectangle(5, 5, 118, 54, OLED_UNFILLED);",
+          "summary": "Call OLED Draw Rectangle with 5, 5, 118, 54, OLED UNFILLED.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3183,6 +3378,7 @@
           "id": "n21",
           "kind": "statement",
           "label": "OLED_DrawRectangle(6, 6, 116, 52, OLED_UNFILLED);",
+          "summary": "Call OLED Draw Rectangle with 6, 6, 116, 52, OLED UNFILLED.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3194,6 +3390,7 @@
           "id": "n22",
           "kind": "statement",
           "label": "OLED_DrawLine(57, 22, 62, 27);",
+          "summary": "Call OLED Draw Line with 57, 22, 62, 27.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3205,6 +3402,7 @@
           "id": "n23",
           "kind": "statement",
           "label": "OLED_DrawLine(62, 27, 70, 19);",
+          "summary": "Call OLED Draw Line with 62, 27, 70, 19.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3216,6 +3414,7 @@
           "id": "n24",
           "kind": "statement",
           "label": "OLED_DrawLine(58, 23, 63, 28);",
+          "summary": "Call OLED Draw Line with 58, 23, 63, 28.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3227,6 +3426,7 @@
           "id": "n25",
           "kind": "statement",
           "label": "OLED_DrawLine(63, 28, 71, 20);",
+          "summary": "Call OLED Draw Line with 63, 28, 71, 20.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3238,6 +3438,7 @@
           "id": "n26",
           "kind": "statement",
           "label": "OLED_ShowStringCentered(38, \"Calibration Complete!\", OLED_6X8_HALF);",
+          "summary": "Call OLED Show String Centered with 38, \"Calibration Complete!\", OLED 6 X8 HALF.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3249,6 +3450,7 @@
           "id": "n27",
           "kind": "statement",
           "label": "OLED_Update();",
+          "summary": "Call OLED Update.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3260,6 +3462,7 @@
           "id": "n28",
           "kind": "statement",
           "label": "osDelay(2000);",
+          "summary": "Call os Delay with 2000.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3271,6 +3474,7 @@
           "id": "n29",
           "kind": "statement",
           "label": "OLED_Clear();",
+          "summary": "Call OLED Clear.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3282,6 +3486,7 @@
           "id": "n30",
           "kind": "statement",
           "label": "OLED_Update();",
+          "summary": "Call OLED Update.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3439,6 +3644,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3450,6 +3656,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -3463,6 +3670,7 @@
           "id": "n2",
           "kind": "statement",
           "label": "static uint8_t last_flag_change = 0;",
+          "summary": "Set static uint8_t last_flag_change to 0.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3474,6 +3682,7 @@
           "id": "n3",
           "kind": "statement",
           "label": "flag_change = 1;",
+          "summary": "Set flag_change to 1.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3485,6 +3694,7 @@
           "id": "n4",
           "kind": "statement",
           "label": "last_flag_change = 0;",
+          "summary": "Set last_flag_change to 0.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3496,6 +3706,7 @@
           "id": "n5",
           "kind": "statement",
           "label": "OLED_Clear();",
+          "summary": "Call OLED Clear.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3507,6 +3718,7 @@
           "id": "n6",
           "kind": "statement",
           "label": "OLED_ShowStringCentered(16, \"Do Not Disturb\", OLED_6X8_HALF);",
+          "summary": "Call OLED Show String Centered with 16, \"Do Not Disturb\", OLED 6 X8 HALF.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3518,6 +3730,7 @@
           "id": "n7",
           "kind": "statement",
           "label": "OLED_ShowStringCentered(28, \"Door Reset\", OLED_6X8_HALF);",
+          "summary": "Call OLED Show String Centered with 28, \"Door Reset\", OLED 6 X8 HALF.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3529,6 +3742,7 @@
           "id": "n8",
           "kind": "statement",
           "label": "OLED_ShowStringCentered(40, \"Back\", OLED_6X8_HALF);",
+          "summary": "Call OLED Show String Centered with 40, \"Back\", OLED 6 X8 HALF.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3540,6 +3754,7 @@
           "id": "n9",
           "kind": "statement",
           "label": "OLED_HighlightMenuLine(flag_change - 1, true);",
+          "summary": "Call OLED Highlight Menu Line with flag change - 1, true.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3551,6 +3766,7 @@
           "id": "n10",
           "kind": "statement",
           "label": "OLED_DrawBatteryIconTopRight();",
+          "summary": "Call OLED Draw Battery Icon Top Right.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3562,6 +3778,7 @@
           "id": "n11",
           "kind": "statement",
           "label": "OLED_BatteryLowNotifier_Update();",
+          "summary": "Call OLED Battery Low Notifier Update.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3573,6 +3790,7 @@
           "id": "n12",
           "kind": "statement",
           "label": "OLED_Display();",
+          "summary": "Call OLED Display.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3584,6 +3802,7 @@
           "id": "n13",
           "kind": "statement",
           "label": "last_flag_change = 1;",
+          "summary": "Set last_flag_change to 1.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3595,6 +3814,7 @@
           "id": "n14",
           "kind": "loop",
           "label": "while(1)",
+          "summary": "Repeat according to while(1).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3606,6 +3826,7 @@
           "id": "n15",
           "kind": "statement",
           "label": "key_num = Key_GetEvent();",
+          "summary": "Set key_num to Key_GetEvent().",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3617,6 +3838,7 @@
           "id": "n16",
           "kind": "conditional",
           "label": "if (key_num == 1)",
+          "summary": "Check whether (key_num equals 1).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3628,6 +3850,7 @@
           "id": "n17",
           "kind": "statement",
           "label": "flag_change--;",
+          "summary": "flag change--",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3639,6 +3862,7 @@
           "id": "n18",
           "kind": "conditional",
           "label": "if (flag_change == 0)",
+          "summary": "Check whether (flag_change equals 0).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3650,6 +3874,7 @@
           "id": "n19",
           "kind": "statement",
           "label": "flag_change = 3;",
+          "summary": "Set flag_change to 3.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3661,6 +3886,7 @@
           "id": "n20",
           "kind": "statement",
           "label": "if(key_num == 2 )\n\t\t{\n\t\t\tOLED_Clear();\n\t\t\tOLED_Display();\n\t\t\tif(flag_change == 3) {\n\t\t\t\treturn 0; // \u8fd4\u56de\u4e0a\u4e00\u7ea7\n\t\t\t}\n\t\t\treturn flag_change;\n\t\t}\n\t\telse if(key_num == 3 )\n\t\t{\n\t\t\tflag_change++;\n\t\t\tif(flag_change > 3 )\n\t\t\t{\n\t\t\t\t flag_change = 1;\n\t\t\t}\n\t\t}\n\t\t\n\t\t// \u53ea\u6709\u5f53\u9009\u62e9\u53d1\u751f\u53d8\u5316\u65f6\u624d\u5237\u65b0\u663e\u793a\n\t\tif (flag_change != last_flag_change) {\n\t\t\t// \u663e\u793a\u83dc\u5355\u9879\n\t\t\tOLED_Clear();\n\t\t\t\n\t\t\tOLED_ShowStringCentered(16, \"Do Not Disturb\", OLED_6X8_HALF);\n\t\t\tOLED_ShowStringCentered(28, \"Door Reset\", OLED_6X8_HALF);\n\t\t\tOLED_ShowStringCentered(40, \"Back\", OLED_6X8_HALF);\n\t\t\t\n\t\t\t// \u9ad8\u4eae\u5f53\u524d\u9009\u4e2d\u7684\u884c\n\t\t\tOLED_HighlightMenuLine(flag_change - 1, true);\n\t\t\t// \u53e0\u52a0\u53f3\u4e0a\u89d2\u7535\u91cf\u4e0e\u4f4e\u7535\u63d0\u793a\n\t\t\tOLED_DrawBatteryIconTopRight();\n\t\t\tOLED_BatteryLowNotifier_Update();\n\t\t\t\n\t\t\tOLED_Display();\n\t\t\tlast_flag_change = flag_change;  // \u66f4\u65b0\u8bb0\u5f55\n\t\t}\n\t\t\n\t\tosDelay(10);",
+          "summary": "Call if with key num == 2 { OLED Clear; OLED Display; ifflag change == 3 { return 0; // \u8fd4\u56de\u4e0a\u4e00\u7ea7 } return flag change; } else ifkey num == 3 { flag change++; ifflag change > 3 { flag change = 1; } } // \u53ea\u6709\u5f53\u9009\u62e9\u53d1\u751f\u53d8\u5316\u65f6\u624d\u5237\u65b0\u663e\u793a if flag change != last flag change { // \u663e\u793a\u83dc\u5355\u9879 OLED Clear; OLED Show String Centered16, \"Do Not Disturb\", OLED 6 X8 HALF; OLED Show String Centered28, \"Door Reset\", OLED 6 X8 HALF; OLED Show String Centered40, \"Back\", OLED 6 X8 HALF; // \u9ad8\u4eae\u5f53\u524d\u9009\u4e2d\u7684\u884c OLED Highlight Menu Lineflag change - 1, true; // \u53e0\u52a0\u53f3\u4e0a\u89d2\u7535\u91cf\u4e0e\u4f4e\u7535\u63d0\u793a OLED Draw Battery Icon Top Right; OLED Battery Low Notifier Update; OLED Display; last flag change = flag change; // \u66f4\u65b0\u8bb0\u5f55 } os Delay10.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3786,6 +4012,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3797,6 +4024,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -3810,6 +4038,7 @@
           "id": "n2",
           "kind": "statement",
           "label": "OLED_Clear();",
+          "summary": "Call OLED Clear.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3821,6 +4050,7 @@
           "id": "n3",
           "kind": "statement",
           "label": "OLED_ScrollTextInCentered(15, \"Radar Config\", OLED_8X16_HALF, ANIMATION_SLIDE_DOWN, SCROLL_SPEED_FAST);",
+          "summary": "Call OLED Scroll Text In Centered with 15, \"Radar Config\", OLED 8 X16 HALF, ANIMATION SLIDE DOWN, SCROLL SPEED FAST.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3832,6 +4062,7 @@
           "id": "n4",
           "kind": "statement",
           "label": "osDelay(1000);",
+          "summary": "Call os Delay with 1000.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3843,6 +4074,7 @@
           "id": "n5",
           "kind": "statement",
           "label": "selected_user_id = 1;",
+          "summary": "Set selected_user_id to 1.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3854,6 +4086,7 @@
           "id": "n6",
           "kind": "statement",
           "label": "user_config_t current_config;",
+          "summary": "user config t current config",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3865,6 +4098,7 @@
           "id": "n7",
           "kind": "statement",
           "label": "bool config_exists = Flash_LoadUserConfig(1, &current_config);",
+          "summary": "Set bool config_exists to Flash_LoadUserConfig(1, &current_config).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3876,6 +4110,7 @@
           "id": "n8",
           "kind": "conditional",
           "label": "if (!config_exists)",
+          "summary": "Check whether (!config_exists).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3887,6 +4122,7 @@
           "id": "n9",
           "kind": "statement",
           "label": "Flash_GetDefaultUserConfig(&current_config, 1);",
+          "summary": "Call Flash Get Default User Config with &current config, 1.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3898,6 +4134,7 @@
           "id": "n10",
           "kind": "statement",
           "label": "OLED_Clear();",
+          "summary": "Call OLED Clear.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3909,6 +4146,7 @@
           "id": "n11",
           "kind": "statement",
           "label": "OLED_ShowStringCentered(15, \"Loading defaults...\", OLED_6X8_HALF);",
+          "summary": "Call OLED Show String Centered with 15, \"Loading defaults \", OLED 6 X8 HALF.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3920,6 +4158,7 @@
           "id": "n12",
           "kind": "statement",
           "label": "osDelay(1000);",
+          "summary": "Call os Delay with 1000.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3931,6 +4170,7 @@
           "id": "n13",
           "kind": "statement",
           "label": "OLED_Clear();",
+          "summary": "Call OLED Clear.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3942,6 +4182,7 @@
           "id": "n14",
           "kind": "statement",
           "label": "OLED_ShowStringCentered(15, \"Loading config...\", OLED_6X8_HALF);",
+          "summary": "Call OLED Show String Centered with 15, \"Loading config \", OLED 6 X8 HALF.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3953,6 +4194,7 @@
           "id": "n15",
           "kind": "statement",
           "label": "OLED_Update();",
+          "summary": "Call OLED Update.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3964,6 +4206,7 @@
           "id": "n16",
           "kind": "statement",
           "label": "osDelay(1000);",
+          "summary": "Call os Delay with 1000.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3975,6 +4218,7 @@
           "id": "n17",
           "kind": "statement",
           "label": "OLED_Clear();",
+          "summary": "Call OLED Clear.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3986,6 +4230,7 @@
           "id": "n18",
           "kind": "statement",
           "label": "debug_temp_angle = current_config.open_angle;",
+          "summary": "Set debug_temp_angle to current_config.open_angle.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -3997,6 +4242,7 @@
           "id": "n19",
           "kind": "statement",
           "label": "debug_temp_speed = current_config.open_speed;",
+          "summary": "Set debug_temp_speed to current_config.open_speed.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4008,6 +4254,7 @@
           "id": "n20",
           "kind": "statement",
           "label": "debug_open_or_not_flag = current_config.open_or_not_flag;",
+          "summary": "Set debug_open_or_not_flag to current_config.open_or_not_flag.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4019,6 +4266,7 @@
           "id": "n21",
           "kind": "statement",
           "label": "char config_info[64];",
+          "summary": "char config info 64",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4030,6 +4278,7 @@
           "id": "n22",
           "kind": "statement",
           "label": "sprintf(config_info, \"Config ID: %d\", selected_user_id);",
+          "summary": "Call sprintf with config info, \"Config ID: %d\", selected user id.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4041,6 +4290,7 @@
           "id": "n23",
           "kind": "statement",
           "label": "OLED_ShowStringCentered(35, config_info, OLED_6X8_HALF);",
+          "summary": "Call OLED Show String Centered with 35, config info, OLED 6 X8 HALF.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4052,6 +4302,7 @@
           "id": "n24",
           "kind": "statement",
           "label": "OLED_Update();",
+          "summary": "Call OLED Update.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4063,6 +4314,7 @@
           "id": "n25",
           "kind": "statement",
           "label": "osDelay(1500);",
+          "summary": "Call os Delay with 1500.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4074,6 +4326,7 @@
           "id": "n26",
           "kind": "statement",
           "label": "int config_result = menu3_angle_speed();",
+          "summary": "Set int config_result to menu3_angle_speed().",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4085,6 +4338,7 @@
           "id": "n27",
           "kind": "conditional",
           "label": "if (config_result == 1)",
+          "summary": "Check whether (config_result equals 1).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4096,6 +4350,7 @@
           "id": "n28",
           "kind": "statement",
           "label": "OLED_Clear();",
+          "summary": "Call OLED Clear.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4107,6 +4362,7 @@
           "id": "n29",
           "kind": "statement",
           "label": "OLED_ShowStringCentered(15, \"Saving config...\", OLED_6X8_HALF);",
+          "summary": "Call OLED Show String Centered with 15, \"Saving config \", OLED 6 X8 HALF.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4118,6 +4374,7 @@
           "id": "n30",
           "kind": "statement",
           "label": "enroll_progress_active = true;",
+          "summary": "Set enroll_progress_active to true.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4129,6 +4386,7 @@
           "id": "n31",
           "kind": "statement",
           "label": "enroll_progress_start_time = HAL_GetTick();",
+          "summary": "Set enroll_progress_start_time to HAL_GetTick().",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4140,6 +4398,7 @@
           "id": "n32",
           "kind": "statement",
           "label": "enroll_progress_duration = 2000;",
+          "summary": "Set enroll_progress_duration to 2000.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4151,6 +4410,7 @@
           "id": "n33",
           "kind": "statement",
           "label": "uint32_t save_start = HAL_GetTick();",
+          "summary": "Set uint32_t save_start to HAL_GetTick().",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4162,6 +4422,7 @@
           "id": "n34",
           "kind": "statement",
           "label": "bool save_success = false;",
+          "summary": "Set bool save_success to false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4173,6 +4434,7 @@
           "id": "n35",
           "kind": "statement",
           "label": "user_cfg_diy.user_id = selected_user_id;",
+          "summary": "Set user_cfg_diy.user_id to selected_user_id.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4184,6 +4446,7 @@
           "id": "n36",
           "kind": "statement",
           "label": "user_cfg_diy.open_angle = debug_temp_angle;",
+          "summary": "Set user_cfg_diy.open_angle to debug_temp_angle.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4195,6 +4458,7 @@
           "id": "n37",
           "kind": "statement",
           "label": "user_cfg_diy.open_speed = debug_temp_speed;",
+          "summary": "Set user_cfg_diy.open_speed to debug_temp_speed.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4206,6 +4470,7 @@
           "id": "n38",
           "kind": "statement",
           "label": "user_cfg_diy.open_or_not_flag = debug_open_or_not_flag;",
+          "summary": "Set user_cfg_diy.open_or_not_flag to debug_open_or_not_flag.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4217,6 +4482,7 @@
           "id": "n39",
           "kind": "statement",
           "label": "bool erase_success = Flash_EraseAllUserData();",
+          "summary": "Set bool erase_success to Flash_EraseAllUserData().",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4228,6 +4494,7 @@
           "id": "n40",
           "kind": "conditional",
           "label": "if (erase_success)",
+          "summary": "Check whether (erase_success).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4239,6 +4506,7 @@
           "id": "n41",
           "kind": "statement",
           "label": "Flash_Unlock();",
+          "summary": "Call Flash Unlock.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4250,6 +4518,7 @@
           "id": "n42",
           "kind": "statement",
           "label": "uint32_t flash_address = FLASH_USER_BASE_ADDR + (user_cfg_diy.user_id * USER_CONFIG_FLASH_SIZE);",
+          "summary": "Set uint32_t flash_address to FLASH_USER_BASE_ADDR plus (user_cfg_diy.user_id multiplied by USER_CONFIG_FLASH_SIZE).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4261,6 +4530,7 @@
           "id": "n43",
           "kind": "statement",
           "label": "flash_address = (flash_address + 7) & ~7;",
+          "summary": "Set flash_address to (flash_address plus 7) & ~7.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4272,6 +4542,7 @@
           "id": "n44",
           "kind": "statement",
           "label": "user_config_t temp_cfg = user_cfg_diy;",
+          "summary": "Set user_config_t temp_cfg to user_cfg_diy.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4283,6 +4554,7 @@
           "id": "n45",
           "kind": "statement",
           "label": "temp_cfg.crc = 0;",
+          "summary": "Set temp_cfg.crc to 0.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4294,6 +4566,7 @@
           "id": "n46",
           "kind": "statement",
           "label": "temp_cfg.crc = calculate_crc(&temp_cfg);",
+          "summary": "Set temp_cfg.crc to calculate_crc(&temp_cfg).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4305,6 +4578,7 @@
           "id": "n47",
           "kind": "statement",
           "label": "Flash_Status write_result = Flash_Write64BitAligned(flash_address, &temp_cfg, sizeof(user_config_t));",
+          "summary": "Set Flash_Status write_result to Flash_Write64BitAligned(flash_address, &temp_cfg, sizeof(user_config_t)).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4316,6 +4590,7 @@
           "id": "n48",
           "kind": "statement",
           "label": "Flash_Lock();",
+          "summary": "Call Flash Lock.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4327,6 +4602,7 @@
           "id": "n49",
           "kind": "statement",
           "label": "save_success = (write_result == FLASH_OK);",
+          "summary": "Call save success = with write result == FLASH OK.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4338,6 +4614,7 @@
           "id": "n50",
           "kind": "conditional",
           "label": "if (save_success)",
+          "summary": "Check whether (save_success).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4349,6 +4626,7 @@
           "id": "n51",
           "kind": "statement",
           "label": "user_config_t verify_cfg;",
+          "summary": "user config t verify cfg",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4360,6 +4638,7 @@
           "id": "n52",
           "kind": "statement",
           "label": "bool verify_result = Flash_LoadUserConfig(user_cfg_diy.user_id, &verify_cfg);",
+          "summary": "Set bool verify_result to Flash_LoadUserConfig(user_cfg_diy.user_id, &verify_cfg).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4371,6 +4650,7 @@
           "id": "n53",
           "kind": "conditional",
           "label": "if (!verify_result)",
+          "summary": "Check whether (!verify_result).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4382,6 +4662,7 @@
           "id": "n54",
           "kind": "statement",
           "label": "save_success = false;",
+          "summary": "Set save_success to false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4393,6 +4674,7 @@
           "id": "n55",
           "kind": "conditional",
           "label": "if (verify_cfg.user_id != user_cfg_diy.user_id ||\n                        verify_cfg.open_angle != user_cfg_diy.open_angle ||\n                        verify_cfg.open_speed != user_cfg_diy.open_speed ||\n                        verify_cfg.open_or_not_flag != user_cfg_diy.open_or_not_flag)",
+          "summary": "Check whether (verify_cfg.user_id does not equal user_cfg_diy.user_id || verify_cfg.open_angle does not equal user_cfg_diy.open_angle || verify_cfg.open_speed does not equal user_cfg_diy.open_speed || verify_cfg.open_or_not_flag does not equal user_cfg_diy.open_or_not_flag).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4404,6 +4686,7 @@
           "id": "n56",
           "kind": "statement",
           "label": "save_success = false;",
+          "summary": "Set save_success to false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4415,6 +4698,7 @@
           "id": "n57",
           "kind": "loop",
           "label": "while ((HAL_GetTick() - save_start) < enroll_progress_duration)",
+          "summary": "Loop while ((HAL_GetTick() - save_start) is less than enroll_progress_duration).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4426,6 +4710,7 @@
           "id": "n58",
           "kind": "conditional",
           "label": "if (enroll_progress_active)",
+          "summary": "Check whether (enroll_progress_active).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4437,6 +4722,7 @@
           "id": "n59",
           "kind": "statement",
           "label": "uint32_t elapsed = HAL_GetTick() - enroll_progress_start_time;",
+          "summary": "Set uint32_t elapsed to HAL_GetTick() minus enroll_progress_start_time.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4448,6 +4734,7 @@
           "id": "n60",
           "kind": "statement",
           "label": "uint8_t progress = (elapsed * 100) / enroll_progress_duration;",
+          "summary": "Set uint8_t progress to (elapsed multiplied by 100) divided by enroll_progress_duration.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4459,6 +4746,7 @@
           "id": "n61",
           "kind": "conditional",
           "label": "if (progress > 100)",
+          "summary": "Check whether (progress is greater than 100).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4470,6 +4758,7 @@
           "id": "n62",
           "kind": "statement",
           "label": "progress = 100;",
+          "summary": "Set progress to 100.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4481,6 +4770,7 @@
           "id": "n63",
           "kind": "statement",
           "label": "enroll_progress_active = false;",
+          "summary": "Set enroll_progress_active to false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4492,6 +4782,7 @@
           "id": "n64",
           "kind": "statement",
           "label": "OLED_ClearArea(10, 30, 108, 20);",
+          "summary": "Call OLED Clear Area with 10, 30, 108, 20.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4503,6 +4794,7 @@
           "id": "n65",
           "kind": "statement",
           "label": "OLED_ShowProgressBar(10, 35, 108, progress, PROGRESS_SPEED_FAST);",
+          "summary": "Call OLED Show Progress Bar with 10, 35, 108, progress, PROGRESS SPEED FAST.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4514,6 +4806,7 @@
           "id": "n66",
           "kind": "statement",
           "label": "OLED_Update();",
+          "summary": "Call OLED Update.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4525,6 +4818,7 @@
           "id": "n67",
           "kind": "statement",
           "label": "osDelay(50);",
+          "summary": "Call os Delay with 50.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4536,6 +4830,7 @@
           "id": "n68",
           "kind": "conditional",
           "label": "if (save_success)",
+          "summary": "Check whether (save_success).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4547,6 +4842,7 @@
           "id": "n69",
           "kind": "statement",
           "label": "OLED_Clear();",
+          "summary": "Call OLED Clear.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4558,6 +4854,7 @@
           "id": "n70",
           "kind": "statement",
           "label": "OLED_ShowMessageCentered(\"Config Saved\", \"Successfully!\");",
+          "summary": "Call OLED Show Message Centered with \"Config Saved\", \"Successfully!\".",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4569,6 +4866,7 @@
           "id": "n71",
           "kind": "statement",
           "label": "osDelay(2000);",
+          "summary": "Call os Delay with 2000.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4580,6 +4878,7 @@
           "id": "n72",
           "kind": "statement",
           "label": "system_state = FACE_ENROLL_SUCCESS;",
+          "summary": "Set system_state to FACE_ENROLL_SUCCESS.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4591,6 +4890,7 @@
           "id": "n73",
           "kind": "statement",
           "label": "OLED_Clear();",
+          "summary": "Call OLED Clear.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4602,6 +4902,7 @@
           "id": "n74",
           "kind": "statement",
           "label": "OLED_DrawRectangle(5, 5, 118, 54, OLED_UNFILLED);",
+          "summary": "Call OLED Draw Rectangle with 5, 5, 118, 54, OLED UNFILLED.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4613,6 +4914,7 @@
           "id": "n75",
           "kind": "statement",
           "label": "OLED_DrawRectangle(6, 6, 116, 52, OLED_UNFILLED);",
+          "summary": "Call OLED Draw Rectangle with 6, 6, 116, 52, OLED UNFILLED.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4624,6 +4926,7 @@
           "id": "n76",
           "kind": "statement",
           "label": "OLED_ShowStringCentered(23, \"Save Failed\", OLED_7X12_HALF);",
+          "summary": "Call OLED Show String Centered with 23, \"Save Failed\", OLED 7 X12 HALF.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4635,6 +4938,7 @@
           "id": "n77",
           "kind": "statement",
           "label": "OLED_Update();",
+          "summary": "Call OLED Update.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4646,6 +4950,7 @@
           "id": "n78",
           "kind": "statement",
           "label": "osDelay(2000);",
+          "summary": "Call os Delay with 2000.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4657,6 +4962,7 @@
           "id": "n79",
           "kind": "statement",
           "label": "system_state = FACE_ENROLL_FAIL;",
+          "summary": "Set system_state to FACE_ENROLL_FAIL.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -4668,6 +4974,7 @@
           "id": "n80",
           "kind": "statement",
           "label": "system_state = FACE_ENROLL_FAIL;",
+          "summary": "Set system_state to FACE_ENROLL_FAIL.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5069,6 +5376,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5080,6 +5388,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -5093,6 +5402,7 @@
           "id": "n2",
           "kind": "statement",
           "label": "delete_num = menu2_delete_with_return();",
+          "summary": "Set delete_num to menu2_delete_with_return().",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5104,6 +5414,7 @@
           "id": "n3",
           "kind": "conditional",
           "label": "if (delete_num == 0)",
+          "summary": "Check whether (delete_num equals 0).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5115,6 +5426,7 @@
           "id": "n4",
           "kind": "return",
           "label": "return;",
+          "summary": "Return from the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5126,6 +5438,7 @@
           "id": "n5",
           "kind": "statement",
           "label": "if(delete_num == 1) \n\t{\n\n\t\tDelete = true ;\t\n\t\tosDelay(5);   \n\n\t}\n\telse if(delete_num == 2)\n\t{\n\t\t// \u5220\u9664\u5355\u4e2a\u7528\u6237\n\t\tOLED_ShowMessageCentered(\"Reset Single\", \"Press any key\");\n\twhile(Key_GetEvent() == 0) { osDelay(5); }\n\t}\n\t\n\t// \u521d\u59cb\u5316\u5220\u9664\u6210\u529f\u6807\u5fd7\n\tdelete_success = false;",
+          "summary": "ifdelete num == 1 { Delete = true ; os Delay5; } else ifdelete num == 2 { // \u5220\u9664\u5355\u4e2a\u7528\u6237 OLED Show Message Centered\"Reset Single\", \"Press any key\"; whileKey Get Event == 0 { os Delay5; } } // \u521d\u59cb\u5316\u5220\u9664\u6210\u529f\u6807\u5fd7 delete success = false",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5137,6 +5450,7 @@
           "id": "n6",
           "kind": "conditional",
           "label": "if (Delete == true)",
+          "summary": "Check whether (Delete equals true).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5148,6 +5462,7 @@
           "id": "n7",
           "kind": "statement",
           "label": "uint32_t delete_start = HAL_GetTick();",
+          "summary": "Set uint32_t delete_start to HAL_GetTick().",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5159,6 +5474,7 @@
           "id": "n8",
           "kind": "statement",
           "label": "uint32_t delete_timeout = 5000;",
+          "summary": "Set uint32_t delete_timeout to 5000.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5170,6 +5486,7 @@
           "id": "n9",
           "kind": "statement",
           "label": "FaceRec_ClearAllUsers();",
+          "summary": "Call Face Rec Clear All Users.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5181,6 +5498,7 @@
           "id": "n10",
           "kind": "statement",
           "label": "osDelay(100);",
+          "summary": "Call os Delay with 100.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5192,6 +5510,7 @@
           "id": "n11",
           "kind": "statement",
           "label": "OLED_Clear();",
+          "summary": "Call OLED Clear.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5203,6 +5522,7 @@
           "id": "n12",
           "kind": "statement",
           "label": "OLED_ShowStringCentered(15, \"Resetting...\", OLED_6X8_HALF);",
+          "summary": "Call OLED Show String Centered with 15, \"Resetting \", OLED 6 X8 HALF.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5214,6 +5534,7 @@
           "id": "n13",
           "kind": "loop",
           "label": "while ((HAL_GetTick() - delete_start) < delete_timeout)",
+          "summary": "Loop while ((HAL_GetTick() - delete_start) is less than delete_timeout).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5225,6 +5546,7 @@
           "id": "n14",
           "kind": "statement",
           "label": "uint32_t elapsed = HAL_GetTick() - delete_start;",
+          "summary": "Set uint32_t elapsed to HAL_GetTick() minus delete_start.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5236,6 +5558,7 @@
           "id": "n15",
           "kind": "statement",
           "label": "uint8_t progress = (elapsed * 100) / delete_timeout;",
+          "summary": "Set uint8_t progress to (elapsed multiplied by 100) divided by delete_timeout.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5247,6 +5570,7 @@
           "id": "n16",
           "kind": "statement",
           "label": "OLED_ClearArea(10, 30, 108, 20);",
+          "summary": "Call OLED Clear Area with 10, 30, 108, 20.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5258,6 +5582,7 @@
           "id": "n17",
           "kind": "statement",
           "label": "OLED_ShowProgressBar(10, 35, 108, progress, PROGRESS_SPEED_FAST);",
+          "summary": "Call OLED Show Progress Bar with 10, 35, 108, progress, PROGRESS SPEED FAST.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5269,6 +5594,7 @@
           "id": "n18",
           "kind": "statement",
           "label": "FaceRec_ClearAllUsers();",
+          "summary": "Call Face Rec Clear All Users.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5280,6 +5606,7 @@
           "id": "n19",
           "kind": "statement",
           "label": "osDelay(100);",
+          "summary": "Call os Delay with 100.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5291,6 +5618,7 @@
           "id": "n20",
           "kind": "conditional",
           "label": "if (FaceRec_HasDataAvailable())",
+          "summary": "Check whether (FaceRec_HasDataAvailable()).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5302,6 +5630,7 @@
           "id": "n21",
           "kind": "statement",
           "label": "FaceRec_Process();",
+          "summary": "Call Face Rec Process.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5313,6 +5642,7 @@
           "id": "n22",
           "kind": "statement",
           "label": "osDelay(5);",
+          "summary": "Call os Delay with 5.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5324,6 +5654,7 @@
           "id": "n23",
           "kind": "conditional",
           "label": "if (FaceRec_IsDeleteSuccess())",
+          "summary": "Check whether (FaceRec_IsDeleteSuccess()).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5335,6 +5666,7 @@
           "id": "n24",
           "kind": "statement",
           "label": "delete_success = true;",
+          "summary": "Set delete_success to true.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5346,6 +5678,7 @@
           "id": "n25",
           "kind": "statement",
           "label": "OLED_ClearArea(10, 30, 108, 20);",
+          "summary": "Call OLED Clear Area with 10, 30, 108, 20.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5357,6 +5690,7 @@
           "id": "n26",
           "kind": "statement",
           "label": "OLED_ShowProgressBar(10, 35, 108, 100, PROGRESS_SPEED_FAST);",
+          "summary": "Call OLED Show Progress Bar with 10, 35, 108, 100, PROGRESS SPEED FAST.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5368,6 +5702,7 @@
           "id": "n27",
           "kind": "statement",
           "label": "break;",
+          "summary": "break",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5379,6 +5714,7 @@
           "id": "n28",
           "kind": "conditional",
           "label": "if (Delete == true)",
+          "summary": "Check whether (Delete equals true).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5390,6 +5726,7 @@
           "id": "n29",
           "kind": "conditional",
           "label": "if (delete_success)",
+          "summary": "Check whether (delete_success).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5401,6 +5738,7 @@
           "id": "n30",
           "kind": "statement",
           "label": "system_state = FACE_DELETE_SUCCESS;",
+          "summary": "Set system_state to FACE_DELETE_SUCCESS.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5412,6 +5750,7 @@
           "id": "n31",
           "kind": "statement",
           "label": "system_state = FACE_DELETE_FAIL;",
+          "summary": "Set system_state to FACE_DELETE_FAIL.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5603,6 +5942,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5614,6 +5954,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -5646,6 +5987,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5657,6 +5999,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -5670,6 +6013,7 @@
           "id": "n2",
           "kind": "loop",
           "label": "for (;;)",
+          "summary": "Repeat according to for (;;).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5681,6 +6025,7 @@
           "id": "n3",
           "kind": "conditional",
           "label": "if (system_state != Do_not_disturb && lora_rx_flag==1)",
+          "summary": "Check whether (system_state does not equal Do_not_disturb && lora_rx_flag equals 1).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5692,6 +6037,7 @@
           "id": "n4",
           "kind": "statement",
           "label": "HC15_SendMessage(\"AARI55\");",
+          "summary": "Call HC15 Send Message with \"AARI55\".",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5703,6 +6049,7 @@
           "id": "n5",
           "kind": "statement",
           "label": "lora_rx_flag=0;",
+          "summary": "Set lora_rx_flag to 0.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5714,6 +6061,7 @@
           "id": "n6",
           "kind": "statement",
           "label": "osDelay(10);",
+          "summary": "Call os Delay with 10.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5725,6 +6073,7 @@
           "id": "n7",
           "kind": "statement",
           "label": "osDelay(10);",
+          "summary": "Call os Delay with 10.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5736,6 +6085,7 @@
           "id": "n8",
           "kind": "statement",
           "label": "switch (system_state)\n        {\n\t\t\tcase Do_not_disturb:\n\t\t\t\tHC15_SendMessage(\"AA0055\");\n\t\t\t\tosDelay(10);\n\t\t\t\tstatic uint32_t pir_start = 0;\n\t\t\t\tif(lora_rx_flag==1)\n\t\t\t\t{\n\t\t\t\t\tHC15_SendMessage(\"AARF55\");\n\t\t\t\t\tosDelay(10);\n\t\t\t\t\tlora_rx_flag = 0;                   // \u6e05\u9664LoRa\u63a5\u6536\u6807\u5fd7\n\t\t\t\t}\n\t\t\t\t// \u68c0\u67e5\u957f\u6309\u6309\u952e3\u9000\u51fa\u52ff\u6270\u6a21\u5f0f\uff08\u65e0\u8bba\u662f\u9759\u9ed8\u8fd8\u662f\u975e\u9759\u9ed8\u6a21\u5f0f\uff09\n\t\t\t\tkey_num = Key_GetEvent();\n\t\t\t\tif (key_num == 1 || key_num == 2 || key_num == 3) {  // \u957f\u6309\u6309\u952e3\n\t\t\t\t\tsilent_do_not_disturb = false;  // \u6e05\u9664\u9759\u9ed8\u6807\u5fd7\n\t\t\t\t\tsystem_state = SYSTEM_IDLE;  // \u9000\u51fa\u52ff\u6270\u6a21\u5f0f---\n\t\t\t\t\tOLED_Clear();\n\t\t\t\t\tOLED_Update();\n\t\t\t\t\tbreak;\n\t\t\t\t}\n\t\t\t\t\n\t\t\t\t// \u5982\u679c\u662f\u9759\u9ed8\u52ff\u6270\u6a21\u5f0f\uff0c\u4e0d\u663e\u793a\u4efb\u4f55\u5185\u5bb9\n\t\t\t\tif (silent_do_not_disturb) {\n\t\t\t\t\tOLED_Clear();\n\t\t\t\t\tOLED_Update();\n\t\t\t\t\tbreak;\n\t\t\t\t}\n\t\t\t\t\n\t\t\t\t// \u975e\u9759\u9ed8\u52ff\u6270\u6a21\u5f0f\uff0c\u4fdd\u6301\u539f\u6709\u7684PIR\u663e\u793a\u903b\u8f91\n\t\t\t\tif(HAL_GPIO_ReadPin(PIR_INPUT_GPIO_Port, PIR_INPUT_Pin) == GPIO_PIN_SET)\n\t\t\t\t{\n\t\t\t\t\tpir_start = HAL_GetTick();\n\t\t\t\t}\n\t\t\t\tif((HAL_GetTick() - pir_start) < 5000)\n\t\t\t\t{\n\t\t\t\t\tOLED_Clear();\n\t\t\t\t\tOLED_DrawRectangle(5, 5, 118, 54, OLED_UNFILLED);\n\t\t\t\t\tOLED_DrawRectangle(6, 6, 116, 52, OLED_UNFILLED);\n\t\t\t\t\tchar disturb_info[35];\n\t\t\t\t\tsprintf(disturb_info, \"Do not disturb!\");\n\t\t\t\t\tOLED_ShowStringCentered(23, disturb_info, OLED_7X12_HALF);\n\t\t\t\t\tOLED_Update();\n\t\t\t\t}\n\t\t\t\telse\n\t\t\t\t{\n\t\t\t\t\tOLED_Clear();\n\t\t\t\t\tOLED_Update();\n\t\t\t\t}\n\t\t\t\tbreak;\n            case SYSTEM_IDLE:\n            {\n\t\t\t\tstatic uint32_t idle_start = 0;\n\t\t\t\tif(idle_start == 0)\n\t\t\t\t{\n\t\t\t\t\tidle_start = HAL_GetTick();\n\t\t\t\t}\n\t\t\t\tif(HAL_GetTick() - idle_start > 2000)\n\t\t\t\t{\n\t\t\t\t\tidle_start = 0;\n                    pre_Sleep_Flag = 1;\n\n\t\t\t\t\tXY_MB06BA_SendATCommand(\"AT+DISCONN=1\");\n                    osDelay(10);\n                    XY_MB06BA_SendATCommand(\"AT+DISCONN=0\");\n                    osDelay(10);\n\t\t\t\t\tXY_MB06BA_SendATCommand(\"AT+DISCONN=1\");\n                    osDelay(10);\n                    XY_MB06BA_SendATCommand(\"AT+DISCONN=0\");\n                    osDelay(10);\n\t\t\t\t\tHAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);\t\n\t\t\t\t\tHAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);\t\n\t\t\t\t\tOLED_Clear();\n\t\t\t\t\tOLED_Update();\n\t\t\t\t\t/* \u786e\u4fddNMOS\u5904\u4e8e\u5173\u95ed\u72b6\u6001\uff08PC2\u4e3a\u672c\u9879\u76ee\u9ed8\u8ba4\u95e8\u6781\u5f15\u811a\uff09 */\n\t\t\t\t\tHAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);\n\t\t\t\t\tPowerMgmt_SetLowPowerMode(1);\n\t\t\t\t\tosDelay(1000);\n\t\t\t\t}\n\t\t\t\tOLED_Clear();\n\t\t\t\tOLED_Update();\n\t\t\t\tosDelay(50);\n                break;\n            }\n\n            case FACE_VERIFYING:\n            {\n                (void)HAL_GetTick(); // \u907f\u514d\u672a\u4f7f\u7528\u53d8\u91cf\u8b66\u544a\n                osDelay(50);  // \u589e\u52a0\u5ef6\u65f6\uff0c\u51cf\u5c11\u5237\u65b0\u9891\u7387\n                break;\n            }\n            case FACE_VERIFY_SUCCESS:\n                break;\n\n            case FACE_VERIFY_FAIL:\n\t\t\t\tOLED_Clear();\n\t\t\t\tOLED_DrawRectangle(5, 5, 118, 54, OLED_UNFILLED);\n\t\t\t\tOLED_DrawRectangle(6, 6, 116, 52, OLED_UNFILLED);\n\t\t\t\tOLED_Update();\n                OLED_ShowMessageCentered(\"Radar Failed\", \"No detection\");\n                osDelay(1500);\n                system_state = SYSTEM_IDLE;\n                all_control = false;\n                break;\n\n            case FACE_ENROLL_SUCCESS:\n\t\t\t\tOLED_Clear();\n\t\t\t\tOLED_DrawRectangle(5, 5, 118, 54, OLED_UNFILLED);\n\t\t\t\tOLED_DrawRectangle(6, 6, 116, 52, OLED_UNFILLED);\n\t\t\t\tOLED_Update();\n                OLED_ShowMessageCentered(\"Config Success\", \"Settings saved\");\n                osDelay(1500);\n                system_state = MENU_ACTIVE;\n                break;\n\n            case FACE_ENROLL_FAIL:\n\n                system_state = MENU_ACTIVE;\n                break;\n\n            case FACE_DELETE_SUCCESS:\n\t\t\t\tOLED_Clear();\n\t\t\t\tOLED_DrawRectangle(5, 5, 118, 54, OLED_UNFILLED);\n\t\t\t\tOLED_DrawRectangle(6, 6, 116, 52, OLED_UNFILLED);\n\t\t\t\tOLED_Update();\n                OLED_ShowMessageCentered(\"Reset Success\", \"Data cleared\");\n                osDelay(1500);\n                system_state = MENU_ACTIVE;\n                Delete = false;\n                break;\n\n            case FACE_DELETE_FAIL:\n\t\t\t\tOLED_Clear();\n\t\t\t\tOLED_DrawRectangle(5, 5, 118, 54, OLED_UNFILLED);\n\t\t\t\tOLED_DrawRectangle(6, 6, 116, 52, OLED_UNFILLED);\n\t\t\t\tOLED_Update();\n                OLED_ShowMessageCentered(\"Reset Failed\", \"Try again\");\n                osDelay(1500);\n                system_state = MENU_ACTIVE;\n                Delete = false;\n                break;\n\n            case MENU_ACTIVE:\n            {\n\t\t\t\tface_enroll_in_progress = true;\n                int menu_choice = menu1();\n\t\t\t\tif(system_state != Do_not_disturb)\n\t\t\t\t{\n\t\t\t\t\tprocess_main_menu(menu_choice);\n                    if(system_state != Do_not_disturb)\n\t\t\t\t\t{\n\t\t\t\t\t\tsystem_state = SYSTEM_IDLE;\n\t\t\t\t\t}\n\t\t\t\t}\n                face_enroll_in_progress = false;\n                break;\n            }\n\n            default:\n                OLED_ShowMessageCentered(\"System Error\", \"Unknown state\");\n                osDelay(1000);\n                system_state = SYSTEM_IDLE;\n                break;\n        }\n\n        osDelay(1);",
+          "summary": "Call switch with system state { case Do not disturb: HC15 Send Message\"AA0055\"; os Delay10; static uint32 t pir start = 0; iflora rx flag==1 { HC15 Send Message\"AARF55\"; os Delay10; lora rx flag = 0; // \u6e05\u9664Lo Ra\u63a5\u6536\u6807\u5fd7 } // \u68c0\u67e5\u957f\u6309\u6309\u952e3\u9000\u51fa\u52ff\u6270\u6a21\u5f0f\uff08\u65e0\u8bba\u662f\u9759\u9ed8\u8fd8\u662f\u975e\u9759\u9ed8\u6a21\u5f0f\uff09 key num = Key Get Event; if key num == 1 || key num == 2 || key num == 3 { // \u957f\u6309\u6309\u952e3 silent do not disturb = false; // \u6e05\u9664\u9759\u9ed8\u6807\u5fd7 system state = SYSTEM IDLE; // \u9000\u51fa\u52ff\u6270\u6a21\u5f0f--- OLED Clear; OLED Update; break; } // \u5982\u679c\u662f\u9759\u9ed8\u52ff\u6270\u6a21\u5f0f\uff0c\u4e0d\u663e\u793a\u4efb\u4f55\u5185\u5bb9 if silent do not disturb { OLED Clear; OLED Update; break; } // \u975e\u9759\u9ed8\u52ff\u6270\u6a21\u5f0f\uff0c\u4fdd\u6301\u539f\u6709\u7684PIR\u663e\u793a\u903b\u8f91 ifHAL GPIO Read PinPIR INPUT GPIO Port, PIR INPUT Pin == GPIO PIN SET { pir start = HAL Get Tick; } ifHAL Get Tick - pir start < 5000 { OLED Clear; OLED Draw Rectangle5, 5, 118, 54, OLED UNFILLED; OLED Draw Rectangle6, 6, 116, 52, OLED UNFILLED; char disturb info 35 ; sprintfdisturb info, \"Do not disturb!\"; OLED Show String Centered23, disturb info, OLED 7 X12 HALF; OLED Update; } else { OLED Clear; OLED Update; } break; case SYSTEM IDLE: { static uint32 t idle start = 0; ifidle start == 0 { idle start = HAL Get Tick; } ifHAL Get Tick - idle start > 2000 { idle start = 0; pre Sleep Flag = 1; XY MB06 BA Send ATCommand\"AT+DISCONN=1\"; os Delay10; XY MB06 BA Send ATCommand\"AT+DISCONN=0\"; os Delay10; XY MB06 BA Send ATCommand\"AT+DISCONN=1\"; os Delay10; XY MB06 BA Send ATCommand\"AT+DISCONN=0\"; os Delay10; HAL GPIO Write PinGPIOA, GPIO PIN 8, GPIO PIN SET; HAL GPIO Write PinGPIOA, GPIO PIN 4, GPIO PIN SET; OLED Clear; OLED Update; /* \u786e\u4fddNMOS\u5904\u4e8e\u5173\u95ed\u72b6\u6001\uff08PC2\u4e3a\u672c\u9879\u76ee\u9ed8\u8ba4\u95e8\u6781\u5f15\u811a\uff09 */ HAL GPIO Write PinGPIOC, GPIO PIN 2, GPIO PIN RESET; Power Mgmt Set Low Power Mode1; os Delay1000; } OLED Clear; OLED Update; os Delay50; break; } case FACE VERIFYING: { voidHAL Get Tick; // \u907f\u514d\u672a\u4f7f\u7528\u53d8\u91cf\u8b66\u544a os Delay50; // \u589e\u52a0\u5ef6\u65f6\uff0c\u51cf\u5c11\u5237\u65b0\u9891\u7387 break; } case FACE VERIFY SUCCESS: break; case FACE VERIFY FAIL: OLED Clear; OLED Draw Rectangle5, 5, 118, 54, OLED UNFILLED; OLED Draw Rectangle6, 6, 116, 52, OLED UNFILLED; OLED Update; OLED Show Message Centered\"Radar Failed\", \"No detection\"; os Delay1500; system state = SYSTEM IDLE; all control = false; break; case FACE ENROLL SUCCESS: OLED Clear; OLED Draw Rectangle5, 5, 118, 54, OLED UNFILLED; OLED Draw Rectangle6, 6, 116, 52, OLED UNFILLED; OLED Update; OLED Show Message Centered\"Config Success\", \"Settings saved\"; os Delay1500; system state = MENU ACTIVE; break; case FACE ENROLL FAIL: system state = MENU ACTIVE; break; case FACE DELETE SUCCESS: OLED Clear; OLED Draw Rectangle5, 5, 118, 54, OLED UNFILLED; OLED Draw Rectangle6, 6, 116, 52, OLED UNFILLED; OLED Update; OLED Show Message Centered\"Reset Success\", \"Data cleared\"; os Delay1500; system state = MENU ACTIVE; Delete = false; break; case FACE DELETE FAIL: OLED Clear; OLED Draw Rectangle5, 5, 118, 54, OLED UNFILLED; OLED Draw Rectangle6, 6, 116, 52, OLED UNFILLED; OLED Update; OLED Show Message Centered\"Reset Failed\", \"Try again\"; os Delay1500; system state = MENU ACTIVE; Delete = false; break; case MENU ACTIVE: { face enroll in progress = true; int menu choice = menu1; ifsystem state != Do not disturb { process main menumenu choice; ifsystem state != Do not disturb { system state = SYSTEM IDLE; } } face enroll in progress = false; break; } default: OLED Show Message Centered\"System Error\", \"Unknown state\"; os Delay1000; system state = SYSTEM IDLE; break; } os Delay1.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5805,6 +6155,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5816,6 +6167,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -5829,6 +6181,7 @@
           "id": "n2",
           "kind": "statement",
           "label": "uint8_t crc = 0;",
+          "summary": "Set uint8_t crc to 0.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5840,6 +6193,7 @@
           "id": "n3",
           "kind": "statement",
           "label": "const uint8_t *data = (const uint8_t*)cfg;",
+          "summary": "Set const uint8_t multiplied by data to (const uint8_t multiplied by )cfg.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5851,6 +6205,7 @@
           "id": "n4",
           "kind": "loop",
           "label": "for (int i = 0; i < sizeof(user_config_t) - 1; i++)",
+          "summary": "Repeat according to for (int i = 0; i < sizeof(user_config_t) - 1; i++).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5862,6 +6217,7 @@
           "id": "n5",
           "kind": "statement",
           "label": "crc ^= data[i];",
+          "summary": "Set crc ^ to data[i].",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5873,6 +6229,7 @@
           "id": "n6",
           "kind": "return",
           "label": "return crc;",
+          "summary": "Return crc.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5930,6 +6287,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5941,6 +6299,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -5954,6 +6313,7 @@
           "id": "n2",
           "kind": "statement",
           "label": "uint8_t crc = 0;",
+          "summary": "Set uint8_t crc to 0.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5965,6 +6325,7 @@
           "id": "n3",
           "kind": "statement",
           "label": "const uint8_t *data = (const uint8_t*)addr_storage;",
+          "summary": "Set const uint8_t multiplied by data to (const uint8_t multiplied by )addr_storage.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5976,6 +6337,7 @@
           "id": "n4",
           "kind": "loop",
           "label": "for (int i = 0; i < sizeof(ble_address_storage_t) - 1; i++)",
+          "summary": "Repeat according to for (int i = 0; i < sizeof(ble_address_storage_t) - 1; i++).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5987,6 +6349,7 @@
           "id": "n5",
           "kind": "statement",
           "label": "crc ^= data[i];",
+          "summary": "Set crc ^ to data[i].",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -5998,6 +6361,7 @@
           "id": "n6",
           "kind": "return",
           "label": "return crc;",
+          "summary": "Return crc.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6056,6 +6420,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6067,6 +6432,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -6080,6 +6446,7 @@
           "id": "n2",
           "kind": "conditional",
           "label": "if (!cfg)",
+          "summary": "Check whether (!cfg).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6091,6 +6458,7 @@
           "id": "n3",
           "kind": "statement",
           "label": "return false;",
+          "summary": "Return false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6102,6 +6470,7 @@
           "id": "n4",
           "kind": "conditional",
           "label": "if (user_id >= MAX_USER_CONFIG_COUNT)",
+          "summary": "Check whether (user_id is at least MAX_USER_CONFIG_COUNT).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6113,6 +6482,7 @@
           "id": "n5",
           "kind": "statement",
           "label": "return false;",
+          "summary": "Return false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6124,6 +6494,7 @@
           "id": "n6",
           "kind": "statement",
           "label": "uint32_t flash_address = FLASH_USER_BASE_ADDR + (user_id * USER_CONFIG_FLASH_SIZE);",
+          "summary": "Set uint32_t flash_address to FLASH_USER_BASE_ADDR plus (user_id multiplied by USER_CONFIG_FLASH_SIZE).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6135,6 +6506,7 @@
           "id": "n7",
           "kind": "statement",
           "label": "flash_address = (flash_address + 7) & ~7;",
+          "summary": "Set flash_address to (flash_address plus 7) & ~7.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6146,6 +6518,7 @@
           "id": "n8",
           "kind": "conditional",
           "label": "if (flash_address >= FLASH_USER_END_ADDR)",
+          "summary": "Check whether (flash_address is at least FLASH_USER_END_ADDR).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6157,6 +6530,7 @@
           "id": "n9",
           "kind": "statement",
           "label": "return false;",
+          "summary": "Return false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6168,6 +6542,7 @@
           "id": "n10",
           "kind": "statement",
           "label": "uint64_t *raw_data = (uint64_t*)flash_address;",
+          "summary": "Set uint64_t multiplied by raw_data to (uint64_t multiplied by )flash_address.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6179,6 +6554,7 @@
           "id": "n11",
           "kind": "statement",
           "label": "bool is_empty = true;",
+          "summary": "Set bool is_empty to true.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6190,6 +6566,7 @@
           "id": "n12",
           "kind": "statement",
           "label": "uint32_t words_to_check = (sizeof(user_config_t) + 7) / 8;",
+          "summary": "Set uint32_t words_to_check to (sizeof(user_config_t) plus 7) divided by 8.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6201,6 +6578,7 @@
           "id": "n13",
           "kind": "loop",
           "label": "for (uint32_t i = 0; i < words_to_check; i++)",
+          "summary": "Repeat according to for (uint32_t i = 0; i < words_to_check; i++).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6212,6 +6590,7 @@
           "id": "n14",
           "kind": "conditional",
           "label": "if (raw_data[i] != 0xFFFFFFFFFFFFFFFFULL)",
+          "summary": "Check whether (raw_data[i] does not equal 0xFFFFFFFFFFFFFFFFULL).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6223,6 +6602,7 @@
           "id": "n15",
           "kind": "statement",
           "label": "is_empty = false;",
+          "summary": "Set is_empty to false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6234,6 +6614,7 @@
           "id": "n16",
           "kind": "statement",
           "label": "break;",
+          "summary": "break",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6245,6 +6626,7 @@
           "id": "n17",
           "kind": "conditional",
           "label": "if (is_empty)",
+          "summary": "Check whether (is_empty).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6256,6 +6638,7 @@
           "id": "n18",
           "kind": "statement",
           "label": "return false;",
+          "summary": "Return false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6267,6 +6650,7 @@
           "id": "n19",
           "kind": "statement",
           "label": "memcpy(cfg, raw_data, sizeof(user_config_t));",
+          "summary": "Call memcpy with cfg, raw data, sizeofuser config t.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6278,6 +6662,7 @@
           "id": "n20",
           "kind": "statement",
           "label": "uint8_t crc_check = calculate_crc(cfg);",
+          "summary": "Set uint8_t crc_check to calculate_crc(cfg).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6289,6 +6674,7 @@
           "id": "n21",
           "kind": "conditional",
           "label": "if (crc_check != cfg->crc)",
+          "summary": "Check whether (crc_check does not equal cfg- is greater than crc).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6300,6 +6686,7 @@
           "id": "n22",
           "kind": "return",
           "label": "return false;",
+          "summary": "Return false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6311,6 +6698,7 @@
           "id": "n23",
           "kind": "return",
           "label": "return true;",
+          "summary": "Return true.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6470,6 +6858,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6481,6 +6870,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -6494,6 +6884,7 @@
           "id": "n2",
           "kind": "conditional",
           "label": "if (address & 0x7)",
+          "summary": "Check whether (address & 0x7).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6505,6 +6896,7 @@
           "id": "n3",
           "kind": "return",
           "label": "return FLASH_ERROR;",
+          "summary": "Return FLASH_ERROR.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6516,6 +6908,7 @@
           "id": "n4",
           "kind": "statement",
           "label": "uint64_t aligned_buffer[16];",
+          "summary": "uint64 t aligned buffer 16",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6527,6 +6920,7 @@
           "id": "n5",
           "kind": "statement",
           "label": "memset(aligned_buffer, 0xFF, sizeof(aligned_buffer));",
+          "summary": "Call memset with aligned buffer, 0x FF, sizeofaligned buffer.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6538,6 +6932,7 @@
           "id": "n6",
           "kind": "statement",
           "label": "memcpy(aligned_buffer, data, size);",
+          "summary": "Call memcpy with aligned buffer, data, size.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6549,6 +6944,7 @@
           "id": "n7",
           "kind": "statement",
           "label": "uint32_t words_to_write = (size + 7) / 8;",
+          "summary": "Set uint32_t words_to_write to (size plus 7) divided by 8.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6560,6 +6956,7 @@
           "id": "n8",
           "kind": "loop",
           "label": "for (uint32_t i = 0; i < words_to_write; i++)",
+          "summary": "Repeat according to for (uint32_t i = 0; i < words_to_write; i++).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6571,6 +6968,7 @@
           "id": "n9",
           "kind": "statement",
           "label": "HAL_StatusTypeDef status = HAL_FLASH_Program(\n            FLASH_TYPEPROGRAM_DOUBLEWORD, \n            address + i * 8, \n            aligned_buffer[i]\n        );",
+          "summary": "Set HAL_StatusTypeDef status to HAL_FLASH_Program( FLASH_TYPEPROGRAM_DOUBLEWORD, address plus i multiplied by 8, aligned_buffer[i] ).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6582,6 +6980,7 @@
           "id": "n10",
           "kind": "conditional",
           "label": "if (status != HAL_OK)",
+          "summary": "Check whether (status does not equal HAL_OK).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6593,6 +6992,7 @@
           "id": "n11",
           "kind": "return",
           "label": "return FLASH_ERROR;",
+          "summary": "Return FLASH_ERROR.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6604,6 +7004,7 @@
           "id": "n12",
           "kind": "return",
           "label": "return FLASH_OK;",
+          "summary": "Return FLASH_OK.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6697,6 +7098,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6708,6 +7110,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -6721,6 +7124,7 @@
           "id": "n2",
           "kind": "conditional",
           "label": "if (!cfg)",
+          "summary": "Check whether (!cfg).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6732,6 +7136,7 @@
           "id": "n3",
           "kind": "statement",
           "label": "return;",
+          "summary": "Return from the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6743,6 +7148,7 @@
           "id": "n4",
           "kind": "conditional",
           "label": "if (cfg->user_id >= MAX_USER_CONFIG_COUNT)",
+          "summary": "Check whether (cfg- is greater than user_id is at least MAX_USER_CONFIG_COUNT).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6754,6 +7160,7 @@
           "id": "n5",
           "kind": "statement",
           "label": "return;",
+          "summary": "Return from the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6765,6 +7172,7 @@
           "id": "n6",
           "kind": "statement",
           "label": "Flash_Unlock();",
+          "summary": "Call Flash Unlock.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6776,6 +7184,7 @@
           "id": "n7",
           "kind": "statement",
           "label": "uint32_t flash_address = FLASH_USER_BASE_ADDR + (cfg->user_id * USER_CONFIG_FLASH_SIZE);",
+          "summary": "Set uint32_t flash_address to FLASH_USER_BASE_ADDR plus (cfg minus >user_id multiplied by USER_CONFIG_FLASH_SIZE).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6787,6 +7196,7 @@
           "id": "n8",
           "kind": "statement",
           "label": "flash_address = (flash_address + 7) & ~7;",
+          "summary": "Set flash_address to (flash_address plus 7) & ~7.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6798,6 +7208,7 @@
           "id": "n9",
           "kind": "conditional",
           "label": "if (flash_address >= FLASH_USER_END_ADDR)",
+          "summary": "Check whether (flash_address is at least FLASH_USER_END_ADDR).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6809,6 +7220,7 @@
           "id": "n10",
           "kind": "statement",
           "label": "Flash_Lock();",
+          "summary": "Call Flash Lock.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6820,6 +7232,7 @@
           "id": "n11",
           "kind": "return",
           "label": "return;",
+          "summary": "Return from the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6831,6 +7244,7 @@
           "id": "n12",
           "kind": "statement",
           "label": "user_config_t temp_cfg = *cfg;",
+          "summary": "Set user_config_t temp_cfg to multiplied by cfg.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6842,6 +7256,7 @@
           "id": "n13",
           "kind": "statement",
           "label": "temp_cfg.crc = 0;",
+          "summary": "Set temp_cfg.crc to 0.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6853,6 +7268,7 @@
           "id": "n14",
           "kind": "statement",
           "label": "temp_cfg.crc = calculate_crc(&temp_cfg);",
+          "summary": "Set temp_cfg.crc to calculate_crc(&temp_cfg).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6864,6 +7280,7 @@
           "id": "n15",
           "kind": "statement",
           "label": "uint32_t page_start_addr = flash_address & ~(0x800 - 1);",
+          "summary": "Set uint32_t page_start_addr to flash_address & ~(0x800 minus 1).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6875,6 +7292,7 @@
           "id": "n16",
           "kind": "statement",
           "label": "bool need_erase = false;",
+          "summary": "Set bool need_erase to false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6886,6 +7304,7 @@
           "id": "n17",
           "kind": "statement",
           "label": "uint64_t *page_check_addr = (uint64_t*)page_start_addr;",
+          "summary": "Set uint64_t multiplied by page_check_addr to (uint64_t multiplied by )page_start_addr.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6897,6 +7316,7 @@
           "id": "n18",
           "kind": "loop",
           "label": "for (int i = 0; i < 0x800 / 8; i++)",
+          "summary": "Repeat according to for (int i = 0; i < 0x800 / 8; i++).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6908,6 +7328,7 @@
           "id": "n19",
           "kind": "conditional",
           "label": "if (page_check_addr[i] != 0xFFFFFFFFFFFFFFFFULL)",
+          "summary": "Check whether (page_check_addr[i] does not equal 0xFFFFFFFFFFFFFFFFULL).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6919,6 +7340,7 @@
           "id": "n20",
           "kind": "statement",
           "label": "need_erase = true;",
+          "summary": "Set need_erase to true.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6930,6 +7352,7 @@
           "id": "n21",
           "kind": "statement",
           "label": "break;",
+          "summary": "break",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6941,6 +7364,7 @@
           "id": "n22",
           "kind": "conditional",
           "label": "if (need_erase)",
+          "summary": "Check whether (need_erase).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6952,6 +7376,7 @@
           "id": "n23",
           "kind": "statement",
           "label": "static uint64_t page_buffer[0x800 / 8];",
+          "summary": "static uint64 t page buffer 0x800 / 8",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6963,6 +7388,7 @@
           "id": "n24",
           "kind": "statement",
           "label": "memcpy(page_buffer, (void*)page_start_addr, 0x800);",
+          "summary": "Call memcpy with page buffer, void*page start addr, 0x800.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6974,6 +7400,7 @@
           "id": "n25",
           "kind": "conditional",
           "label": "if (Flash_ErasePage(page_start_addr) != FLASH_OK)",
+          "summary": "Check whether (Flash_ErasePage(page_start_addr) does not equal FLASH_OK).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6985,6 +7412,7 @@
           "id": "n26",
           "kind": "statement",
           "label": "Flash_Lock();",
+          "summary": "Call Flash Lock.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -6996,6 +7424,7 @@
           "id": "n27",
           "kind": "return",
           "label": "return;",
+          "summary": "Return from the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7007,6 +7436,7 @@
           "id": "n28",
           "kind": "statement",
           "label": "uint32_t offset_in_page = flash_address - page_start_addr;",
+          "summary": "Set uint32_t offset_in_page to flash_address minus page_start_addr.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7018,6 +7448,7 @@
           "id": "n29",
           "kind": "statement",
           "label": "memcpy((uint8_t*)page_buffer + offset_in_page, &temp_cfg, sizeof(user_config_t));",
+          "summary": "Call memcpy with uint8 t*page buffer + offset in page, &temp cfg, sizeofuser config t.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7029,6 +7460,7 @@
           "id": "n30",
           "kind": "loop",
           "label": "for (int i = 0; i < 0x800 / 8; i++)",
+          "summary": "Repeat according to for (int i = 0; i < 0x800 / 8; i++).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7040,6 +7472,7 @@
           "id": "n31",
           "kind": "statement",
           "label": "uint32_t write_addr = page_start_addr + i * 8;",
+          "summary": "Set uint32_t write_addr to page_start_addr plus i multiplied by 8.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7051,6 +7484,7 @@
           "id": "n32",
           "kind": "statement",
           "label": "HAL_StatusTypeDef status = HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, write_addr, page_buffer[i]);",
+          "summary": "Set HAL_StatusTypeDef status to HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, write_addr, page_buffer[i]).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7062,6 +7496,7 @@
           "id": "n33",
           "kind": "conditional",
           "label": "if (status != HAL_OK)",
+          "summary": "Check whether (status does not equal HAL_OK).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7073,6 +7508,7 @@
           "id": "n34",
           "kind": "statement",
           "label": "Flash_Lock();",
+          "summary": "Call Flash Lock.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7084,6 +7520,7 @@
           "id": "n35",
           "kind": "return",
           "label": "return;",
+          "summary": "Return from the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7095,6 +7532,7 @@
           "id": "n36",
           "kind": "conditional",
           "label": "if (Flash_Write64BitAligned(flash_address, &temp_cfg, sizeof(user_config_t)) != FLASH_OK)",
+          "summary": "Check whether (Flash_Write64BitAligned(flash_address, &temp_cfg, sizeof(user_config_t)) does not equal FLASH_OK).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7106,6 +7544,7 @@
           "id": "n37",
           "kind": "statement",
           "label": "Flash_Lock();",
+          "summary": "Call Flash Lock.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7117,6 +7556,7 @@
           "id": "n38",
           "kind": "return",
           "label": "return;",
+          "summary": "Return from the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7128,6 +7568,7 @@
           "id": "n39",
           "kind": "statement",
           "label": "Flash_Lock();",
+          "summary": "Call Flash Lock.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7368,6 +7809,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7379,6 +7821,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -7392,6 +7835,7 @@
           "id": "n2",
           "kind": "statement",
           "label": "Flash_Unlock();",
+          "summary": "Call Flash Unlock.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7403,6 +7847,7 @@
           "id": "n3",
           "kind": "statement",
           "label": "uint32_t start_page_addr = FLASH_USER_BASE_ADDR;",
+          "summary": "Set uint32_t start_page_addr to FLASH_USER_BASE_ADDR.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7414,6 +7859,7 @@
           "id": "n4",
           "kind": "statement",
           "label": "uint32_t end_addr = FLASH_USER_END_ADDR;",
+          "summary": "Set uint32_t end_addr to FLASH_USER_END_ADDR.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7425,6 +7871,7 @@
           "id": "n5",
           "kind": "statement",
           "label": "uint32_t page_size = 0x800;",
+          "summary": "Set uint32_t page_size to 0x800.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7436,6 +7883,7 @@
           "id": "n6",
           "kind": "statement",
           "label": "bool erase_success = true;",
+          "summary": "Set bool erase_success to true.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7447,6 +7895,7 @@
           "id": "n7",
           "kind": "loop",
           "label": "for (uint32_t page_addr = start_page_addr; page_addr < end_addr; page_addr += page_size)",
+          "summary": "Repeat according to for (uint32_t page_addr = start_page_addr; page_addr < end_addr; page_addr += page_size).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7458,6 +7907,7 @@
           "id": "n8",
           "kind": "conditional",
           "label": "if (Flash_ErasePage(page_addr) != FLASH_OK)",
+          "summary": "Check whether (Flash_ErasePage(page_addr) does not equal FLASH_OK).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7469,6 +7919,7 @@
           "id": "n9",
           "kind": "statement",
           "label": "erase_success = false;",
+          "summary": "Set erase_success to false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7480,6 +7931,7 @@
           "id": "n10",
           "kind": "statement",
           "label": "break;",
+          "summary": "break",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7491,6 +7943,7 @@
           "id": "n11",
           "kind": "statement",
           "label": "Flash_Lock();",
+          "summary": "Call Flash Lock.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7502,6 +7955,7 @@
           "id": "n12",
           "kind": "return",
           "label": "return erase_success;",
+          "summary": "Return erase_success.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7590,6 +8044,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7601,6 +8056,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -7614,6 +8070,7 @@
           "id": "n2",
           "kind": "conditional",
           "label": "if (!cfg)",
+          "summary": "Check whether (!cfg).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7625,6 +8082,7 @@
           "id": "n3",
           "kind": "statement",
           "label": "return;",
+          "summary": "Return from the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7636,6 +8094,7 @@
           "id": "n4",
           "kind": "statement",
           "label": "cfg->user_id = user_id;",
+          "summary": "Set cfg minus >user_id to user_id.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7647,6 +8106,7 @@
           "id": "n5",
           "kind": "statement",
           "label": "cfg->open_angle = 1;",
+          "summary": "Set cfg minus >open_angle to 1.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7658,6 +8118,7 @@
           "id": "n6",
           "kind": "statement",
           "label": "cfg->open_speed = 1;",
+          "summary": "Set cfg minus >open_speed to 1.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7669,6 +8130,7 @@
           "id": "n7",
           "kind": "statement",
           "label": "cfg->open_or_not_flag = 1;",
+          "summary": "Set cfg minus >open_or_not_flag to 1.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7680,6 +8142,7 @@
           "id": "n8",
           "kind": "statement",
           "label": "memset(cfg->reserved, 0, sizeof(cfg->reserved));",
+          "summary": "Call memset with cfg to reserved, 0, sizeofcfg to reserved.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7691,6 +8154,7 @@
           "id": "n9",
           "kind": "statement",
           "label": "cfg->crc = 0;",
+          "summary": "Set cfg minus >crc to 0.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7702,6 +8166,7 @@
           "id": "n10",
           "kind": "statement",
           "label": "cfg->crc = calculate_crc(cfg);",
+          "summary": "Set cfg minus >crc to calculate_crc(cfg).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7773,6 +8238,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7784,6 +8250,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -7797,6 +8264,7 @@
           "id": "n2",
           "kind": "conditional",
           "label": "if (!mac_address)",
+          "summary": "Check whether (!mac_address).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7808,6 +8276,7 @@
           "id": "n3",
           "kind": "statement",
           "label": "return false;",
+          "summary": "Return false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7819,6 +8288,7 @@
           "id": "n4",
           "kind": "statement",
           "label": "ble_address_storage_t *stored_addr = (ble_address_storage_t*)BLE_ADDRESS_FLASH_ADDR;",
+          "summary": "Set ble_address_storage_t multiplied by stored_addr to (ble_address_storage_t multiplied by )BLE_ADDRESS_FLASH_ADDR.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7830,6 +8300,7 @@
           "id": "n5",
           "kind": "statement",
           "label": "uint64_t *raw_data = (uint64_t*)stored_addr;",
+          "summary": "Set uint64_t multiplied by raw_data to (uint64_t multiplied by )stored_addr.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7841,6 +8312,7 @@
           "id": "n6",
           "kind": "statement",
           "label": "bool is_empty = true;",
+          "summary": "Set bool is_empty to true.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7852,6 +8324,7 @@
           "id": "n7",
           "kind": "statement",
           "label": "uint32_t words_to_check = (sizeof(ble_address_storage_t) + 7) / 8;",
+          "summary": "Set uint32_t words_to_check to (sizeof(ble_address_storage_t) plus 7) divided by 8.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7863,6 +8336,7 @@
           "id": "n8",
           "kind": "loop",
           "label": "for (uint32_t i = 0; i < words_to_check; i++)",
+          "summary": "Repeat according to for (uint32_t i = 0; i < words_to_check; i++).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7874,6 +8348,7 @@
           "id": "n9",
           "kind": "conditional",
           "label": "if (raw_data[i] != 0xFFFFFFFFFFFFFFFFULL)",
+          "summary": "Check whether (raw_data[i] does not equal 0xFFFFFFFFFFFFFFFFULL).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7885,6 +8360,7 @@
           "id": "n10",
           "kind": "statement",
           "label": "is_empty = false;",
+          "summary": "Set is_empty to false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7896,6 +8372,7 @@
           "id": "n11",
           "kind": "statement",
           "label": "break;",
+          "summary": "break",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7907,6 +8384,7 @@
           "id": "n12",
           "kind": "conditional",
           "label": "if (is_empty)",
+          "summary": "Check whether (is_empty).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7918,6 +8396,7 @@
           "id": "n13",
           "kind": "statement",
           "label": "return false;",
+          "summary": "Return false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7929,6 +8408,7 @@
           "id": "n14",
           "kind": "statement",
           "label": "ble_address_storage_t temp_storage;",
+          "summary": "ble address storage t temp storage",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7940,6 +8420,7 @@
           "id": "n15",
           "kind": "statement",
           "label": "memcpy(&temp_storage, stored_addr, sizeof(ble_address_storage_t));",
+          "summary": "Call memcpy with &temp storage, stored addr, sizeofble address storage t.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7951,6 +8432,7 @@
           "id": "n16",
           "kind": "statement",
           "label": "uint8_t crc_check = calculate_ble_address_crc(&temp_storage);",
+          "summary": "Set uint8_t crc_check to calculate_ble_address_crc(&temp_storage).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7962,6 +8444,7 @@
           "id": "n17",
           "kind": "conditional",
           "label": "if (crc_check != temp_storage.crc)",
+          "summary": "Check whether (crc_check does not equal temp_storage.crc).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7973,6 +8456,7 @@
           "id": "n18",
           "kind": "return",
           "label": "return false;",
+          "summary": "Return false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7984,6 +8468,7 @@
           "id": "n19",
           "kind": "conditional",
           "label": "if (temp_storage.is_valid != BLE_ADDRESS_VALID_FLAG)",
+          "summary": "Check whether (temp_storage.is_valid does not equal BLE_ADDRESS_VALID_FLAG).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -7995,6 +8480,7 @@
           "id": "n20",
           "kind": "return",
           "label": "return false;",
+          "summary": "Return false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8006,6 +8492,7 @@
           "id": "n21",
           "kind": "statement",
           "label": "bool all_zero = true;",
+          "summary": "Set bool all_zero to true.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8017,6 +8504,7 @@
           "id": "n22",
           "kind": "statement",
           "label": "bool all_ff = true;",
+          "summary": "Set bool all_ff to true.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8028,6 +8516,7 @@
           "id": "n23",
           "kind": "loop",
           "label": "for (int i = 0; i < 6; i++)",
+          "summary": "Repeat according to for (int i = 0; i < 6; i++).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8039,6 +8528,7 @@
           "id": "n24",
           "kind": "conditional",
           "label": "if (temp_storage.mac_address[i] != 0x00)",
+          "summary": "Check whether (temp_storage.mac_address[i] does not equal 0x00).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8050,6 +8540,7 @@
           "id": "n25",
           "kind": "statement",
           "label": "all_zero = false;",
+          "summary": "Set all_zero to false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8061,6 +8552,7 @@
           "id": "n26",
           "kind": "conditional",
           "label": "if (temp_storage.mac_address[i] != 0xFF)",
+          "summary": "Check whether (temp_storage.mac_address[i] does not equal 0xFF).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8072,6 +8564,7 @@
           "id": "n27",
           "kind": "statement",
           "label": "all_ff = false;",
+          "summary": "Set all_ff to false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8083,6 +8576,7 @@
           "id": "n28",
           "kind": "conditional",
           "label": "if (all_zero || all_ff)",
+          "summary": "Check whether (all_zero || all_ff).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8094,6 +8588,7 @@
           "id": "n29",
           "kind": "return",
           "label": "return false;",
+          "summary": "Return false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8105,6 +8600,7 @@
           "id": "n30",
           "kind": "statement",
           "label": "memcpy(mac_address, temp_storage.mac_address, 6);",
+          "summary": "Call memcpy with mac address, temp storage mac address, 6.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8116,6 +8612,7 @@
           "id": "n31",
           "kind": "return",
           "label": "return true;",
+          "summary": "Return true.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8324,6 +8821,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8335,6 +8833,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -8348,6 +8847,7 @@
           "id": "n2",
           "kind": "conditional",
           "label": "if (!mac_address)",
+          "summary": "Check whether (!mac_address).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8359,6 +8859,7 @@
           "id": "n3",
           "kind": "statement",
           "label": "return false;",
+          "summary": "Return false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8370,6 +8871,7 @@
           "id": "n4",
           "kind": "statement",
           "label": "bool all_zero = true;",
+          "summary": "Set bool all_zero to true.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8381,6 +8883,7 @@
           "id": "n5",
           "kind": "statement",
           "label": "bool all_ff = true;",
+          "summary": "Set bool all_ff to true.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8392,6 +8895,7 @@
           "id": "n6",
           "kind": "loop",
           "label": "for (int i = 0; i < 6; i++)",
+          "summary": "Repeat according to for (int i = 0; i < 6; i++).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8403,6 +8907,7 @@
           "id": "n7",
           "kind": "conditional",
           "label": "if (mac_address[i] != 0x00)",
+          "summary": "Check whether (mac_address[i] does not equal 0x00).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8414,6 +8919,7 @@
           "id": "n8",
           "kind": "statement",
           "label": "all_zero = false;",
+          "summary": "Set all_zero to false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8425,6 +8931,7 @@
           "id": "n9",
           "kind": "conditional",
           "label": "if (mac_address[i] != 0xFF)",
+          "summary": "Check whether (mac_address[i] does not equal 0xFF).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8436,6 +8943,7 @@
           "id": "n10",
           "kind": "statement",
           "label": "all_ff = false;",
+          "summary": "Set all_ff to false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8447,6 +8955,7 @@
           "id": "n11",
           "kind": "conditional",
           "label": "if (all_zero || all_ff)",
+          "summary": "Check whether (all_zero || all_ff).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8458,6 +8967,7 @@
           "id": "n12",
           "kind": "return",
           "label": "return false;",
+          "summary": "Return false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8469,6 +8979,7 @@
           "id": "n13",
           "kind": "statement",
           "label": "Flash_Unlock();",
+          "summary": "Call Flash Unlock.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8480,6 +8991,7 @@
           "id": "n14",
           "kind": "statement",
           "label": "uint32_t page_addr = BLE_ADDRESS_FLASH_ADDR & ~(0x800 - 1);",
+          "summary": "Set uint32_t page_addr to BLE_ADDRESS_FLASH_ADDR & ~(0x800 minus 1).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8491,6 +9003,7 @@
           "id": "n15",
           "kind": "conditional",
           "label": "if (Flash_ErasePage(page_addr) != FLASH_OK)",
+          "summary": "Check whether (Flash_ErasePage(page_addr) does not equal FLASH_OK).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8502,6 +9015,7 @@
           "id": "n16",
           "kind": "statement",
           "label": "Flash_Lock();",
+          "summary": "Call Flash Lock.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8513,6 +9027,7 @@
           "id": "n17",
           "kind": "return",
           "label": "return false;",
+          "summary": "Return false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8524,6 +9039,7 @@
           "id": "n18",
           "kind": "statement",
           "label": "ble_address_storage_t addr_storage = {0};",
+          "summary": "Set ble_address_storage_t addr_storage to {0}.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8535,6 +9051,7 @@
           "id": "n19",
           "kind": "statement",
           "label": "memcpy(addr_storage.mac_address, mac_address, 6);",
+          "summary": "Call memcpy with addr storage mac address, mac address, 6.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8546,6 +9063,7 @@
           "id": "n20",
           "kind": "statement",
           "label": "addr_storage.is_valid = BLE_ADDRESS_VALID_FLAG;",
+          "summary": "Set addr_storage.is_valid to BLE_ADDRESS_VALID_FLAG.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8557,6 +9075,7 @@
           "id": "n21",
           "kind": "statement",
           "label": "memset(addr_storage.reserved, 0, sizeof(addr_storage.reserved));",
+          "summary": "Call memset with addr storage reserved, 0, sizeofaddr storage reserved.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8568,6 +9087,7 @@
           "id": "n22",
           "kind": "statement",
           "label": "addr_storage.crc = 0;",
+          "summary": "Set addr_storage.crc to 0.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8579,6 +9099,7 @@
           "id": "n23",
           "kind": "statement",
           "label": "addr_storage.crc = calculate_ble_address_crc(&addr_storage);",
+          "summary": "Set addr_storage.crc to calculate_ble_address_crc(&addr_storage).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8590,6 +9111,7 @@
           "id": "n24",
           "kind": "statement",
           "label": "Flash_Status write_result = Flash_Write64BitAligned(BLE_ADDRESS_FLASH_ADDR, &addr_storage, sizeof(ble_address_storage_t));",
+          "summary": "Set Flash_Status write_result to Flash_Write64BitAligned(BLE_ADDRESS_FLASH_ADDR, &addr_storage, sizeof(ble_address_storage_t)).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8601,6 +9123,7 @@
           "id": "n25",
           "kind": "statement",
           "label": "Flash_Lock();",
+          "summary": "Call Flash Lock.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8612,6 +9135,7 @@
           "id": "n26",
           "kind": "conditional",
           "label": "if (write_result != FLASH_OK)",
+          "summary": "Check whether (write_result does not equal FLASH_OK).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8623,6 +9147,7 @@
           "id": "n27",
           "kind": "return",
           "label": "return false;",
+          "summary": "Return false.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8634,6 +9159,7 @@
           "id": "n28",
           "kind": "statement",
           "label": "uint8_t verify_addr[6];",
+          "summary": "uint8 t verify addr 6",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8645,6 +9171,7 @@
           "id": "n29",
           "kind": "return",
           "label": "return Flash_LoadBLEAddress(verify_addr) && (memcmp(verify_addr, mac_address, 6) == 0);",
+          "summary": "Return Flash_LoadBLEAddress(verify_addr) && (memcmp(verify_addr, mac_address, 6) == 0).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8828,6 +9355,7 @@
           "id": "n0",
           "kind": "start",
           "label": "Start",
+          "summary": "Begin the function.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8839,6 +9367,7 @@
           "id": "n1",
           "kind": "end",
           "label": "End",
+          "summary": "Finish the function.",
           "metadata": {
             "reason": "function_terminator"
           },
@@ -8852,6 +9381,7 @@
           "id": "n2",
           "kind": "statement",
           "label": "Flash_Unlock();",
+          "summary": "Call Flash Unlock.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8863,6 +9393,7 @@
           "id": "n3",
           "kind": "statement",
           "label": "uint32_t page_addr = BLE_ADDRESS_FLASH_ADDR & ~(0x800 - 1);",
+          "summary": "Set uint32_t page_addr to BLE_ADDRESS_FLASH_ADDR & ~(0x800 minus 1).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8874,6 +9405,7 @@
           "id": "n4",
           "kind": "statement",
           "label": "Flash_Status erase_result = Flash_ErasePage(page_addr);",
+          "summary": "Set Flash_Status erase_result to Flash_ErasePage(page_addr).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8885,6 +9417,7 @@
           "id": "n5",
           "kind": "statement",
           "label": "Flash_Lock();",
+          "summary": "Call Flash Lock.",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
@@ -8896,6 +9429,7 @@
           "id": "n6",
           "kind": "return",
           "label": "return (erase_result == FLASH_OK);",
+          "summary": "Return (erase_result == FLASH_OK).",
           "metadata": {},
           "location": {
             "file_path": "stage1/test_code/Flash.c",
