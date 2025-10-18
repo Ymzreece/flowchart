@@ -2,6 +2,14 @@
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   color: #1f2933;
   background-color: #f5f7fb;
+  --edge-status-default: #94a3b8;
+  --edge-status-active: #2563eb;
+  --edge-status-success: #10b981;
+  --edge-status-warning: #f59e0b;
+  --edge-status-error: #f43f5e;
+  --edge-status-disabled: #a1a1aa;
+  --edge-label-text-dark: #1f2937;
+  --edge-label-text-light: #ffffff;
 }
 
 body,
@@ -75,11 +83,17 @@ html,
 }
 
 .toolbar__info {
-  margin-left: auto;
   display: flex;
   flex-direction: column;
   font-size: 0.875rem;
   color: #4b5563;
+}
+
+.toolbar__meta {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
 }
 
 .toolbar__language {
@@ -191,34 +205,85 @@ html,
   transition: stroke 0.2s ease, opacity 0.2s ease;
 }
 
-.react-flow__edge.edge-highlight .react-flow__edge-path {
-  stroke: #2563eb !important;
-  stroke-width: 3px;
-  stroke-dasharray: 6;
-  animation: edge-flow 1.2s linear infinite;
+.react-flow__edge {
+  --edge-stroke-color: var(--edge-status-default);
+  --edge-arrow-color: var(--edge-stroke-color);
+  --edge-label-bg: rgba(148, 163, 184, 0.18);
+  --edge-label-color: var(--edge-label-text-dark);
 }
 
-.react-flow__edge.edge-highlight .react-flow__edge-text {
-  background: #2563eb;
-  color: #fff;
+.react-flow__edge.edge-status-default {
+  --edge-stroke-color: var(--edge-status-default);
+  --edge-arrow-color: var(--edge-status-default);
+  --edge-label-bg: rgba(148, 163, 184, 0.18);
+  --edge-label-color: var(--edge-label-text-dark);
+}
+
+.react-flow__edge.edge-status-active {
+  --edge-stroke-color: var(--edge-status-active);
+  --edge-arrow-color: var(--edge-status-active);
+  --edge-label-bg: rgba(37, 99, 235, 0.18);
+  --edge-label-color: var(--edge-label-text-dark);
+}
+
+.react-flow__edge.edge-status-success {
+  --edge-stroke-color: var(--edge-status-success);
+  --edge-arrow-color: var(--edge-status-success);
+  --edge-label-bg: rgba(16, 185, 129, 0.2);
+  --edge-label-color: var(--edge-label-text-dark);
+}
+
+.react-flow__edge.edge-status-warning {
+  --edge-stroke-color: var(--edge-status-warning);
+  --edge-arrow-color: var(--edge-status-warning);
+  --edge-label-bg: rgba(245, 158, 11, 0.22);
+  --edge-label-color: var(--edge-label-text-dark);
+}
+
+.react-flow__edge.edge-status-error {
+  --edge-stroke-color: var(--edge-status-error);
+  --edge-arrow-color: var(--edge-status-error);
+  --edge-label-bg: rgba(244, 63, 94, 0.2);
+  --edge-label-color: var(--edge-label-text-light);
+}
+
+.react-flow__edge.edge-status-disabled {
+  --edge-stroke-color: var(--edge-status-disabled);
+  --edge-arrow-color: var(--edge-status-disabled);
+  --edge-label-bg: rgba(161, 161, 170, 0.16);
+  --edge-label-color: #4b5563;
+}
+
+.react-flow__edge .react-flow__edge-path {
+  stroke: var(--edge-stroke-color);
+}
+
+.react-flow__edge .react-flow__edge-arrowhead polyline,
+.react-flow__edge .react-flow__edge-arrowhead polygon {
+  stroke: var(--edge-arrow-color);
+  fill: var(--edge-arrow-color);
+}
+
+.react-flow__edge .react-flow__edge-text {
+  background: var(--edge-label-bg);
+  color: var(--edge-label-color);
   border-radius: 6px;
   padding: 2px 6px;
 }
 
-.react-flow__edge.edge-highlight .react-flow__edge-arrowhead polyline,
-.react-flow__edge.edge-highlight .react-flow__edge-arrowhead polygon {
-  stroke: #2563eb;
-  fill: #2563eb;
+.react-flow__edge.edge-highlight .react-flow__edge-path {
+  stroke-width: 3px;
+  stroke-dasharray: 6;
+  animation: edge-flow 1.2s linear infinite;
+  filter: drop-shadow(0 0 6px rgba(15, 23, 42, 0.18));
+}
+
+.react-flow__edge.edge-highlight .react-flow__edge-text {
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08);
 }
 
 .react-flow__edge.edge-dim .react-flow__edge-path {
   opacity: 0.2;
-}
-
-.react-flow__edge.edge-dim .react-flow__edge-arrowhead polyline,
-.react-flow__edge.edge-dim .react-flow__edge-arrowhead polygon {
-  stroke: #9ca3af;
-  fill: #9ca3af;
 }
 
 .react-flow__edge.edge-dim .react-flow__edge-text {
@@ -232,4 +297,63 @@ html,
   100% {
     stroke-dashoffset: -18;
   }
+}
+
+.status-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  color: #4b5563;
+}
+
+.status-legend__title {
+  font-weight: 600;
+}
+
+.status-legend__list {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.status-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #1f2937;
+}
+
+.status-legend__swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.16);
+}
+
+.status-legend__swatch--default {
+  background: var(--edge-status-default);
+}
+
+.status-legend__swatch--active {
+  background: var(--edge-status-active);
+}
+
+.status-legend__swatch--success {
+  background: var(--edge-status-success);
+}
+
+.status-legend__swatch--warning {
+  background: var(--edge-status-warning);
+}
+
+.status-legend__swatch--error {
+  background: var(--edge-status-error);
+}
+
+.status-legend__swatch--disabled {
+  background: var(--edge-status-disabled);
 }

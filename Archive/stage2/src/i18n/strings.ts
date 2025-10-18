@@ -16,7 +16,14 @@ const STRINGS = {
     fieldSource: "Source",
     fallbackMessage: "Import a flow JSON file to begin editing.",
     languageEnglish: "English",
-    languageChinese: "中文"
+    languageChinese: "中文",
+    statusLegendTitle: "Edge status",
+    statusDefault: "Default",
+    statusActive: "Active",
+    statusSuccess: "Success",
+    statusWarning: "Warning",
+    statusError: "Error",
+    statusDisabled: "Disabled"
   },
   zh: {
     appTitle: "流程图编辑器",
@@ -33,7 +40,14 @@ const STRINGS = {
     fieldSource: "来源",
     fallbackMessage: "导入流程图 JSON 文件开始编辑。",
     languageEnglish: "英语",
-    languageChinese: "中文"
+    languageChinese: "中文",
+    statusLegendTitle: "连线状态",
+    statusDefault: "默认",
+    statusActive: "活动",
+    statusSuccess: "成功",
+    statusWarning: "警告",
+    statusError: "错误",
+    statusDisabled: "禁用"
   }
 } as const;
 

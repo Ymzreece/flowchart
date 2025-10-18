@@ -1,8 +1,11 @@
-import { ChangeEvent } from "react";
+import { ChangeEvent, useMemo } from "react";
 import { useFlowStore } from "@hooks/useFlowStore";
 import type { ModuleGraph } from "@lib/graphSchema";
 import { useTranslation } from "@i18n/useTranslation";
 import { availableLanguages, type SupportedLanguage } from "@i18n/strings";
+import { normalizeEdgeStatus } from "@lib/status";
+import type { EdgeStatus } from "@lib/graphSchema";
+import { StatusLegend } from "@components/StatusLegend";
 
 export function Toolbar() {
   const loadGraph = useFlowStore((state) => state.loadGraph);
@@ -10,6 +13,19 @@ export function Toolbar() {
   const currentFunction = useFlowStore((state) => state.currentFunction);
   const setLanguage = useFlowStore((state) => state.setLanguage);
   const { t, language } = useTranslation();
+  const statuses = useMemo(() => {
+    if (!currentFunction) {
+      return [] as EdgeStatus[];
+    }
+    const detected = new Set<EdgeStatus>();
+    currentFunction.edges.forEach((edge) => {
+      const status = normalizeEdgeStatus(edge.metadata?.status);
+      if (status) {
+        detected.add(status);
+      }
+    });
+    return Array.from(detected);
+  }, [currentFunction]);
 
   const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -56,12 +72,15 @@ export function Toolbar() {
           ))}
         </select>
       </label>
-      {currentFunction && (
-        <div className="toolbar__info">
-          <strong>{currentFunction.name}</strong>
-          <span>{currentModule?.language}</span>
-        </div>
-      )}
+      <div className="toolbar__meta">
+        {currentFunction && (
+          <div className="toolbar__info">
+            <strong>{currentFunction.name}</strong>
+            <span>{currentModule?.language}</span>
+          </div>
+        )}
+        <StatusLegend statuses={statuses} />
+      </div>
     </div>
   );
 }

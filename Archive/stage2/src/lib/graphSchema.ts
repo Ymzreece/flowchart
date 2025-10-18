@@ -9,6 +9,12 @@ export type NodeKind =
   | "exception"
   | "unknown";
 
+export type EdgeStatus = "default" | "active" | "success" | "warning" | "error" | "disabled";
+
+export interface EdgeMetadata extends Record<string, unknown> {
+  status?: EdgeStatus;
+}
+
 export interface SourceLocation {
   file_path: string;
   line: number;
@@ -28,7 +34,7 @@ export interface EdgeIR {
   source: string;
   target: string;
   label?: string;
-  metadata?: Record<string, unknown>;
+  metadata?: EdgeMetadata;
 }
 
 export interface FunctionGraph {

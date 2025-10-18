@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from typing import Dict
+from typing import Any, Dict
 
 from .models import FlowGraph, GraphNode
 
@@ -43,12 +43,14 @@ def graph_to_stage2_module(graph: FlowGraph) -> Dict[str, object]:
 
     edges_payload = []
     for edge in graph.edges:
-        payload = {
+        payload: Dict[str, Any] = {
             "source": edge.source,
             "target": edge.target,
         }
         if edge.label:
             payload["label"] = edge.label
+        if edge.metadata:
+            payload["metadata"] = edge.metadata
         edges_payload.append(payload)
 
     function_payload = {

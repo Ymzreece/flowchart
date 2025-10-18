@@ -1,7 +1,8 @@
 import type { Edge, Node } from "reactflow";
-import type { FunctionGraph } from "./graphSchema";
+import type { EdgeMetadata, FunctionGraph } from "./graphSchema";
 import type { SupportedLanguage } from "@i18n/strings";
 import { createContentTranslator } from "@i18n/translator";
+import { getEdgeStatusClass, normalizeEdgeStatus } from "./status";
 
 interface ReactFlowGraph {
   nodes: Node[];
@@ -28,9 +29,18 @@ export function toReactFlowGraph(fn: FunctionGraph, language: SupportedLanguage 
   }));
 
   const edges: Edge[] = fn.edges.map((edge) => {
-    const metadata: Record<string, unknown> = { ...(edge.metadata ?? {}) };
+    const metadata: EdgeMetadata & Record<string, unknown> = { ...(edge.metadata ?? {}) };
     const originalAnimated = edge.label === "True" || edge.label === "False";
     metadata.__originalAnimated = originalAnimated;
+
+    const resolvedStatus = normalizeEdgeStatus(edge.metadata?.status);
+    let className: string | undefined;
+    if (resolvedStatus) {
+      metadata.status = resolvedStatus;
+      className = getEdgeStatusClass(resolvedStatus);
+    } else if (edge.metadata?.status && process.env.NODE_ENV !== "production") {
+      console.warn(`Unsupported edge status "${String(edge.metadata.status)}" – rendering with default styling.`);
+    }
 
     return {
       id: `${edge.source}-${edge.target}-${edge.label ?? "edge"}`,
@@ -42,6 +52,7 @@ export function toReactFlowGraph(fn: FunctionGraph, language: SupportedLanguage 
       markerEnd: {
         type: "arrowclosed",
       },
+      className,
     };
   });
 
@@ -67,12 +78,18 @@ export function updateFunctionGraphFromReactFlow(
     };
   });
 
-  const updatedEdges = edges.map((edge) => ({
-    source: edge.source,
-    target: edge.target,
-    label: edge.label,
-    metadata: edge.data as Record<string, unknown> | undefined,
-  }));
+  const updatedEdges = edges.map((edge) => {
+    const data = (edge.data ?? {}) as Record<string, unknown>;
+    const { __originalAnimated, ...rest } = data;
+    const metadata = Object.keys(rest).length > 0 ? (rest as EdgeMetadata) : undefined;
+
+    return {
+      source: edge.source,
+      target: edge.target,
+      label: edge.label,
+      metadata,
+    };
+  });
 
   return {
     ...fn,

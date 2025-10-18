@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from .models import FlowGraph, GraphEdge, GraphNode
 
@@ -86,7 +86,11 @@ def parse_graph_json(text: str) -> FlowGraph:
         if not src or not tgt:
             continue
         label = edge.get("label")
-        edges.append(GraphEdge(source=str(src), target=str(tgt), label=label))
+        edge_metadata = edge.get("metadata")
+        metadata_dict: Dict[str, Any] = {}
+        if isinstance(edge_metadata, dict):
+            metadata_dict = dict(edge_metadata)
+        edges.append(GraphEdge(source=str(src), target=str(tgt), label=label, metadata=metadata_dict))
 
     if not nodes and fallback_stages:
         previous_id: str | None = None

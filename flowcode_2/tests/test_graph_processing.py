@@ -17,7 +17,12 @@ SAMPLE_JSON = json.dumps(
         ],
         "edges": [
             {"source": "start", "target": "decision", "label": "Next"},
-            {"source": "decision", "target": "end", "label": "True"},
+            {
+                "source": "decision",
+                "target": "end",
+                "label": "True",
+                "metadata": {"status": "success"},
+            },
         ],
     }
 )
@@ -30,6 +35,7 @@ class GraphProcessingTests(unittest.TestCase):
         self.assertEqual(len(graph.nodes), 3)
         self.assertEqual(len(graph.edges), 2)
         self.assertEqual(graph.nodes["decision"].type, "decision")
+        self.assertEqual(graph.edges[1].metadata.get("status"), "success")
 
     def test_converter_stage2(self) -> None:
         graph = parse_graph_json(SAMPLE_JSON)
@@ -38,6 +44,8 @@ class GraphProcessingTests(unittest.TestCase):
         node_kinds = {node["id"]: node["kind"] for node in module["functions"][0]["nodes"]}
         self.assertEqual(node_kinds["start"], "start")
         self.assertEqual(node_kinds["decision"], "conditional")
+        edge_payload = module["functions"][0]["edges"][1]
+        self.assertEqual(edge_payload["metadata"]["status"], "success")
 
 
 if __name__ == "__main__":  # pragma: no cover
