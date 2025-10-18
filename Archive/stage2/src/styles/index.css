@@ -150,20 +150,20 @@ html,
 }
 
 .react-flow__node {
-  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  transition: box-shadow 0.2s ease, opacity 0.2s ease;
 }
 
 .react-flow__node.node-selected {
-  transform: scale(1.03);
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.2);
 }
 
 .react-flow__node.node-selected .react-flow__node-default {
   border-color: #2563eb;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.25);
 }
 
 .react-flow__node.node-connected {
-  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.18);
 }
 
 .react-flow__node.node-dim {
