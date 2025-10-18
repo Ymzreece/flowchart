@@ -148,3 +148,71 @@ html,
   margin: 0.25rem 0 0;
   font-size: 0.95rem;
 }
+
+.react-flow__node {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.react-flow__node.node-selected {
+  transform: scale(1.03);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.25);
+}
+
+.react-flow__node.node-selected .react-flow__node-default {
+  border-color: #2563eb;
+}
+
+.react-flow__node.node-connected {
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+.react-flow__node.node-dim {
+  opacity: 0.35;
+}
+
+.react-flow__edge-path {
+  transition: stroke 0.2s ease, opacity 0.2s ease;
+}
+
+.react-flow__edge.edge-highlight .react-flow__edge-path {
+  stroke: #2563eb !important;
+  stroke-width: 3px;
+  stroke-dasharray: 6;
+  animation: edge-flow 1.2s linear infinite;
+}
+
+.react-flow__edge.edge-highlight .react-flow__edge-text {
+  background: #2563eb;
+  color: #fff;
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+
+.react-flow__edge.edge-highlight .react-flow__edge-arrowhead polyline,
+.react-flow__edge.edge-highlight .react-flow__edge-arrowhead polygon {
+  stroke: #2563eb;
+  fill: #2563eb;
+}
+
+.react-flow__edge.edge-dim .react-flow__edge-path {
+  opacity: 0.2;
+}
+
+.react-flow__edge.edge-dim .react-flow__edge-arrowhead polyline,
+.react-flow__edge.edge-dim .react-flow__edge-arrowhead polygon {
+  stroke: #9ca3af;
+  fill: #9ca3af;
+}
+
+.react-flow__edge.edge-dim .react-flow__edge-text {
+  opacity: 0.4;
+}
+
+@keyframes edge-flow {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -18;
+  }
+}

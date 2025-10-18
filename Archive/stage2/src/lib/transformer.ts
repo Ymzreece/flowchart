@@ -24,17 +24,23 @@ export function toReactFlowGraph(fn: FunctionGraph): ReactFlowGraph {
     type: "default",
   }));
 
-  const edges: Edge[] = fn.edges.map((edge) => ({
-    id: `${edge.source}-${edge.target}-${edge.label ?? "edge"}`,
-    source: edge.source,
-    target: edge.target,
-    label: edge.label,
-    data: edge.metadata,
-    animated: edge.label === "True" || edge.label === "False",
-    markerEnd: {
-      type: "arrowclosed",
-    },
-  }));
+  const edges: Edge[] = fn.edges.map((edge) => {
+    const metadata: Record<string, unknown> = { ...(edge.metadata ?? {}) };
+    const originalAnimated = edge.label === "True" || edge.label === "False";
+    metadata.__originalAnimated = originalAnimated;
+
+    return {
+      id: `${edge.source}-${edge.target}-${edge.label ?? "edge"}`,
+      source: edge.source,
+      target: edge.target,
+      label: edge.label,
+      data: metadata,
+      animated: originalAnimated,
+      markerEnd: {
+        type: "arrowclosed",
+      },
+    };
+  });
 
   return { nodes, edges };
 }

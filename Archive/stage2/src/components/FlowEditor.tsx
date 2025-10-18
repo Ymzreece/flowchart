@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import ReactFlow, {
   Background,
   Controls,
@@ -14,6 +14,8 @@ import "reactflow/dist/style.css";
 
 import { useFlowStore } from "@hooks/useFlowStore";
 import { toReactFlowGraph } from "@lib/transformer";
+import { highlightConnectedEdges, highlightNodes } from "@lib/highlightUtils";
+import { highlightConnectedEdges } from "@lib/highlightUtils";
 
 export function FlowEditor() {
   return (
@@ -26,6 +28,8 @@ export function FlowEditor() {
 function FlowEditorInner() {
   const currentFunction = useFlowStore((state) => state.currentFunction);
   const selectNode = useFlowStore((state) => state.selectNode);
+  const selectedNodeId = useFlowStore((state) => state.selectedNodeId);
+  const selectedNodeId = useFlowStore((state) => state.selectedNodeId);
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -66,11 +70,20 @@ function FlowEditorInner() {
     onConnect(connection as Connection);
   };
 
+  const decoratedEdges = useMemo(
+    () => highlightConnectedEdges(edges, selectedNodeId),
+    [edges, selectedNodeId]
+  );
+  const decoratedNodes = useMemo(
+    () => highlightNodes(nodes, edges, selectedNodeId),
+    [nodes, edges, selectedNodeId]
+  );
+
   return (
     <div className="flow-editor">
       <ReactFlow
-        nodes={nodes}
-        edges={edges}
+        nodes={decoratedNodes}
+        edges={decoratedEdges}
         style={{ width: "100%", height: "100%" }}
         onNodesChange={handleNodesChange}
         onEdgesChange={handleEdgesChange}
