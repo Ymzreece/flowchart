@@ -15,7 +15,6 @@ import "reactflow/dist/style.css";
 import { useFlowStore } from "@hooks/useFlowStore";
 import { toReactFlowGraph } from "@lib/transformer";
 import { highlightConnectedEdges, highlightNodes } from "@lib/highlightUtils";
-import { highlightConnectedEdges } from "@lib/highlightUtils";
 
 export function FlowEditor() {
   return (
@@ -28,7 +27,6 @@ export function FlowEditor() {
 function FlowEditorInner() {
   const currentFunction = useFlowStore((state) => state.currentFunction);
   const selectNode = useFlowStore((state) => state.selectNode);
-  const selectedNodeId = useFlowStore((state) => state.selectedNodeId);
   const selectedNodeId = useFlowStore((state) => state.selectedNodeId);
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
