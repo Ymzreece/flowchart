@@ -1,320 +1,400 @@
 {
   "metadata": {
-    "title": "FreeRTOS Door Actuator Control Flow",
-    "summary": "A task that initializes, calibrates, parses commands from LoRa and BLE, performs forward/open and reverse/close yaw-driven motor control with safety checks, and manages sleep/power states.",
+    "title": "State-machine flow for FreeRTOS motion-control loop",
+    "summary": "Flowchart of boot calibration, calibrated idle loop, LoRa/Bluetooth command handling, opening/closing control, stall detection, and power management.",
     "language": "en"
   },
-  "entry_node": "n_start",
+  "entry_node": "start",
   "nodes": [
     {
-      "id": "n_start",
-      "title": "System Startup",
-      "summary": "Power-on and prepare system resources for operation.",
-      "detail": "Initial entry point where the system begins startup sequence.",
+      "id": "start",
+      "title": "Start and system boot",
+      "summary": "System boots and begins initialization and calibration persistence.",
+      "detail": null,
       "type": "start"
     },
     {
-      "id": "n_init_flags",
-      "title": "Initialize Flags and Stop Motor",
-      "summary": "Reset internal control flags and ensure the motor is stopped.",
-      "detail": "Clear run state flags and ensure the motor driver is not active at boot.",
+      "id": "boot_init",
+      "title": "Init Flash and restore calibration",
+      "summary": "Initialize Flash storage and read last-known calibration: diff_sumup and check_flag.",
+      "detail": "If check_flag is true, calibration is considered complete; otherwise uncalibrated path will be taken.",
       "type": "process"
     },
     {
-      "id": "n_load_calib",
-      "title": "Load Calibration Data",
-      "summary": "Read diff_sumup (angle limit) and check_flag (calibration state) from flash.",
-      "detail": "Restore previously saved calibration values to globals.",
-      "type": "process"
-    },
-    {
-      "id": "n_calib_decision",
-      "title": "Calibration Status Decision",
-      "summary": "Is the system already calibrated (check_flag)?",
-      "detail": "Branch to Auto_Check if not calibrated; otherwise proceed to operational loop.",
+      "id": "calibrated_at_boot?",
+      "title": "Calibrated at boot?",
+      "summary": "Decision: is calibration complete (check_flag == true)?",
+      "detail": "If calibrated, start in idle; if not, enter uncalibrated path.",
       "type": "decision"
     },
     {
-      "id": "n_auto_check",
-      "title": "Auto_Check Procedure",
-      "summary": "Perform calibration/limit procedure and persist results to flash.",
-      "detail": "Triggered when calibration is required; updates diff_sumup and check_flag.",
+      "id": "uncalibrated_loop",
+      "title": "Uncalibrated: wait for LoRa Auto_Check",
+      "summary": "Await a LoRa frame to start Auto_Check calibration/limits.",
+      "detail": "Auto_Check will set check_flag to true on success.",
+      "type": "process"
+    },
+    {
+      "id": "auto_check",
+      "title": "Auto_Check (calibration/limit procedure)",
+      "summary": "Run calibration to determine diff_sumup and limits; set check_flag on success.",
+      "detail": "Diff_sumup becomes total open angle; check_flag becomes true.",
       "type": "call"
     },
     {
-      "id": "n_operational_loop",
-      "title": "Main Periodic Operation Loop",
-      "summary": "Periodic cycle handling inputs, motion decisions, and power management.",
-      "detail": "Core loop that orchestrates command parsing, motion control, and sleep logic.",
-      "type": "loop"
-    },
-    {
-      "id": "n_read_bus_current",
-      "title": "Read Bus Current",
-      "summary": "Sample motor current to monitor load and detect stalls.",
-      "detail": "Fetch current draw for safety and status checks.",
+      "id": "calibrated_idle",
+      "title": "Calibrated Idle",
+      "summary": "Calibration complete; monitor for idle, motion commands, and keep-power.",
+      "detail": "Main runtime state when calibrated.",
       "type": "process"
     },
     {
-      "id": "n_ble_parse",
-      "title": "Parse Bluetooth and LoRa Inputs",
-      "summary": "Interpret commands received via BLE and LoRa interfaces.",
-      "detail": "Extract command frames and parameters for further processing.",
-      "type": "process"
-    },
-    {
-      "id": "n_cal_flag_check",
-      "title": "Calibration Flag Check",
-      "summary": "Decide whether to stay in operational mode or trigger Auto_Check.",
-      "detail": "If check_flag is false, go to Auto_Check; if true, continue with forward/reverse logic.",
+      "id": "idle_timeout?",
+      "title": "Idle timeout check",
+      "summary": "If idle beyond 15s, check yaw to decide low power or force close.",
+      "detail": "If |yaw| < 10 deg, enter low-power; else force closing.",
       "type": "decision"
     },
     {
-      "id": "n_lora_forward_parse",
-      "title": "Parse AA.. LoRa Command for Forward",
-      "summary": "Extract speed/angle settings or action triggers from AA.. frames.",
-      "detail": "Handles AA00 (keep-power) and AAxy command variants.",
+      "id": "low_power_seq",
+      "title": "Enter low-power sequence",
+      "summary": "Power down motor, peripherals, and sleep subsystems to save power.",
+      "detail": "Includes BLE disconnect, IMU sleep, radar save, and yaw reset wait.",
       "type": "process"
     },
     {
-      "id": "n_forward_entry",
-      "title": "Forward/Open Entry Decision",
-      "summary": "Decide to start forward/open motion based on commands and flags.",
-      "detail": "Evaluates commandExecuted/ahead_flag and related conditions.",
-      "type": "decision"
-    },
-    {
-      "id": "n_forward_init",
-      "title": "Forward/Open Initialization",
-      "summary": "Enable motor power and initialize forward motion.",
-      "detail": "Prepare movement, reset accumulators, and set up for speed control.",
+      "id": "force_close_idle",
+      "title": "Force closing due to idle",
+      "summary": "Set motor_runing_flag_r to 1 to begin closing due to long idle without near-zero yaw.",
+      "detail": "Opens a closing motion path.",
       "type": "process"
     },
     {
-      "id": "n_forward_threshold",
-      "title": "Compute Forward Threshold and Speed Command",
-      "summary": "Determine yaw target based on Angle_Level_Lora and issue speed command.",
-      "detail": "Uses diff_sumup, yaw, and Speed_from_Lora caps to send speed control.",
-      "type": "process"
-    },
-    {
-      "id": "n_yaw_stall_check_forward",
-      "title": "Yaw Stall/Oscillation Check (Forward)",
-      "summary": "Safety check to detect lack of progress or oscillation during forward motion.",
-      "detail": "Implements Yaw_Stall_Check logic for forward direction.",
-      "type": "process"
-    },
-    {
-      "id": "n_forward_stop",
-      "title": "Forward Stop Condition Check",
-      "summary": "Evaluate whether forward movement should stop based on thresholds and safety.",
-      "detail": "Stops when near target, overshoots, or stall detected.",
-      "type": "decision"
-    },
-    {
-      "id": "n_post_forward",
-      "title": "Post-Forward Transition",
-      "summary": "Decide next step after forward: initiate reverse if requested or sleep.",
-      "detail": "If close_flag is set, prepare reverse; otherwise enter idle/sleep.",
-      "type": "decision"
-    },
-    {
-      "id": "n_reverse_entry",
-      "title": "Reverse/Close Entry Decision",
-      "summary": "Decide to start reverse/close motion.",
-      "detail": "Triggered by post-forward transition when closing is requested or by flags.",
-      "type": "decision"
-    },
-    {
-      "id": "n_reverse_init",
-      "title": "Reverse/Close Initialization",
-      "summary": "Enable motor power and initialize reverse motion.",
-      "detail": "Prepare for reverse speed command and stall checks.",
-      "type": "process"
-    },
-    {
-      "id": "n_reverse_speed",
-      "title": "Compute Reverse Speed",
-      "summary": "Calculate reverse speed command toward 0 degrees with bias.",
-      "detail": "speed = Motor_P * (0 - (yaw + 3)) capped by Speed_from_Lora.",
-      "type": "process"
-    },
-    {
-      "id": "n_reverse_stop",
-      "title": "Reverse Stop Condition Check",
-      "summary": "Evaluate reverse stop criteria (stall, yaw sign, closing_inpurrt).",
-      "detail": "Stops when near zero yaw, collision risk, or closing_inpurt occurs.",
-      "type": "decision"
-    },
-    {
-      "id": "n_sleep",
-      "title": "Enter Low-Power Sleep",
-      "summary": "Power down motor and peripherals to conserve energy.",
-      "detail": "Disables power, disconnects BLE, sleeps IMU, sets radar/external low-power state.",
-      "type": "loop"
-    },
-    {
-      "id": "n_aa00_keep_power",
-      "title": "AA00 Keep-Power Management",
-      "summary": "Maintain motor power while active frames; timeout otherwise.",
-      "detail": "Refresh last_message_time when moving; disable power after timeout when idle.",
-      "type": "process"
-    },
-    {
-      "id": "n_sleep_wake",
-      "title": "Sleep Wake Handling",
-      "summary": "Handle wake-up conditions to re-enter operational loop.",
-      "detail": "Wake via timer or triggers and resume main loop.",
-      "type": "process"
-    },
-    {
-      "id": "n_pb6_wake",
-      "title": "PB6 Wake/Actuation Trigger",
-      "summary": "PB6 edge detects wake/actuation and can kick off forward motion.",
-      "detail": "Edge-triggered wake that initiates a forward/open cycle when idle.",
+      "id": "lora_parser",
+      "title": "LoRa command parser (AA..)",
+      "summary": "Parse LoRa frames for control commands.",
+      "detail": "AA00 keeps power; AAxy sets speed/angle; AAOF requests close after open; AARE re-enters calibration.",
       "type": "io"
+    },
+    {
+      "id": "aa00_power_on",
+      "title": "AA00: keep motor power on",
+      "summary": "Turn motor power on and set aa00_motor_enabled.",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "aaxy_command",
+      "title": "AAxy: set motion/target",
+      "summary": "Set Speed_Level_Lora and Angle_Level_Lora; start opening.",
+      "detail": "Also asserts flags to begin opening and prepares for timed motion.",
+      "type": "process"
+    },
+    {
+      "id": "aaof_command",
+      "title": "AAOF: request close after open",
+      "summary": "Set close_flag so that closing occurs after an open cycle finishes.",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "aare_command",
+      "title": "AARE: re-enter calibration",
+      "summary": "Reset check_flag to force uncalibrated path on next loop.",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "pb6_trigger",
+      "title": "PB6 manual trigger",
+      "summary": "Detect edge on PB6 to start opening if no motion is active.",
+      "detail": "Debounced edge increments a small counter and triggers opening when ready.",
+      "type": "io"
+    },
+    {
+      "id": "opening_entry",
+      "title": "Opening: entry condition",
+      "summary": "Determine if opening should start based on commands/triggers.",
+      "detail": "Conditions include commandExecuted, ahead_flag, or motor_runing_flag being set.",
+      "type": "decision"
+    },
+    {
+      "id": "opening_init",
+      "title": "Opening Init",
+      "summary": "Power on, reset accumulators, and enable speed-control for opening.",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "opening_control",
+      "title": "Opening Control (motion loop)",
+      "summary": "Compute speed from yaw error and send motor drive commands.",
+      "detail": "Looping control using threshold, yaw, and speed limits.",
+      "type": "loop"
+    },
+    {
+      "id": "opening_stop?",
+      "title": "Opening Stop condition",
+      "summary": "Check if target reached, near threshold, or stall detected.",
+      "detail": "If stop, handle stop actions; else continue motion loop.",
+      "type": "decision"
+    },
+    {
+      "id": "opening_stop_action",
+      "title": "Opening Stop Actions",
+      "summary": "Stop RPM, power down, clear flags; possibly queue closing.",
+      "detail": "If close_flag is set, prepare closing path.",
+      "type": "process"
+    },
+    {
+      "id": "closing_entry",
+      "title": "Closing: entry condition",
+      "summary": "Determine if closing should start (close command or pull assist).",
+      "detail": "Requires yaw to be away from zero and motion flags.",
+      "type": "decision"
+    },
+    {
+      "id": "closing_init",
+      "title": "Closing Init",
+      "summary": "Power on, reset, enable speed-control for closing.",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "closing_control",
+      "title": "Closing Control (motion loop)",
+      "summary": "Drive toward zero angle; bias toward closing; cap speed.",
+      "detail": null,
+      "type": "loop"
+    },
+    {
+      "id": "closing_stop?",
+      "title": "Closing Stop condition",
+      "summary": "Check near-zero yaw, overshoot, stall, or preemption by opening.",
+      "detail": "If stop, perform post-stop actions; else continue loop.",
+      "type": "decision"
+    },
+    {
+      "id": "closing_stop_action",
+      "title": "Closing Stop Actions",
+      "summary": "Handle post-close behavior, possible low-power sequence.",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "yaw_stall_opening",
+      "title": "Yaw Stall Check (Opening)",
+      "summary": "Detect stall or wrong-direction movement during opening.",
+      "detail": "Used to stop safely if stall is detected.",
+      "type": "decision"
+    },
+    {
+      "id": "yaw_stall_closing",
+      "title": "Yaw Stall Check (Closing)",
+      "summary": "Detect stall or collision during closing.",
+      "detail": "Used to stop safely and handle errors.",
+      "type": "decision"
+    },
+    {
+      "id": "post_move_low_power",
+      "title": "Post-move Low-Power Entry",
+      "summary": "Apply low-power sequence after a move completes.",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "end",
+      "title": "End of flow",
+      "summary": "End node; represents completion of the modeled sequences.",
+      "detail": null,
+      "type": "end"
     }
   ],
   "edges": [
     {
-      "source": "n_start",
-      "target": "n_init_flags",
-      "label": "power-on"
+      "source": "start",
+      "target": "boot_init",
+      "label": "boot"
     },
     {
-      "source": "n_init_flags",
-      "target": "n_load_calib",
-      "label": "stop motor and reset state"
+      "source": "boot_init",
+      "target": "calibrated_at_boot?",
+      "label": "read and restore calibration (diff_sumup, check_flag)"
     },
     {
-      "source": "n_load_calib",
-      "target": "n_calib_decision",
-      "label": "load from flash: diff_sumup and check_flag"
-    },
-    {
-      "source": "n_calib_decision",
-      "target": "n_auto_check",
-      "label": "check_flag == false"
-    },
-    {
-      "source": "n_calib_decision",
-      "target": "n_operational_loop",
+      "source": "calibrated_at_boot?",
+      "target": "calibrated_idle",
       "label": "check_flag == true"
     },
     {
-      "source": "n_auto_check",
-      "target": "n_operational_loop",
-      "label": "calibration complete"
-    },
-    {
-      "source": "n_operational_loop",
-      "target": "n_read_bus_current",
-      "label": "start loop iteration"
-    },
-    {
-      "source": "n_read_bus_current",
-      "target": "n_ble_parse",
-      "label": "read current and parse inputs"
-    },
-    {
-      "source": "n_ble_parse",
-      "target": "n_cal_flag_check",
-      "label": "parse Bluetooth/LoRa"
-    },
-    {
-      "source": "n_cal_flag_check",
-      "target": "n_auto_check",
+      "source": "calibrated_at_boot?",
+      "target": "uncalibrated_loop",
       "label": "check_flag == false"
     },
     {
-      "source": "n_cal_flag_check",
-      "target": "n_lora_forward_parse",
-      "label": "check_flag == true"
+      "source": "uncalibrated_loop",
+      "target": "auto_check",
+      "label": "lora_rx_flag == 1"
     },
     {
-      "source": "n_lora_forward_parse",
-      "target": "n_forward_entry",
-      "label": "AA.. parsed"
+      "source": "auto_check",
+      "target": "calibrated_at_boot?",
+      "label": "success / check_flag == true"
     },
     {
-      "source": "n_forward_entry",
-      "target": "n_forward_init",
-      "label": "forward path selected"
+      "source": "calibrated_idle",
+      "target": "idle_timeout?",
+      "label": "every loop cycle"
     },
     {
-      "source": "n_forward_init",
-      "target": "n_forward_threshold",
-      "label": "first entry: enable power"
+      "source": "idle_timeout?",
+      "target": "low_power_seq",
+      "label": "Idle timeout and |yaw| < 10 deg"
     },
     {
-      "source": "n_forward_threshold",
-      "target": "n_yaw_stall_check_forward",
-      "label": "compute target and send speed"
+      "source": "idle_timeout?",
+      "target": "force_close_idle",
+      "label": "Idle timeout and |yaw| >= 10 deg"
     },
     {
-      "source": "n_yaw_stall_check_forward",
-      "target": "n_forward_stop",
-      "label": "stall/stop/threshold reached"
+      "source": "low_power_seq",
+      "target": "calibrated_idle",
+      "label": "complete low-power wake/sleep"
     },
     {
-      "source": "n_forward_stop",
-      "target": "n_post_forward",
-      "label": "forward stop condition met"
+      "source": "force_close_idle",
+      "target": "opening_entry",
+      "label": "begin closing by idle preemption"
     },
     {
-      "source": "n_post_forward",
-      "target": "n_reverse_entry",
-      "label": "close_flag set"
+      "source": "calibrated_idle",
+      "target": "lora_parser",
+      "label": "loop iteration: poll inputs"
     },
     {
-      "source": "n_post_forward",
-      "target": "n_sleep",
-      "label": "no close_flag"
+      "source": "lora_parser",
+      "target": "aa00_power_on",
+      "label": "AA00"
     },
     {
-      "source": "n_reverse_entry",
-      "target": "n_reverse_init",
-      "label": "start reverse"
+      "source": "lora_parser",
+      "target": "aaxy_command",
+      "label": "AAxy"
     },
     {
-      "source": "n_reverse_init",
-      "target": "n_reverse_speed",
-      "label": "enable power and init"
+      "source": "lora_parser",
+      "target": "aaof_command",
+      "label": "AAOF"
     },
     {
-      "source": "n_reverse_speed",
-      "target": "n_reverse_stop",
-      "label": "compute reverse speed"
+      "source": "lora_parser",
+      "target": "aare_command",
+      "label": "AARE"
     },
     {
-      "source": "n_reverse_stop",
-      "target": "n_sleep",
-      "label": "stop conditions"
+      "source": "aa00_power_on",
+      "target": "calibrated_idle",
+      "label": "return to idle after power-on"
     },
     {
-      "source": "n_sleep",
-      "target": "n_sleep_wake",
-      "label": "sleep interval elapsed or wake condition"
+      "source": "aaxy_command",
+      "target": "opening_entry",
+      "label": "start opening (commandExecuted)"
     },
     {
-      "source": "n_sleep_wake",
-      "target": "n_operational_loop",
-      "label": "wake up to loop"
+      "source": "aaof_command",
+      "target": "closing_entry",
+      "label": "set close_flag"
     },
     {
-      "source": "n_aa00_keep_power",
-      "target": "n_operational_loop",
-      "label": "keep power active"
+      "source": "aare_command",
+      "target": "uncalibrated_loop",
+      "label": "re-enter calibration"
     },
     {
-      "source": "n_aa00_keep_power",
-      "target": "n_sleep",
-      "label": "timeout when idle"
+      "source": "pb6_trigger",
+      "target": "opening_entry",
+      "label": "PB6 edge detected and idle cleared"
     },
     {
-      "source": "n_pb6_wake",
-      "target": "n_forward_entry",
-      "label": "PB6 edge wake triggers forward"
+      "source": "opening_entry",
+      "target": "opening_init",
+      "label": "entry condition met"
+    },
+    {
+      "source": "opening_init",
+      "target": "opening_control",
+      "label": "initialize opening motion"
+    },
+    {
+      "source": "opening_control",
+      "target": "yaw_stall_opening",
+      "label": "per control cycle"
+    },
+    {
+      "source": "yaw_stall_opening",
+      "target": "opening_stop_action",
+      "label": "stall detected"
+    },
+    {
+      "source": "yaw_stall_opening",
+      "target": "opening_control",
+      "label": "no stall"
+    },
+    {
+      "source": "opening_stop_action",
+      "target": "closing_entry",
+      "label": "close_flag == true"
+    },
+    {
+      "source": "opening_stop_action",
+      "target": "post_move_low_power",
+      "label": "no close_flag; enter low-power after open"
+    },
+    {
+      "source": "closing_entry",
+      "target": "closing_init",
+      "label": "entry condition met"
+    },
+    {
+      "source": "closing_init",
+      "target": "closing_control",
+      "label": "initialize closing motion"
+    },
+    {
+      "source": "closing_control",
+      "target": "yaw_stall_closing",
+      "label": "per control cycle"
+    },
+    {
+      "source": "yaw_stall_closing",
+      "target": "closing_stop_action",
+      "label": "stall detected"
+    },
+    {
+      "source": "yaw_stall_closing",
+      "target": "closing_control",
+      "label": "no stall"
+    },
+    {
+      "source": "closing_stop_action",
+      "target": "post_move_low_power",
+      "label": "normal stop; enter low-power"
+    },
+    {
+      "source": "yaw_stall_opening",
+      "target": "opening_stop_action",
+      "label": "emergency stop due to stall"
+    },
+    {
+      "source": "post_move_low_power",
+      "target": "calibrated_idle",
+      "label": "low-power sequence complete; return to idle"
+    },
+    {
+      "source": "start",
+      "target": "end",
+      "label": "end of modeled sequence"
     }
   ]
 }

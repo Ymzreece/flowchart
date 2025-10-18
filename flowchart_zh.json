@@ -1,320 +1,400 @@
 {
   "metadata": {
-    "title": "FreeRTOS 门执行器控制流程",
-    "summary": "一个任务：初始化、标定、解析来自 LoRa 与 BLE 的命令，执行基于偏航的正向/开启和反向/关闭电机控制，带有安全检查，并管理睡眠/电源状态。",
+    "title": "FreeRTOS运动控制循环的状态机流程",
+    "summary": "引导标定、已标定空闲循环、LoRa/蓝牙指令处理、开启/关闭控制、失速检测与电源管理的流程图。",
     "language": "zh"
   },
-  "entry_node": "n_start",
+  "entry_node": "start",
   "nodes": [
     {
-      "id": "n_start",
-      "title": "系统启动",
-      "summary": "上电并为运行准备系统资源。",
-      "detail": "系统启动序列的初始入口点。",
+      "id": "start",
+      "title": "启动与系统引导",
+      "summary": "系统启动并开始初始化与标定持久化。",
+      "detail": null,
       "type": "start"
     },
     {
-      "id": "n_init_flags",
-      "title": "初始化标志并停止电机",
-      "summary": "重置内部控制标志并确保电机已停止。",
-      "detail": "在引导时清除运行状态标志并确保电机驱动未激活。",
+      "id": "boot_init",
+      "title": "初始化闪存存储并恢复标定",
+      "summary": "初始化闪存存储并读取最近已知标定：diff_sumup 和 check_flag。",
+      "detail": "如果 check_flag 为 true，则标定视为完成；否则将进入未标定路径。",
       "type": "process"
     },
     {
-      "id": "n_load_calib",
-      "title": "加载标定数据",
-      "summary": "从闪存读取 diff_sumup（角度限制）和 check_flag（标定状态）。",
-      "detail": "将先前保存的标定值恢复到全局变量。",
-      "type": "process"
-    },
-    {
-      "id": "n_calib_decision",
-      "title": "标定状态判断",
-      "summary": "系统是否已标定（check_flag）？",
-      "detail": "未标定时跳转到 Auto_Check；否则进入操作循环。",
+      "id": "calibrated_at_boot?",
+      "title": "启动时已完成标定？",
+      "summary": "决策：标定是否完成（check_flag == true）？",
+      "detail": "若已标定，则在空闲状态启动；若未标定，则进入未标定路径。",
       "type": "decision"
     },
     {
-      "id": "n_auto_check",
-      "title": "自动校验过程",
-      "summary": "执行标定/限制过程并将结果写入闪存。",
-      "detail": "在需要标定时触发；更新 diff_sumup 和 check_flag。",
+      "id": "uncalibrated_loop",
+      "title": "未标定：等待 LoRa Auto_Check",
+      "summary": "等待 LoRa 帧以启动 Auto_Check 标定/限值。",
+      "detail": "Auto_Check 在成功时将把 check_flag 设为 true。",
+      "type": "process"
+    },
+    {
+      "id": "auto_check",
+      "title": "Auto_Check（标定/极限过程）",
+      "summary": "运行标定以确定 diff_sumup 和极限值；成功时设置 check_flag。",
+      "detail": "diff_sumup 将成为总开角；check_flag 将为 true。",
       "type": "call"
     },
     {
-      "id": "n_operational_loop",
-      "title": "主周期性操作循环",
-      "summary": "对输入、运动决策与电源管理进行的周期性循环。",
-      "detail": "协调命令解析、运动控制和睡眠逻辑的核心循环。",
-      "type": "loop"
-    },
-    {
-      "id": "n_read_bus_current",
-      "title": "读取总线电流",
-      "summary": "采样电机电流以监控负载和检测堵转。",
-      "detail": "获取电流消耗以确保安全并进行状态检查。",
+      "id": "calibrated_idle",
+      "title": "已标定的空闲",
+      "summary": "标定完成；监视空闲、运动指令，并保持供电。",
+      "detail": "标定后的主运行时状态。",
       "type": "process"
     },
     {
-      "id": "n_ble_parse",
-      "title": "解析蓝牙/LoRa 输入",
-      "summary": "解释通过 BLE 与 LoRa 接口接收到的命令。",
-      "detail": "提取指令帧和参数以供进一步处理。",
-      "type": "process"
-    },
-    {
-      "id": "n_cal_flag_check",
-      "title": "标定标志检查",
-      "summary": "判断是保持在工作模式还是触发 Auto_Check。",
-      "detail": "如果 check_flag 为 false，则转到 Auto_Check；如果为 true，则继续前向/反向逻辑。",
+      "id": "idle_timeout?",
+      "title": "空闲超时检查",
+      "summary": "若超过 15 秒保持空闲，则检查偏航角以决定进入低功耗或强制关闭。",
+      "detail": "若 |yaw| < 10 度，进入低功耗；否则强制关闭。",
       "type": "decision"
     },
     {
-      "id": "n_lora_forward_parse",
-      "title": "AA.. LoRa 前进命令解析",
-      "summary": "从 AA.. 帧中提取速度/角度设置或动作触发。",
-      "detail": "处理 AA00（保持电源）和 AAxy 命令变体。",
+      "id": "low_power_seq",
+      "title": "进入低功耗序列",
+      "summary": "降低电机功率、外设并使子系统进入睡眠以节省电力。",
+      "detail": "包括蓝牙断连、IMU 休眠、雷达休眠，以及等待偏航角重置。",
       "type": "process"
     },
     {
-      "id": "n_forward_entry",
-      "title": "正向/开启进入决策",
-      "summary": "基于命令和标志决定是否启动正向/开启运动。",
-      "detail": "评估 commandExecuted/ahead_flag 及相关条件。",
-      "type": "decision"
-    },
-    {
-      "id": "n_forward_init",
-      "title": "正向/开启初始化",
-      "summary": "为正向运动启用电机电源并初始化。",
-      "detail": "准备移动、重置累加器，并为速度控制做准备。",
+      "id": "force_close_idle",
+      "title": "因空闲而强制关闭",
+      "summary": "将 motor_runing_flag_r 设为 1，以在长时间空闲且偏航角不接近零时开始关闭。",
+      "detail": "开启关闭运动路径。",
       "type": "process"
     },
     {
-      "id": "n_forward_threshold",
-      "title": "计算正向阈值与速度指令",
-      "summary": "基于 Angle_Level_Lora 计算偏航目标并发出速度指令。",
-      "detail": "使用 diff_sumup、yaw 和 Speed_from_Lora 限制来进行速度控制的发送。",
-      "type": "process"
-    },
-    {
-      "id": "n_yaw_stall_check_forward",
-      "title": "偏航堵转/振荡检查（正向）",
-      "summary": "在正向运动中检测无进展或振荡的安全检查。",
-      "detail": "实现正向方向的 Yaw_Stall_Check 逻辑。",
-      "type": "process"
-    },
-    {
-      "id": "n_forward_stop",
-      "title": "正向停止条件检查",
-      "summary": "基于阈值和安全性评估是否应停止正向运动。",
-      "detail": "在接近目标、超出目标或检测到堵转时停止。",
-      "type": "decision"
-    },
-    {
-      "id": "n_post_forward",
-      "title": "正向后的过渡",
-      "summary": "在正向后决定下一步：如有请求则启动反向，否则进入睡眠。",
-      "detail": "若设置了 close_flag，则准备反向；否则进入空闲/睡眠。",
-      "type": "decision"
-    },
-    {
-      "id": "n_reverse_entry",
-      "title": "反向/关闭进入决策",
-      "summary": "决定启动反向/关闭运动。",
-      "detail": "由正向后的转换触发，当请求关闭或由标志触发。",
-      "type": "decision"
-    },
-    {
-      "id": "n_reverse_init",
-      "title": "反向/关闭初始化",
-      "summary": "为反向运动启用电机电源并初始化。",
-      "detail": "为反向速度指令和堵转检查做准备。",
-      "type": "process"
-    },
-    {
-      "id": "n_reverse_speed",
-      "title": "计算反向速度",
-      "summary": "计算趋向0度的反向速度指令并带偏置。",
-      "detail": "speed = Motor_P * (0 - (yaw + 3))，受 Speed_from_Lora 限制。",
-      "type": "process"
-    },
-    {
-      "id": "n_reverse_stop",
-      "title": "反向停止条件检查",
-      "summary": "评估反向停止条件（堵转、偏航符号、closing_inpurrt）。",
-      "detail": "在接近零偏航、存在碰撞风险或 closing_inpurt 发生时停止。",
-      "type": "decision"
-    },
-    {
-      "id": "n_sleep",
-      "title": "进入低功耗睡眠",
-      "summary": "为省电而关闭电机及外设。",
-      "detail": "关闭电源、断开 BLE、使 IMU 进入休眠，并设置雷达/外部低功耗状态。",
-      "type": "loop"
-    },
-    {
-      "id": "n_aa00_keep_power",
-      "title": "AA00 保持电源管理",
-      "summary": "在活动帧期间维持电机供电；空闲时超时。",
-      "detail": "移动时刷新 last_message_time；空闲时超时后关闭电源。",
-      "type": "process"
-    },
-    {
-      "id": "n_sleep_wake",
-      "title": "睡眠唤醒处理",
-      "summary": "处理唤醒条件以重新进入操作循环。",
-      "detail": "通过定时器或触发器唤醒并恢复主循环。",
-      "type": "process"
-    },
-    {
-      "id": "n_pb6_wake",
-      "title": "PB6 唤醒/执行触发",
-      "summary": "PB6 边沿检测到唤醒/执行信号，可启动正向操作。",
-      "detail": "边沿触发唤醒，在空闲时启动正向/开启循环。",
+      "id": "lora_parser",
+      "title": "LoRa 指令解析器（AA..）",
+      "summary": "解析 LoRa 帧以获取控制指令。",
+      "detail": "AA00 维持电源；AAxy 设置速度/角度；AAOF 请求在开启后关闭；AARE 重新进入标定。",
       "type": "io"
+    },
+    {
+      "id": "aa00_power_on",
+      "title": "AA00：保持电机供电",
+      "summary": "开启电机供电并设置 aa00_motor_enabled。",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "aaxy_command",
+      "title": "AAxy：设置运动/目标",
+      "summary": "设置 Speed_Level_Lora 和 Angle_Level_Lora；开始开启。",
+      "detail": "同时置位标志以开始开启并为定时运动做准备。",
+      "type": "process"
+    },
+    {
+      "id": "aaof_command",
+      "title": "AAOF：在开启后请求关闭",
+      "summary": "设置 close_flag 以便在开启循环结束后进行关闭。",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "aare_command",
+      "title": "AARE：重新进入标定",
+      "summary": "将 check_flag 重置，以在下一次循环强制进入未标定路径。",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "pb6_trigger",
+      "title": "PB6 手动触发",
+      "summary": "检测 PB6 边沿以在无运动时启动开启。",
+      "detail": "去抖动后的边沿会使一个小计数器增加，并在准备就绪时触发开启。",
+      "type": "io"
+    },
+    {
+      "id": "opening_entry",
+      "title": "开启：进入条件",
+      "summary": "根据指令/触发条件确定是否应开始开启。",
+      "detail": "条件包括 commandExecuted、ahead_flag，或 motor_runing_flag 已设定。",
+      "type": "decision"
+    },
+    {
+      "id": "opening_init",
+      "title": "开启初始化",
+      "summary": "上电、重置累加器，并为开启启用速度控制。",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "opening_control",
+      "title": "开启控制（运动循环）",
+      "summary": "根据偏航误差计算速度并发送电机驱动指令。",
+      "detail": "使用阈值、偏航角和速度上限的循环控制。",
+      "type": "loop"
+    },
+    {
+      "id": "opening_stop?",
+      "title": "开启停止条件",
+      "summary": "检查是否达到目标、接近阈值或检测到失速。",
+      "detail": "若停止，执行停止动作；否则继续运动循环。",
+      "type": "decision"
+    },
+    {
+      "id": "opening_stop_action",
+      "title": "开启停止动作",
+      "summary": "停止 RPM、断电、清除标志；如有需要，排队进入关闭。",
+      "detail": "若 close_flag 已设，准备进入关闭路径。",
+      "type": "process"
+    },
+    {
+      "id": "closing_entry",
+      "title": "关闭：进入条件",
+      "summary": "确定是否应开始关闭（关闭指令或拉动辅助）。",
+      "detail": "要求偏航角远离零且运动标志已设。",
+      "type": "decision"
+    },
+    {
+      "id": "closing_init",
+      "title": "关闭初始化",
+      "summary": "上电、重置并为关闭启用速度控制。",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "closing_control",
+      "title": "关闭控制（运动循环）",
+      "summary": "驱动至零角度；偏向关闭；限制速度。",
+      "detail": null,
+      "type": "loop"
+    },
+    {
+      "id": "closing_stop?",
+      "title": "关闭停止条件",
+      "summary": "检查是否接近零偏航、超调、失速，或被开启中断。",
+      "detail": "若停止，执行后处理动作；否则继续循环。",
+      "type": "decision"
+    },
+    {
+      "id": "closing_stop_action",
+      "title": "关闭停止动作",
+      "summary": "处理关闭后的行为，可能包含低功耗序列。",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "yaw_stall_opening",
+      "title": "偏航失速检查（开启）",
+      "summary": "在开启过程中检测失速或方向错误的移动。",
+      "detail": "检测到失速时用于安全停止。",
+      "type": "decision"
+    },
+    {
+      "id": "yaw_stall_closing",
+      "title": "偏航失速检查（关闭）",
+      "summary": "在关闭过程中检测失速或碰撞。",
+      "detail": "用于安全停止和错误处理。",
+      "type": "decision"
+    },
+    {
+      "id": "post_move_low_power",
+      "title": "移动后进入低功耗",
+      "summary": "在移动完成后应用低功耗序列。",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "end",
+      "title": "流程结束",
+      "summary": "结束节点；表示所建模序列的完成。",
+      "detail": null,
+      "type": "end"
     }
   ],
   "edges": [
     {
-      "source": "n_start",
-      "target": "n_init_flags",
-      "label": "上电"
+      "source": "start",
+      "target": "boot_init",
+      "label": "启动"
     },
     {
-      "source": "n_init_flags",
-      "target": "n_load_calib",
-      "label": "停止电机并重置状态"
+      "source": "boot_init",
+      "target": "calibrated_at_boot?",
+      "label": "读取并恢复标定（diff_sumup、check_flag）"
     },
     {
-      "source": "n_load_calib",
-      "target": "n_calib_decision",
-      "label": "从闪存加载：diff_sumup 与 check_flag"
-    },
-    {
-      "source": "n_calib_decision",
-      "target": "n_auto_check",
-      "label": "check_flag 为 false"
-    },
-    {
-      "source": "n_calib_decision",
-      "target": "n_operational_loop",
+      "source": "calibrated_at_boot?",
+      "target": "calibrated_idle",
       "label": "check_flag 为 true"
     },
     {
-      "source": "n_auto_check",
-      "target": "n_operational_loop",
-      "label": "标定完成"
-    },
-    {
-      "source": "n_operational_loop",
-      "target": "n_read_bus_current",
-      "label": "开始循环迭代"
-    },
-    {
-      "source": "n_read_bus_current",
-      "target": "n_ble_parse",
-      "label": "读取电流并解析输入"
-    },
-    {
-      "source": "n_ble_parse",
-      "target": "n_cal_flag_check",
-      "label": "解析蓝牙/LoRa"
-    },
-    {
-      "source": "n_cal_flag_check",
-      "target": "n_auto_check",
+      "source": "calibrated_at_boot?",
+      "target": "uncalibrated_loop",
       "label": "check_flag 为 false"
     },
     {
-      "source": "n_cal_flag_check",
-      "target": "n_lora_forward_parse",
-      "label": "check_flag 为 true"
+      "source": "uncalibrated_loop",
+      "target": "auto_check",
+      "label": "lora_rx_flag 为 1"
     },
     {
-      "source": "n_lora_forward_parse",
-      "target": "n_forward_entry",
-      "label": "AA.. 已解析"
+      "source": "auto_check",
+      "target": "calibrated_at_boot?",
+      "label": "成功 / check_flag 为 true"
     },
     {
-      "source": "n_forward_entry",
-      "target": "n_forward_init",
-      "label": "正向路径已选择"
+      "source": "calibrated_idle",
+      "target": "idle_timeout?",
+      "label": "每个循环周期"
     },
     {
-      "source": "n_forward_init",
-      "target": "n_forward_threshold",
-      "label": "首次进入：启用电源"
+      "source": "idle_timeout?",
+      "target": "low_power_seq",
+      "label": "空闲超时且 |yaw| < 10 度"
     },
     {
-      "source": "n_forward_threshold",
-      "target": "n_yaw_stall_check_forward",
-      "label": "计算目标并发送速度"
+      "source": "idle_timeout?",
+      "target": "force_close_idle",
+      "label": "空闲超时且 |yaw| >= 10 度"
     },
     {
-      "source": "n_yaw_stall_check_forward",
-      "target": "n_forward_stop",
-      "label": "堵转/停止/阈值达到"
+      "source": "low_power_seq",
+      "target": "calibrated_idle",
+      "label": "完成低功耗唤醒/休眠"
     },
     {
-      "source": "n_forward_stop",
-      "target": "n_post_forward",
-      "label": "正向停止条件满足"
+      "source": "force_close_idle",
+      "target": "opening_entry",
+      "label": "通过空闲抢占开始关闭"
     },
     {
-      "source": "n_post_forward",
-      "target": "n_reverse_entry",
-      "label": "close_flag 设置为真"
+      "source": "calibrated_idle",
+      "target": "lora_parser",
+      "label": "循环迭代：轮询输入"
     },
     {
-      "source": "n_post_forward",
-      "target": "n_sleep",
-      "label": "没有 close_flag"
+      "source": "lora_parser",
+      "target": "aa00_power_on",
+      "label": "AA00"
     },
     {
-      "source": "n_reverse_entry",
-      "target": "n_reverse_init",
-      "label": "开始反向"
+      "source": "lora_parser",
+      "target": "aaxy_command",
+      "label": "AAxy"
     },
     {
-      "source": "n_reverse_init",
-      "target": "n_reverse_speed",
-      "label": "开启电源并初始化"
+      "source": "lora_parser",
+      "target": "aaof_command",
+      "label": "AAOF"
     },
     {
-      "source": "n_reverse_speed",
-      "target": "n_reverse_stop",
-      "label": "计算反向速度"
+      "source": "lora_parser",
+      "target": "aare_command",
+      "label": "AARE"
     },
     {
-      "source": "n_reverse_stop",
-      "target": "n_sleep",
-      "label": "停止条件"
+      "source": "aa00_power_on",
+      "target": "calibrated_idle",
+      "label": "上电后返回空闲状态"
     },
     {
-      "source": "n_sleep",
-      "target": "n_sleep_wake",
-      "label": "睡眠间隔已过或唤醒条件"
+      "source": "aaxy_command",
+      "target": "opening_entry",
+      "label": "开始开启（commandExecuted）"
     },
     {
-      "source": "n_sleep_wake",
-      "target": "n_operational_loop",
-      "label": "唤醒进入循环"
+      "source": "aaof_command",
+      "target": "closing_entry",
+      "label": "设置 close_flag"
     },
     {
-      "source": "n_aa00_keep_power",
-      "target": "n_operational_loop",
-      "label": "保持电源开启"
+      "source": "aare_command",
+      "target": "uncalibrated_loop",
+      "label": "重新进入标定"
     },
     {
-      "source": "n_aa00_keep_power",
-      "target": "n_sleep",
-      "label": "空闲时超时"
+      "source": "pb6_trigger",
+      "target": "opening_entry",
+      "label": "PB6 边沿检测且清除空闲"
     },
     {
-      "source": "n_pb6_wake",
-      "target": "n_forward_entry",
-      "label": "PB6 边沿唤醒触发正向"
+      "source": "opening_entry",
+      "target": "opening_init",
+      "label": "进入条件满足"
+    },
+    {
+      "source": "opening_init",
+      "target": "opening_control",
+      "label": "初始化开启运动"
+    },
+    {
+      "source": "opening_control",
+      "target": "yaw_stall_opening",
+      "label": "每个控制循环"
+    },
+    {
+      "source": "yaw_stall_opening",
+      "target": "opening_stop_action",
+      "label": "检测到失速"
+    },
+    {
+      "source": "yaw_stall_opening",
+      "target": "opening_control",
+      "label": "无失速"
+    },
+    {
+      "source": "opening_stop_action",
+      "target": "closing_entry",
+      "label": "close_flag 为 true"
+    },
+    {
+      "source": "opening_stop_action",
+      "target": "post_move_low_power",
+      "label": "无 close_flag；开启后进入低功耗"
+    },
+    {
+      "source": "closing_entry",
+      "target": "closing_init",
+      "label": "进入条件满足"
+    },
+    {
+      "source": "closing_init",
+      "target": "closing_control",
+      "label": "初始化关闭运动"
+    },
+    {
+      "source": "closing_control",
+      "target": "yaw_stall_closing",
+      "label": "每个控制循环"
+    },
+    {
+      "source": "yaw_stall_closing",
+      "target": "closing_stop_action",
+      "label": "检测到失速"
+    },
+    {
+      "source": "yaw_stall_closing",
+      "target": "closing_control",
+      "label": "无失速"
+    },
+    {
+      "source": "closing_stop_action",
+      "target": "post_move_low_power",
+      "label": "正常停止；进入低功耗"
+    },
+    {
+      "source": "yaw_stall_opening",
+      "target": "opening_stop_action",
+      "label": "因失速而紧急停止"
+    },
+    {
+      "source": "post_move_low_power",
+      "target": "calibrated_idle",
+      "label": "低功耗序列完成；返回空闲"
+    },
+    {
+      "source": "start",
+      "target": "end",
+      "label": "建模序列结束"
     }
   ]
 }

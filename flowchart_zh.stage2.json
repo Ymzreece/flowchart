@@ -1,426 +1,526 @@
 {
   "language": "zh",
   "metadata": {
-    "title": "FreeRTOS \u95e8\u6267\u884c\u5668\u63a7\u5236\u6d41\u7a0b",
-    "summary": "\u4e00\u4e2a\u4efb\u52a1\uff1a\u521d\u59cb\u5316\u3001\u6807\u5b9a\u3001\u89e3\u6790\u6765\u81ea LoRa \u4e0e BLE \u7684\u547d\u4ee4\uff0c\u6267\u884c\u57fa\u4e8e\u504f\u822a\u7684\u6b63\u5411/\u5f00\u542f\u548c\u53cd\u5411/\u5173\u95ed\u7535\u673a\u63a7\u5236\uff0c\u5e26\u6709\u5b89\u5168\u68c0\u67e5\uff0c\u5e76\u7ba1\u7406\u7761\u7720/\u7535\u6e90\u72b6\u6001\u3002",
+    "title": "FreeRTOS\u8fd0\u52a8\u63a7\u5236\u5faa\u73af\u7684\u72b6\u6001\u673a\u6d41\u7a0b",
+    "summary": "\u5f15\u5bfc\u6807\u5b9a\u3001\u5df2\u6807\u5b9a\u7a7a\u95f2\u5faa\u73af\u3001LoRa/\u84dd\u7259\u6307\u4ee4\u5904\u7406\u3001\u5f00\u542f/\u5173\u95ed\u63a7\u5236\u3001\u5931\u901f\u68c0\u6d4b\u4e0e\u7535\u6e90\u7ba1\u7406\u7684\u6d41\u7a0b\u56fe\u3002",
     "language": "zh"
   },
   "functions": [
     {
-      "name": "FreeRTOS \u95e8\u6267\u884c\u5668\u63a7\u5236\u6d41\u7a0b",
+      "name": "FreeRTOS\u8fd0\u52a8\u63a7\u5236\u5faa\u73af\u7684\u72b6\u6001\u673a\u6d41\u7a0b",
       "nodes": [
         {
-          "id": "n_start",
+          "id": "start",
           "kind": "start",
-          "label": "\u4e0a\u7535\u5e76\u4e3a\u8fd0\u884c\u51c6\u5907\u7cfb\u7edf\u8d44\u6e90\u3002",
-          "summary": "\u4e0a\u7535\u5e76\u4e3a\u8fd0\u884c\u51c6\u5907\u7cfb\u7edf\u8d44\u6e90\u3002",
+          "label": "\u7cfb\u7edf\u542f\u52a8\u5e76\u5f00\u59cb\u521d\u59cb\u5316\u4e0e\u6807\u5b9a\u6301\u4e45\u5316\u3002",
+          "summary": "\u7cfb\u7edf\u542f\u52a8\u5e76\u5f00\u59cb\u521d\u59cb\u5316\u4e0e\u6807\u5b9a\u6301\u4e45\u5316\u3002",
           "metadata": {
-            "title": "\u7cfb\u7edf\u542f\u52a8",
-            "detail": "\u7cfb\u7edf\u542f\u52a8\u5e8f\u5217\u7684\u521d\u59cb\u5165\u53e3\u70b9\u3002",
+            "title": "\u542f\u52a8\u4e0e\u7cfb\u7edf\u5f15\u5bfc",
+            "detail": null,
             "type": "start"
           }
         },
         {
-          "id": "n_init_flags",
+          "id": "boot_init",
           "kind": "statement",
-          "label": "\u91cd\u7f6e\u5185\u90e8\u63a7\u5236\u6807\u5fd7\u5e76\u786e\u4fdd\u7535\u673a\u5df2\u505c\u6b62\u3002",
-          "summary": "\u91cd\u7f6e\u5185\u90e8\u63a7\u5236\u6807\u5fd7\u5e76\u786e\u4fdd\u7535\u673a\u5df2\u505c\u6b62\u3002",
+          "label": "\u521d\u59cb\u5316\u95ea\u5b58\u5b58\u50a8\u5e76\u8bfb\u53d6\u6700\u8fd1\u5df2\u77e5\u6807\u5b9a\uff1adiff_sumup \u548c check_flag\u3002",
+          "summary": "\u521d\u59cb\u5316\u95ea\u5b58\u5b58\u50a8\u5e76\u8bfb\u53d6\u6700\u8fd1\u5df2\u77e5\u6807\u5b9a\uff1adiff_sumup \u548c check_flag\u3002",
           "metadata": {
-            "title": "\u521d\u59cb\u5316\u6807\u5fd7\u5e76\u505c\u6b62\u7535\u673a",
-            "detail": "\u5728\u5f15\u5bfc\u65f6\u6e05\u9664\u8fd0\u884c\u72b6\u6001\u6807\u5fd7\u5e76\u786e\u4fdd\u7535\u673a\u9a71\u52a8\u672a\u6fc0\u6d3b\u3002",
+            "title": "\u521d\u59cb\u5316\u95ea\u5b58\u5b58\u50a8\u5e76\u6062\u590d\u6807\u5b9a",
+            "detail": "\u5982\u679c check_flag \u4e3a true\uff0c\u5219\u6807\u5b9a\u89c6\u4e3a\u5b8c\u6210\uff1b\u5426\u5219\u5c06\u8fdb\u5165\u672a\u6807\u5b9a\u8def\u5f84\u3002",
             "type": "process"
           }
         },
         {
-          "id": "n_load_calib",
-          "kind": "statement",
-          "label": "\u4ece\u95ea\u5b58\u8bfb\u53d6 diff_sumup\uff08\u89d2\u5ea6\u9650\u5236\uff09\u548c check_flag\uff08\u6807\u5b9a\u72b6\u6001\uff09\u3002",
-          "summary": "\u4ece\u95ea\u5b58\u8bfb\u53d6 diff_sumup\uff08\u89d2\u5ea6\u9650\u5236\uff09\u548c check_flag\uff08\u6807\u5b9a\u72b6\u6001\uff09\u3002",
-          "metadata": {
-            "title": "\u52a0\u8f7d\u6807\u5b9a\u6570\u636e",
-            "detail": "\u5c06\u5148\u524d\u4fdd\u5b58\u7684\u6807\u5b9a\u503c\u6062\u590d\u5230\u5168\u5c40\u53d8\u91cf\u3002",
-            "type": "process"
-          }
-        },
-        {
-          "id": "n_calib_decision",
+          "id": "calibrated_at_boot?",
           "kind": "conditional",
-          "label": "\u7cfb\u7edf\u662f\u5426\u5df2\u6807\u5b9a\uff08check_flag\uff09\uff1f",
-          "summary": "\u7cfb\u7edf\u662f\u5426\u5df2\u6807\u5b9a\uff08check_flag\uff09\uff1f",
+          "label": "\u51b3\u7b56\uff1a\u6807\u5b9a\u662f\u5426\u5b8c\u6210\uff08check_flag == true\uff09\uff1f",
+          "summary": "\u51b3\u7b56\uff1a\u6807\u5b9a\u662f\u5426\u5b8c\u6210\uff08check_flag == true\uff09\uff1f",
           "metadata": {
-            "title": "\u6807\u5b9a\u72b6\u6001\u5224\u65ad",
-            "detail": "\u672a\u6807\u5b9a\u65f6\u8df3\u8f6c\u5230 Auto_Check\uff1b\u5426\u5219\u8fdb\u5165\u64cd\u4f5c\u5faa\u73af\u3002",
+            "title": "\u542f\u52a8\u65f6\u5df2\u5b8c\u6210\u6807\u5b9a\uff1f",
+            "detail": "\u82e5\u5df2\u6807\u5b9a\uff0c\u5219\u5728\u7a7a\u95f2\u72b6\u6001\u542f\u52a8\uff1b\u82e5\u672a\u6807\u5b9a\uff0c\u5219\u8fdb\u5165\u672a\u6807\u5b9a\u8def\u5f84\u3002",
             "type": "decision"
           }
         },
         {
-          "id": "n_auto_check",
-          "kind": "call",
-          "label": "\u6267\u884c\u6807\u5b9a/\u9650\u5236\u8fc7\u7a0b\u5e76\u5c06\u7ed3\u679c\u5199\u5165\u95ea\u5b58\u3002",
-          "summary": "\u6267\u884c\u6807\u5b9a/\u9650\u5236\u8fc7\u7a0b\u5e76\u5c06\u7ed3\u679c\u5199\u5165\u95ea\u5b58\u3002",
+          "id": "uncalibrated_loop",
+          "kind": "statement",
+          "label": "\u7b49\u5f85 LoRa \u5e27\u4ee5\u542f\u52a8 Auto_Check \u6807\u5b9a/\u9650\u503c\u3002",
+          "summary": "\u7b49\u5f85 LoRa \u5e27\u4ee5\u542f\u52a8 Auto_Check \u6807\u5b9a/\u9650\u503c\u3002",
           "metadata": {
-            "title": "\u81ea\u52a8\u6821\u9a8c\u8fc7\u7a0b",
-            "detail": "\u5728\u9700\u8981\u6807\u5b9a\u65f6\u89e6\u53d1\uff1b\u66f4\u65b0 diff_sumup \u548c check_flag\u3002",
+            "title": "\u672a\u6807\u5b9a\uff1a\u7b49\u5f85 LoRa Auto_Check",
+            "detail": "Auto_Check \u5728\u6210\u529f\u65f6\u5c06\u628a check_flag \u8bbe\u4e3a true\u3002",
+            "type": "process"
+          }
+        },
+        {
+          "id": "auto_check",
+          "kind": "call",
+          "label": "\u8fd0\u884c\u6807\u5b9a\u4ee5\u786e\u5b9a diff_sumup \u548c\u6781\u9650\u503c\uff1b\u6210\u529f\u65f6\u8bbe\u7f6e check_flag\u3002",
+          "summary": "\u8fd0\u884c\u6807\u5b9a\u4ee5\u786e\u5b9a diff_sumup \u548c\u6781\u9650\u503c\uff1b\u6210\u529f\u65f6\u8bbe\u7f6e check_flag\u3002",
+          "metadata": {
+            "title": "Auto_Check\uff08\u6807\u5b9a/\u6781\u9650\u8fc7\u7a0b\uff09",
+            "detail": "diff_sumup \u5c06\u6210\u4e3a\u603b\u5f00\u89d2\uff1bcheck_flag \u5c06\u4e3a true\u3002",
             "type": "call"
           }
         },
         {
-          "id": "n_operational_loop",
-          "kind": "loop",
-          "label": "\u5bf9\u8f93\u5165\u3001\u8fd0\u52a8\u51b3\u7b56\u4e0e\u7535\u6e90\u7ba1\u7406\u8fdb\u884c\u7684\u5468\u671f\u6027\u5faa\u73af\u3002",
-          "summary": "\u5bf9\u8f93\u5165\u3001\u8fd0\u52a8\u51b3\u7b56\u4e0e\u7535\u6e90\u7ba1\u7406\u8fdb\u884c\u7684\u5468\u671f\u6027\u5faa\u73af\u3002",
-          "metadata": {
-            "title": "\u4e3b\u5468\u671f\u6027\u64cd\u4f5c\u5faa\u73af",
-            "detail": "\u534f\u8c03\u547d\u4ee4\u89e3\u6790\u3001\u8fd0\u52a8\u63a7\u5236\u548c\u7761\u7720\u903b\u8f91\u7684\u6838\u5fc3\u5faa\u73af\u3002",
-            "type": "loop"
-          }
-        },
-        {
-          "id": "n_read_bus_current",
+          "id": "calibrated_idle",
           "kind": "statement",
-          "label": "\u91c7\u6837\u7535\u673a\u7535\u6d41\u4ee5\u76d1\u63a7\u8d1f\u8f7d\u548c\u68c0\u6d4b\u5835\u8f6c\u3002",
-          "summary": "\u91c7\u6837\u7535\u673a\u7535\u6d41\u4ee5\u76d1\u63a7\u8d1f\u8f7d\u548c\u68c0\u6d4b\u5835\u8f6c\u3002",
+          "label": "\u6807\u5b9a\u5b8c\u6210\uff1b\u76d1\u89c6\u7a7a\u95f2\u3001\u8fd0\u52a8\u6307\u4ee4\uff0c\u5e76\u4fdd\u6301\u4f9b\u7535\u3002",
+          "summary": "\u6807\u5b9a\u5b8c\u6210\uff1b\u76d1\u89c6\u7a7a\u95f2\u3001\u8fd0\u52a8\u6307\u4ee4\uff0c\u5e76\u4fdd\u6301\u4f9b\u7535\u3002",
           "metadata": {
-            "title": "\u8bfb\u53d6\u603b\u7ebf\u7535\u6d41",
-            "detail": "\u83b7\u53d6\u7535\u6d41\u6d88\u8017\u4ee5\u786e\u4fdd\u5b89\u5168\u5e76\u8fdb\u884c\u72b6\u6001\u68c0\u67e5\u3002",
+            "title": "\u5df2\u6807\u5b9a\u7684\u7a7a\u95f2",
+            "detail": "\u6807\u5b9a\u540e\u7684\u4e3b\u8fd0\u884c\u65f6\u72b6\u6001\u3002",
             "type": "process"
           }
         },
         {
-          "id": "n_ble_parse",
-          "kind": "statement",
-          "label": "\u89e3\u91ca\u901a\u8fc7 BLE \u4e0e LoRa \u63a5\u53e3\u63a5\u6536\u5230\u7684\u547d\u4ee4\u3002",
-          "summary": "\u89e3\u91ca\u901a\u8fc7 BLE \u4e0e LoRa \u63a5\u53e3\u63a5\u6536\u5230\u7684\u547d\u4ee4\u3002",
-          "metadata": {
-            "title": "\u89e3\u6790\u84dd\u7259/LoRa \u8f93\u5165",
-            "detail": "\u63d0\u53d6\u6307\u4ee4\u5e27\u548c\u53c2\u6570\u4ee5\u4f9b\u8fdb\u4e00\u6b65\u5904\u7406\u3002",
-            "type": "process"
-          }
-        },
-        {
-          "id": "n_cal_flag_check",
+          "id": "idle_timeout?",
           "kind": "conditional",
-          "label": "\u5224\u65ad\u662f\u4fdd\u6301\u5728\u5de5\u4f5c\u6a21\u5f0f\u8fd8\u662f\u89e6\u53d1 Auto_Check\u3002",
-          "summary": "\u5224\u65ad\u662f\u4fdd\u6301\u5728\u5de5\u4f5c\u6a21\u5f0f\u8fd8\u662f\u89e6\u53d1 Auto_Check\u3002",
+          "label": "\u82e5\u8d85\u8fc7 15 \u79d2\u4fdd\u6301\u7a7a\u95f2\uff0c\u5219\u68c0\u67e5\u504f\u822a\u89d2\u4ee5\u51b3\u5b9a\u8fdb\u5165\u4f4e\u529f\u8017\u6216\u5f3a\u5236\u5173\u95ed\u3002",
+          "summary": "\u82e5\u8d85\u8fc7 15 \u79d2\u4fdd\u6301\u7a7a\u95f2\uff0c\u5219\u68c0\u67e5\u504f\u822a\u89d2\u4ee5\u51b3\u5b9a\u8fdb\u5165\u4f4e\u529f\u8017\u6216\u5f3a\u5236\u5173\u95ed\u3002",
           "metadata": {
-            "title": "\u6807\u5b9a\u6807\u5fd7\u68c0\u67e5",
-            "detail": "\u5982\u679c check_flag \u4e3a false\uff0c\u5219\u8f6c\u5230 Auto_Check\uff1b\u5982\u679c\u4e3a true\uff0c\u5219\u7ee7\u7eed\u524d\u5411/\u53cd\u5411\u903b\u8f91\u3002",
+            "title": "\u7a7a\u95f2\u8d85\u65f6\u68c0\u67e5",
+            "detail": "\u82e5 |yaw| < 10 \u5ea6\uff0c\u8fdb\u5165\u4f4e\u529f\u8017\uff1b\u5426\u5219\u5f3a\u5236\u5173\u95ed\u3002",
             "type": "decision"
           }
         },
         {
-          "id": "n_lora_forward_parse",
+          "id": "low_power_seq",
           "kind": "statement",
-          "label": "\u4ece AA.. \u5e27\u4e2d\u63d0\u53d6\u901f\u5ea6/\u89d2\u5ea6\u8bbe\u7f6e\u6216\u52a8\u4f5c\u89e6\u53d1\u3002",
-          "summary": "\u4ece AA.. \u5e27\u4e2d\u63d0\u53d6\u901f\u5ea6/\u89d2\u5ea6\u8bbe\u7f6e\u6216\u52a8\u4f5c\u89e6\u53d1\u3002",
+          "label": "\u964d\u4f4e\u7535\u673a\u529f\u7387\u3001\u5916\u8bbe\u5e76\u4f7f\u5b50\u7cfb\u7edf\u8fdb\u5165\u7761\u7720\u4ee5\u8282\u7701\u7535\u529b\u3002",
+          "summary": "\u964d\u4f4e\u7535\u673a\u529f\u7387\u3001\u5916\u8bbe\u5e76\u4f7f\u5b50\u7cfb\u7edf\u8fdb\u5165\u7761\u7720\u4ee5\u8282\u7701\u7535\u529b\u3002",
           "metadata": {
-            "title": "AA.. LoRa \u524d\u8fdb\u547d\u4ee4\u89e3\u6790",
-            "detail": "\u5904\u7406 AA00\uff08\u4fdd\u6301\u7535\u6e90\uff09\u548c AAxy \u547d\u4ee4\u53d8\u4f53\u3002",
+            "title": "\u8fdb\u5165\u4f4e\u529f\u8017\u5e8f\u5217",
+            "detail": "\u5305\u62ec\u84dd\u7259\u65ad\u8fde\u3001IMU \u4f11\u7720\u3001\u96f7\u8fbe\u4f11\u7720\uff0c\u4ee5\u53ca\u7b49\u5f85\u504f\u822a\u89d2\u91cd\u7f6e\u3002",
             "type": "process"
           }
         },
         {
-          "id": "n_forward_entry",
-          "kind": "conditional",
-          "label": "\u57fa\u4e8e\u547d\u4ee4\u548c\u6807\u5fd7\u51b3\u5b9a\u662f\u5426\u542f\u52a8\u6b63\u5411/\u5f00\u542f\u8fd0\u52a8\u3002",
-          "summary": "\u57fa\u4e8e\u547d\u4ee4\u548c\u6807\u5fd7\u51b3\u5b9a\u662f\u5426\u542f\u52a8\u6b63\u5411/\u5f00\u542f\u8fd0\u52a8\u3002",
-          "metadata": {
-            "title": "\u6b63\u5411/\u5f00\u542f\u8fdb\u5165\u51b3\u7b56",
-            "detail": "\u8bc4\u4f30 commandExecuted/ahead_flag \u53ca\u76f8\u5173\u6761\u4ef6\u3002",
-            "type": "decision"
-          }
-        },
-        {
-          "id": "n_forward_init",
+          "id": "force_close_idle",
           "kind": "statement",
-          "label": "\u4e3a\u6b63\u5411\u8fd0\u52a8\u542f\u7528\u7535\u673a\u7535\u6e90\u5e76\u521d\u59cb\u5316\u3002",
-          "summary": "\u4e3a\u6b63\u5411\u8fd0\u52a8\u542f\u7528\u7535\u673a\u7535\u6e90\u5e76\u521d\u59cb\u5316\u3002",
+          "label": "\u5c06 motor_runing_flag_r \u8bbe\u4e3a 1\uff0c\u4ee5\u5728\u957f\u65f6\u95f4\u7a7a\u95f2\u4e14\u504f\u822a\u89d2\u4e0d\u63a5\u8fd1\u96f6\u65f6\u5f00\u59cb\u5173\u95ed\u3002",
+          "summary": "\u5c06 motor_runing_flag_r \u8bbe\u4e3a 1\uff0c\u4ee5\u5728\u957f\u65f6\u95f4\u7a7a\u95f2\u4e14\u504f\u822a\u89d2\u4e0d\u63a5\u8fd1\u96f6\u65f6\u5f00\u59cb\u5173\u95ed\u3002",
           "metadata": {
-            "title": "\u6b63\u5411/\u5f00\u542f\u521d\u59cb\u5316",
-            "detail": "\u51c6\u5907\u79fb\u52a8\u3001\u91cd\u7f6e\u7d2f\u52a0\u5668\uff0c\u5e76\u4e3a\u901f\u5ea6\u63a7\u5236\u505a\u51c6\u5907\u3002",
+            "title": "\u56e0\u7a7a\u95f2\u800c\u5f3a\u5236\u5173\u95ed",
+            "detail": "\u5f00\u542f\u5173\u95ed\u8fd0\u52a8\u8def\u5f84\u3002",
             "type": "process"
           }
         },
         {
-          "id": "n_forward_threshold",
+          "id": "lora_parser",
           "kind": "statement",
-          "label": "\u57fa\u4e8e Angle_Level_Lora \u8ba1\u7b97\u504f\u822a\u76ee\u6807\u5e76\u53d1\u51fa\u901f\u5ea6\u6307\u4ee4\u3002",
-          "summary": "\u57fa\u4e8e Angle_Level_Lora \u8ba1\u7b97\u504f\u822a\u76ee\u6807\u5e76\u53d1\u51fa\u901f\u5ea6\u6307\u4ee4\u3002",
+          "label": "\u89e3\u6790 LoRa \u5e27\u4ee5\u83b7\u53d6\u63a7\u5236\u6307\u4ee4\u3002",
+          "summary": "\u89e3\u6790 LoRa \u5e27\u4ee5\u83b7\u53d6\u63a7\u5236\u6307\u4ee4\u3002",
           "metadata": {
-            "title": "\u8ba1\u7b97\u6b63\u5411\u9608\u503c\u4e0e\u901f\u5ea6\u6307\u4ee4",
-            "detail": "\u4f7f\u7528 diff_sumup\u3001yaw \u548c Speed_from_Lora \u9650\u5236\u6765\u8fdb\u884c\u901f\u5ea6\u63a7\u5236\u7684\u53d1\u9001\u3002",
-            "type": "process"
-          }
-        },
-        {
-          "id": "n_yaw_stall_check_forward",
-          "kind": "statement",
-          "label": "\u5728\u6b63\u5411\u8fd0\u52a8\u4e2d\u68c0\u6d4b\u65e0\u8fdb\u5c55\u6216\u632f\u8361\u7684\u5b89\u5168\u68c0\u67e5\u3002",
-          "summary": "\u5728\u6b63\u5411\u8fd0\u52a8\u4e2d\u68c0\u6d4b\u65e0\u8fdb\u5c55\u6216\u632f\u8361\u7684\u5b89\u5168\u68c0\u67e5\u3002",
-          "metadata": {
-            "title": "\u504f\u822a\u5835\u8f6c/\u632f\u8361\u68c0\u67e5\uff08\u6b63\u5411\uff09",
-            "detail": "\u5b9e\u73b0\u6b63\u5411\u65b9\u5411\u7684 Yaw_Stall_Check \u903b\u8f91\u3002",
-            "type": "process"
-          }
-        },
-        {
-          "id": "n_forward_stop",
-          "kind": "conditional",
-          "label": "\u57fa\u4e8e\u9608\u503c\u548c\u5b89\u5168\u6027\u8bc4\u4f30\u662f\u5426\u5e94\u505c\u6b62\u6b63\u5411\u8fd0\u52a8\u3002",
-          "summary": "\u57fa\u4e8e\u9608\u503c\u548c\u5b89\u5168\u6027\u8bc4\u4f30\u662f\u5426\u5e94\u505c\u6b62\u6b63\u5411\u8fd0\u52a8\u3002",
-          "metadata": {
-            "title": "\u6b63\u5411\u505c\u6b62\u6761\u4ef6\u68c0\u67e5",
-            "detail": "\u5728\u63a5\u8fd1\u76ee\u6807\u3001\u8d85\u51fa\u76ee\u6807\u6216\u68c0\u6d4b\u5230\u5835\u8f6c\u65f6\u505c\u6b62\u3002",
-            "type": "decision"
-          }
-        },
-        {
-          "id": "n_post_forward",
-          "kind": "conditional",
-          "label": "\u5728\u6b63\u5411\u540e\u51b3\u5b9a\u4e0b\u4e00\u6b65\uff1a\u5982\u6709\u8bf7\u6c42\u5219\u542f\u52a8\u53cd\u5411\uff0c\u5426\u5219\u8fdb\u5165\u7761\u7720\u3002",
-          "summary": "\u5728\u6b63\u5411\u540e\u51b3\u5b9a\u4e0b\u4e00\u6b65\uff1a\u5982\u6709\u8bf7\u6c42\u5219\u542f\u52a8\u53cd\u5411\uff0c\u5426\u5219\u8fdb\u5165\u7761\u7720\u3002",
-          "metadata": {
-            "title": "\u6b63\u5411\u540e\u7684\u8fc7\u6e21",
-            "detail": "\u82e5\u8bbe\u7f6e\u4e86 close_flag\uff0c\u5219\u51c6\u5907\u53cd\u5411\uff1b\u5426\u5219\u8fdb\u5165\u7a7a\u95f2/\u7761\u7720\u3002",
-            "type": "decision"
-          }
-        },
-        {
-          "id": "n_reverse_entry",
-          "kind": "conditional",
-          "label": "\u51b3\u5b9a\u542f\u52a8\u53cd\u5411/\u5173\u95ed\u8fd0\u52a8\u3002",
-          "summary": "\u51b3\u5b9a\u542f\u52a8\u53cd\u5411/\u5173\u95ed\u8fd0\u52a8\u3002",
-          "metadata": {
-            "title": "\u53cd\u5411/\u5173\u95ed\u8fdb\u5165\u51b3\u7b56",
-            "detail": "\u7531\u6b63\u5411\u540e\u7684\u8f6c\u6362\u89e6\u53d1\uff0c\u5f53\u8bf7\u6c42\u5173\u95ed\u6216\u7531\u6807\u5fd7\u89e6\u53d1\u3002",
-            "type": "decision"
-          }
-        },
-        {
-          "id": "n_reverse_init",
-          "kind": "statement",
-          "label": "\u4e3a\u53cd\u5411\u8fd0\u52a8\u542f\u7528\u7535\u673a\u7535\u6e90\u5e76\u521d\u59cb\u5316\u3002",
-          "summary": "\u4e3a\u53cd\u5411\u8fd0\u52a8\u542f\u7528\u7535\u673a\u7535\u6e90\u5e76\u521d\u59cb\u5316\u3002",
-          "metadata": {
-            "title": "\u53cd\u5411/\u5173\u95ed\u521d\u59cb\u5316",
-            "detail": "\u4e3a\u53cd\u5411\u901f\u5ea6\u6307\u4ee4\u548c\u5835\u8f6c\u68c0\u67e5\u505a\u51c6\u5907\u3002",
-            "type": "process"
-          }
-        },
-        {
-          "id": "n_reverse_speed",
-          "kind": "statement",
-          "label": "\u8ba1\u7b97\u8d8b\u54110\u5ea6\u7684\u53cd\u5411\u901f\u5ea6\u6307\u4ee4\u5e76\u5e26\u504f\u7f6e\u3002",
-          "summary": "\u8ba1\u7b97\u8d8b\u54110\u5ea6\u7684\u53cd\u5411\u901f\u5ea6\u6307\u4ee4\u5e76\u5e26\u504f\u7f6e\u3002",
-          "metadata": {
-            "title": "\u8ba1\u7b97\u53cd\u5411\u901f\u5ea6",
-            "detail": "speed = Motor_P * (0 - (yaw + 3))\uff0c\u53d7 Speed_from_Lora \u9650\u5236\u3002",
-            "type": "process"
-          }
-        },
-        {
-          "id": "n_reverse_stop",
-          "kind": "conditional",
-          "label": "\u8bc4\u4f30\u53cd\u5411\u505c\u6b62\u6761\u4ef6\uff08\u5835\u8f6c\u3001\u504f\u822a\u7b26\u53f7\u3001closing_inpurrt\uff09\u3002",
-          "summary": "\u8bc4\u4f30\u53cd\u5411\u505c\u6b62\u6761\u4ef6\uff08\u5835\u8f6c\u3001\u504f\u822a\u7b26\u53f7\u3001closing_inpurrt\uff09\u3002",
-          "metadata": {
-            "title": "\u53cd\u5411\u505c\u6b62\u6761\u4ef6\u68c0\u67e5",
-            "detail": "\u5728\u63a5\u8fd1\u96f6\u504f\u822a\u3001\u5b58\u5728\u78b0\u649e\u98ce\u9669\u6216 closing_inpurt \u53d1\u751f\u65f6\u505c\u6b62\u3002",
-            "type": "decision"
-          }
-        },
-        {
-          "id": "n_sleep",
-          "kind": "loop",
-          "label": "\u4e3a\u7701\u7535\u800c\u5173\u95ed\u7535\u673a\u53ca\u5916\u8bbe\u3002",
-          "summary": "\u4e3a\u7701\u7535\u800c\u5173\u95ed\u7535\u673a\u53ca\u5916\u8bbe\u3002",
-          "metadata": {
-            "title": "\u8fdb\u5165\u4f4e\u529f\u8017\u7761\u7720",
-            "detail": "\u5173\u95ed\u7535\u6e90\u3001\u65ad\u5f00 BLE\u3001\u4f7f IMU \u8fdb\u5165\u4f11\u7720\uff0c\u5e76\u8bbe\u7f6e\u96f7\u8fbe/\u5916\u90e8\u4f4e\u529f\u8017\u72b6\u6001\u3002",
-            "type": "loop"
-          }
-        },
-        {
-          "id": "n_aa00_keep_power",
-          "kind": "statement",
-          "label": "\u5728\u6d3b\u52a8\u5e27\u671f\u95f4\u7ef4\u6301\u7535\u673a\u4f9b\u7535\uff1b\u7a7a\u95f2\u65f6\u8d85\u65f6\u3002",
-          "summary": "\u5728\u6d3b\u52a8\u5e27\u671f\u95f4\u7ef4\u6301\u7535\u673a\u4f9b\u7535\uff1b\u7a7a\u95f2\u65f6\u8d85\u65f6\u3002",
-          "metadata": {
-            "title": "AA00 \u4fdd\u6301\u7535\u6e90\u7ba1\u7406",
-            "detail": "\u79fb\u52a8\u65f6\u5237\u65b0 last_message_time\uff1b\u7a7a\u95f2\u65f6\u8d85\u65f6\u540e\u5173\u95ed\u7535\u6e90\u3002",
-            "type": "process"
-          }
-        },
-        {
-          "id": "n_sleep_wake",
-          "kind": "statement",
-          "label": "\u5904\u7406\u5524\u9192\u6761\u4ef6\u4ee5\u91cd\u65b0\u8fdb\u5165\u64cd\u4f5c\u5faa\u73af\u3002",
-          "summary": "\u5904\u7406\u5524\u9192\u6761\u4ef6\u4ee5\u91cd\u65b0\u8fdb\u5165\u64cd\u4f5c\u5faa\u73af\u3002",
-          "metadata": {
-            "title": "\u7761\u7720\u5524\u9192\u5904\u7406",
-            "detail": "\u901a\u8fc7\u5b9a\u65f6\u5668\u6216\u89e6\u53d1\u5668\u5524\u9192\u5e76\u6062\u590d\u4e3b\u5faa\u73af\u3002",
-            "type": "process"
-          }
-        },
-        {
-          "id": "n_pb6_wake",
-          "kind": "statement",
-          "label": "PB6 \u8fb9\u6cbf\u68c0\u6d4b\u5230\u5524\u9192/\u6267\u884c\u4fe1\u53f7\uff0c\u53ef\u542f\u52a8\u6b63\u5411\u64cd\u4f5c\u3002",
-          "summary": "PB6 \u8fb9\u6cbf\u68c0\u6d4b\u5230\u5524\u9192/\u6267\u884c\u4fe1\u53f7\uff0c\u53ef\u542f\u52a8\u6b63\u5411\u64cd\u4f5c\u3002",
-          "metadata": {
-            "title": "PB6 \u5524\u9192/\u6267\u884c\u89e6\u53d1",
-            "detail": "\u8fb9\u6cbf\u89e6\u53d1\u5524\u9192\uff0c\u5728\u7a7a\u95f2\u65f6\u542f\u52a8\u6b63\u5411/\u5f00\u542f\u5faa\u73af\u3002",
+            "title": "LoRa \u6307\u4ee4\u89e3\u6790\u5668\uff08AA..\uff09",
+            "detail": "AA00 \u7ef4\u6301\u7535\u6e90\uff1bAAxy \u8bbe\u7f6e\u901f\u5ea6/\u89d2\u5ea6\uff1bAAOF \u8bf7\u6c42\u5728\u5f00\u542f\u540e\u5173\u95ed\uff1bAARE \u91cd\u65b0\u8fdb\u5165\u6807\u5b9a\u3002",
             "type": "io"
+          }
+        },
+        {
+          "id": "aa00_power_on",
+          "kind": "statement",
+          "label": "\u5f00\u542f\u7535\u673a\u4f9b\u7535\u5e76\u8bbe\u7f6e aa00_motor_enabled\u3002",
+          "summary": "\u5f00\u542f\u7535\u673a\u4f9b\u7535\u5e76\u8bbe\u7f6e aa00_motor_enabled\u3002",
+          "metadata": {
+            "title": "AA00\uff1a\u4fdd\u6301\u7535\u673a\u4f9b\u7535",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "aaxy_command",
+          "kind": "statement",
+          "label": "\u8bbe\u7f6e Speed_Level_Lora \u548c Angle_Level_Lora\uff1b\u5f00\u59cb\u5f00\u542f\u3002",
+          "summary": "\u8bbe\u7f6e Speed_Level_Lora \u548c Angle_Level_Lora\uff1b\u5f00\u59cb\u5f00\u542f\u3002",
+          "metadata": {
+            "title": "AAxy\uff1a\u8bbe\u7f6e\u8fd0\u52a8/\u76ee\u6807",
+            "detail": "\u540c\u65f6\u7f6e\u4f4d\u6807\u5fd7\u4ee5\u5f00\u59cb\u5f00\u542f\u5e76\u4e3a\u5b9a\u65f6\u8fd0\u52a8\u505a\u51c6\u5907\u3002",
+            "type": "process"
+          }
+        },
+        {
+          "id": "aaof_command",
+          "kind": "statement",
+          "label": "\u8bbe\u7f6e close_flag \u4ee5\u4fbf\u5728\u5f00\u542f\u5faa\u73af\u7ed3\u675f\u540e\u8fdb\u884c\u5173\u95ed\u3002",
+          "summary": "\u8bbe\u7f6e close_flag \u4ee5\u4fbf\u5728\u5f00\u542f\u5faa\u73af\u7ed3\u675f\u540e\u8fdb\u884c\u5173\u95ed\u3002",
+          "metadata": {
+            "title": "AAOF\uff1a\u5728\u5f00\u542f\u540e\u8bf7\u6c42\u5173\u95ed",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "aare_command",
+          "kind": "statement",
+          "label": "\u5c06 check_flag \u91cd\u7f6e\uff0c\u4ee5\u5728\u4e0b\u4e00\u6b21\u5faa\u73af\u5f3a\u5236\u8fdb\u5165\u672a\u6807\u5b9a\u8def\u5f84\u3002",
+          "summary": "\u5c06 check_flag \u91cd\u7f6e\uff0c\u4ee5\u5728\u4e0b\u4e00\u6b21\u5faa\u73af\u5f3a\u5236\u8fdb\u5165\u672a\u6807\u5b9a\u8def\u5f84\u3002",
+          "metadata": {
+            "title": "AARE\uff1a\u91cd\u65b0\u8fdb\u5165\u6807\u5b9a",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "pb6_trigger",
+          "kind": "statement",
+          "label": "\u68c0\u6d4b PB6 \u8fb9\u6cbf\u4ee5\u5728\u65e0\u8fd0\u52a8\u65f6\u542f\u52a8\u5f00\u542f\u3002",
+          "summary": "\u68c0\u6d4b PB6 \u8fb9\u6cbf\u4ee5\u5728\u65e0\u8fd0\u52a8\u65f6\u542f\u52a8\u5f00\u542f\u3002",
+          "metadata": {
+            "title": "PB6 \u624b\u52a8\u89e6\u53d1",
+            "detail": "\u53bb\u6296\u52a8\u540e\u7684\u8fb9\u6cbf\u4f1a\u4f7f\u4e00\u4e2a\u5c0f\u8ba1\u6570\u5668\u589e\u52a0\uff0c\u5e76\u5728\u51c6\u5907\u5c31\u7eea\u65f6\u89e6\u53d1\u5f00\u542f\u3002",
+            "type": "io"
+          }
+        },
+        {
+          "id": "opening_entry",
+          "kind": "conditional",
+          "label": "\u6839\u636e\u6307\u4ee4/\u89e6\u53d1\u6761\u4ef6\u786e\u5b9a\u662f\u5426\u5e94\u5f00\u59cb\u5f00\u542f\u3002",
+          "summary": "\u6839\u636e\u6307\u4ee4/\u89e6\u53d1\u6761\u4ef6\u786e\u5b9a\u662f\u5426\u5e94\u5f00\u59cb\u5f00\u542f\u3002",
+          "metadata": {
+            "title": "\u5f00\u542f\uff1a\u8fdb\u5165\u6761\u4ef6",
+            "detail": "\u6761\u4ef6\u5305\u62ec commandExecuted\u3001ahead_flag\uff0c\u6216 motor_runing_flag \u5df2\u8bbe\u5b9a\u3002",
+            "type": "decision"
+          }
+        },
+        {
+          "id": "opening_init",
+          "kind": "statement",
+          "label": "\u4e0a\u7535\u3001\u91cd\u7f6e\u7d2f\u52a0\u5668\uff0c\u5e76\u4e3a\u5f00\u542f\u542f\u7528\u901f\u5ea6\u63a7\u5236\u3002",
+          "summary": "\u4e0a\u7535\u3001\u91cd\u7f6e\u7d2f\u52a0\u5668\uff0c\u5e76\u4e3a\u5f00\u542f\u542f\u7528\u901f\u5ea6\u63a7\u5236\u3002",
+          "metadata": {
+            "title": "\u5f00\u542f\u521d\u59cb\u5316",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "opening_control",
+          "kind": "loop",
+          "label": "\u6839\u636e\u504f\u822a\u8bef\u5dee\u8ba1\u7b97\u901f\u5ea6\u5e76\u53d1\u9001\u7535\u673a\u9a71\u52a8\u6307\u4ee4\u3002",
+          "summary": "\u6839\u636e\u504f\u822a\u8bef\u5dee\u8ba1\u7b97\u901f\u5ea6\u5e76\u53d1\u9001\u7535\u673a\u9a71\u52a8\u6307\u4ee4\u3002",
+          "metadata": {
+            "title": "\u5f00\u542f\u63a7\u5236\uff08\u8fd0\u52a8\u5faa\u73af\uff09",
+            "detail": "\u4f7f\u7528\u9608\u503c\u3001\u504f\u822a\u89d2\u548c\u901f\u5ea6\u4e0a\u9650\u7684\u5faa\u73af\u63a7\u5236\u3002",
+            "type": "loop"
+          }
+        },
+        {
+          "id": "opening_stop?",
+          "kind": "conditional",
+          "label": "\u68c0\u67e5\u662f\u5426\u8fbe\u5230\u76ee\u6807\u3001\u63a5\u8fd1\u9608\u503c\u6216\u68c0\u6d4b\u5230\u5931\u901f\u3002",
+          "summary": "\u68c0\u67e5\u662f\u5426\u8fbe\u5230\u76ee\u6807\u3001\u63a5\u8fd1\u9608\u503c\u6216\u68c0\u6d4b\u5230\u5931\u901f\u3002",
+          "metadata": {
+            "title": "\u5f00\u542f\u505c\u6b62\u6761\u4ef6",
+            "detail": "\u82e5\u505c\u6b62\uff0c\u6267\u884c\u505c\u6b62\u52a8\u4f5c\uff1b\u5426\u5219\u7ee7\u7eed\u8fd0\u52a8\u5faa\u73af\u3002",
+            "type": "decision"
+          }
+        },
+        {
+          "id": "opening_stop_action",
+          "kind": "statement",
+          "label": "\u505c\u6b62 RPM\u3001\u65ad\u7535\u3001\u6e05\u9664\u6807\u5fd7\uff1b\u5982\u6709\u9700\u8981\uff0c\u6392\u961f\u8fdb\u5165\u5173\u95ed\u3002",
+          "summary": "\u505c\u6b62 RPM\u3001\u65ad\u7535\u3001\u6e05\u9664\u6807\u5fd7\uff1b\u5982\u6709\u9700\u8981\uff0c\u6392\u961f\u8fdb\u5165\u5173\u95ed\u3002",
+          "metadata": {
+            "title": "\u5f00\u542f\u505c\u6b62\u52a8\u4f5c",
+            "detail": "\u82e5 close_flag \u5df2\u8bbe\uff0c\u51c6\u5907\u8fdb\u5165\u5173\u95ed\u8def\u5f84\u3002",
+            "type": "process"
+          }
+        },
+        {
+          "id": "closing_entry",
+          "kind": "conditional",
+          "label": "\u786e\u5b9a\u662f\u5426\u5e94\u5f00\u59cb\u5173\u95ed\uff08\u5173\u95ed\u6307\u4ee4\u6216\u62c9\u52a8\u8f85\u52a9\uff09\u3002",
+          "summary": "\u786e\u5b9a\u662f\u5426\u5e94\u5f00\u59cb\u5173\u95ed\uff08\u5173\u95ed\u6307\u4ee4\u6216\u62c9\u52a8\u8f85\u52a9\uff09\u3002",
+          "metadata": {
+            "title": "\u5173\u95ed\uff1a\u8fdb\u5165\u6761\u4ef6",
+            "detail": "\u8981\u6c42\u504f\u822a\u89d2\u8fdc\u79bb\u96f6\u4e14\u8fd0\u52a8\u6807\u5fd7\u5df2\u8bbe\u3002",
+            "type": "decision"
+          }
+        },
+        {
+          "id": "closing_init",
+          "kind": "statement",
+          "label": "\u4e0a\u7535\u3001\u91cd\u7f6e\u5e76\u4e3a\u5173\u95ed\u542f\u7528\u901f\u5ea6\u63a7\u5236\u3002",
+          "summary": "\u4e0a\u7535\u3001\u91cd\u7f6e\u5e76\u4e3a\u5173\u95ed\u542f\u7528\u901f\u5ea6\u63a7\u5236\u3002",
+          "metadata": {
+            "title": "\u5173\u95ed\u521d\u59cb\u5316",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "closing_control",
+          "kind": "loop",
+          "label": "\u9a71\u52a8\u81f3\u96f6\u89d2\u5ea6\uff1b\u504f\u5411\u5173\u95ed\uff1b\u9650\u5236\u901f\u5ea6\u3002",
+          "summary": "\u9a71\u52a8\u81f3\u96f6\u89d2\u5ea6\uff1b\u504f\u5411\u5173\u95ed\uff1b\u9650\u5236\u901f\u5ea6\u3002",
+          "metadata": {
+            "title": "\u5173\u95ed\u63a7\u5236\uff08\u8fd0\u52a8\u5faa\u73af\uff09",
+            "detail": null,
+            "type": "loop"
+          }
+        },
+        {
+          "id": "closing_stop?",
+          "kind": "conditional",
+          "label": "\u68c0\u67e5\u662f\u5426\u63a5\u8fd1\u96f6\u504f\u822a\u3001\u8d85\u8c03\u3001\u5931\u901f\uff0c\u6216\u88ab\u5f00\u542f\u4e2d\u65ad\u3002",
+          "summary": "\u68c0\u67e5\u662f\u5426\u63a5\u8fd1\u96f6\u504f\u822a\u3001\u8d85\u8c03\u3001\u5931\u901f\uff0c\u6216\u88ab\u5f00\u542f\u4e2d\u65ad\u3002",
+          "metadata": {
+            "title": "\u5173\u95ed\u505c\u6b62\u6761\u4ef6",
+            "detail": "\u82e5\u505c\u6b62\uff0c\u6267\u884c\u540e\u5904\u7406\u52a8\u4f5c\uff1b\u5426\u5219\u7ee7\u7eed\u5faa\u73af\u3002",
+            "type": "decision"
+          }
+        },
+        {
+          "id": "closing_stop_action",
+          "kind": "statement",
+          "label": "\u5904\u7406\u5173\u95ed\u540e\u7684\u884c\u4e3a\uff0c\u53ef\u80fd\u5305\u542b\u4f4e\u529f\u8017\u5e8f\u5217\u3002",
+          "summary": "\u5904\u7406\u5173\u95ed\u540e\u7684\u884c\u4e3a\uff0c\u53ef\u80fd\u5305\u542b\u4f4e\u529f\u8017\u5e8f\u5217\u3002",
+          "metadata": {
+            "title": "\u5173\u95ed\u505c\u6b62\u52a8\u4f5c",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "yaw_stall_opening",
+          "kind": "conditional",
+          "label": "\u5728\u5f00\u542f\u8fc7\u7a0b\u4e2d\u68c0\u6d4b\u5931\u901f\u6216\u65b9\u5411\u9519\u8bef\u7684\u79fb\u52a8\u3002",
+          "summary": "\u5728\u5f00\u542f\u8fc7\u7a0b\u4e2d\u68c0\u6d4b\u5931\u901f\u6216\u65b9\u5411\u9519\u8bef\u7684\u79fb\u52a8\u3002",
+          "metadata": {
+            "title": "\u504f\u822a\u5931\u901f\u68c0\u67e5\uff08\u5f00\u542f\uff09",
+            "detail": "\u68c0\u6d4b\u5230\u5931\u901f\u65f6\u7528\u4e8e\u5b89\u5168\u505c\u6b62\u3002",
+            "type": "decision"
+          }
+        },
+        {
+          "id": "yaw_stall_closing",
+          "kind": "conditional",
+          "label": "\u5728\u5173\u95ed\u8fc7\u7a0b\u4e2d\u68c0\u6d4b\u5931\u901f\u6216\u78b0\u649e\u3002",
+          "summary": "\u5728\u5173\u95ed\u8fc7\u7a0b\u4e2d\u68c0\u6d4b\u5931\u901f\u6216\u78b0\u649e\u3002",
+          "metadata": {
+            "title": "\u504f\u822a\u5931\u901f\u68c0\u67e5\uff08\u5173\u95ed\uff09",
+            "detail": "\u7528\u4e8e\u5b89\u5168\u505c\u6b62\u548c\u9519\u8bef\u5904\u7406\u3002",
+            "type": "decision"
+          }
+        },
+        {
+          "id": "post_move_low_power",
+          "kind": "statement",
+          "label": "\u5728\u79fb\u52a8\u5b8c\u6210\u540e\u5e94\u7528\u4f4e\u529f\u8017\u5e8f\u5217\u3002",
+          "summary": "\u5728\u79fb\u52a8\u5b8c\u6210\u540e\u5e94\u7528\u4f4e\u529f\u8017\u5e8f\u5217\u3002",
+          "metadata": {
+            "title": "\u79fb\u52a8\u540e\u8fdb\u5165\u4f4e\u529f\u8017",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "end",
+          "kind": "end",
+          "label": "\u7ed3\u675f\u8282\u70b9\uff1b\u8868\u793a\u6240\u5efa\u6a21\u5e8f\u5217\u7684\u5b8c\u6210\u3002",
+          "summary": "\u7ed3\u675f\u8282\u70b9\uff1b\u8868\u793a\u6240\u5efa\u6a21\u5e8f\u5217\u7684\u5b8c\u6210\u3002",
+          "metadata": {
+            "title": "\u6d41\u7a0b\u7ed3\u675f",
+            "detail": null,
+            "type": "end"
           }
         }
       ],
       "edges": [
         {
-          "source": "n_start",
-          "target": "n_init_flags",
-          "label": "\u4e0a\u7535"
+          "source": "start",
+          "target": "boot_init",
+          "label": "\u542f\u52a8"
         },
         {
-          "source": "n_init_flags",
-          "target": "n_load_calib",
-          "label": "\u505c\u6b62\u7535\u673a\u5e76\u91cd\u7f6e\u72b6\u6001"
+          "source": "boot_init",
+          "target": "calibrated_at_boot?",
+          "label": "\u8bfb\u53d6\u5e76\u6062\u590d\u6807\u5b9a\uff08diff_sumup\u3001check_flag\uff09"
         },
         {
-          "source": "n_load_calib",
-          "target": "n_calib_decision",
-          "label": "\u4ece\u95ea\u5b58\u52a0\u8f7d\uff1adiff_sumup \u4e0e check_flag"
-        },
-        {
-          "source": "n_calib_decision",
-          "target": "n_auto_check",
-          "label": "check_flag \u4e3a false"
-        },
-        {
-          "source": "n_calib_decision",
-          "target": "n_operational_loop",
+          "source": "calibrated_at_boot?",
+          "target": "calibrated_idle",
           "label": "check_flag \u4e3a true"
         },
         {
-          "source": "n_auto_check",
-          "target": "n_operational_loop",
-          "label": "\u6807\u5b9a\u5b8c\u6210"
-        },
-        {
-          "source": "n_operational_loop",
-          "target": "n_read_bus_current",
-          "label": "\u5f00\u59cb\u5faa\u73af\u8fed\u4ee3"
-        },
-        {
-          "source": "n_read_bus_current",
-          "target": "n_ble_parse",
-          "label": "\u8bfb\u53d6\u7535\u6d41\u5e76\u89e3\u6790\u8f93\u5165"
-        },
-        {
-          "source": "n_ble_parse",
-          "target": "n_cal_flag_check",
-          "label": "\u89e3\u6790\u84dd\u7259/LoRa"
-        },
-        {
-          "source": "n_cal_flag_check",
-          "target": "n_auto_check",
+          "source": "calibrated_at_boot?",
+          "target": "uncalibrated_loop",
           "label": "check_flag \u4e3a false"
         },
         {
-          "source": "n_cal_flag_check",
-          "target": "n_lora_forward_parse",
-          "label": "check_flag \u4e3a true"
+          "source": "uncalibrated_loop",
+          "target": "auto_check",
+          "label": "lora_rx_flag \u4e3a 1"
         },
         {
-          "source": "n_lora_forward_parse",
-          "target": "n_forward_entry",
-          "label": "AA.. \u5df2\u89e3\u6790"
+          "source": "auto_check",
+          "target": "calibrated_at_boot?",
+          "label": "\u6210\u529f / check_flag \u4e3a true"
         },
         {
-          "source": "n_forward_entry",
-          "target": "n_forward_init",
-          "label": "\u6b63\u5411\u8def\u5f84\u5df2\u9009\u62e9"
+          "source": "calibrated_idle",
+          "target": "idle_timeout?",
+          "label": "\u6bcf\u4e2a\u5faa\u73af\u5468\u671f"
         },
         {
-          "source": "n_forward_init",
-          "target": "n_forward_threshold",
-          "label": "\u9996\u6b21\u8fdb\u5165\uff1a\u542f\u7528\u7535\u6e90"
+          "source": "idle_timeout?",
+          "target": "low_power_seq",
+          "label": "\u7a7a\u95f2\u8d85\u65f6\u4e14 |yaw| < 10 \u5ea6"
         },
         {
-          "source": "n_forward_threshold",
-          "target": "n_yaw_stall_check_forward",
-          "label": "\u8ba1\u7b97\u76ee\u6807\u5e76\u53d1\u9001\u901f\u5ea6"
+          "source": "idle_timeout?",
+          "target": "force_close_idle",
+          "label": "\u7a7a\u95f2\u8d85\u65f6\u4e14 |yaw| >= 10 \u5ea6"
         },
         {
-          "source": "n_yaw_stall_check_forward",
-          "target": "n_forward_stop",
-          "label": "\u5835\u8f6c/\u505c\u6b62/\u9608\u503c\u8fbe\u5230"
+          "source": "low_power_seq",
+          "target": "calibrated_idle",
+          "label": "\u5b8c\u6210\u4f4e\u529f\u8017\u5524\u9192/\u4f11\u7720"
         },
         {
-          "source": "n_forward_stop",
-          "target": "n_post_forward",
-          "label": "\u6b63\u5411\u505c\u6b62\u6761\u4ef6\u6ee1\u8db3"
+          "source": "force_close_idle",
+          "target": "opening_entry",
+          "label": "\u901a\u8fc7\u7a7a\u95f2\u62a2\u5360\u5f00\u59cb\u5173\u95ed"
         },
         {
-          "source": "n_post_forward",
-          "target": "n_reverse_entry",
-          "label": "close_flag \u8bbe\u7f6e\u4e3a\u771f"
+          "source": "calibrated_idle",
+          "target": "lora_parser",
+          "label": "\u5faa\u73af\u8fed\u4ee3\uff1a\u8f6e\u8be2\u8f93\u5165"
         },
         {
-          "source": "n_post_forward",
-          "target": "n_sleep",
-          "label": "\u6ca1\u6709 close_flag"
+          "source": "lora_parser",
+          "target": "aa00_power_on",
+          "label": "AA00"
         },
         {
-          "source": "n_reverse_entry",
-          "target": "n_reverse_init",
-          "label": "\u5f00\u59cb\u53cd\u5411"
+          "source": "lora_parser",
+          "target": "aaxy_command",
+          "label": "AAxy"
         },
         {
-          "source": "n_reverse_init",
-          "target": "n_reverse_speed",
-          "label": "\u5f00\u542f\u7535\u6e90\u5e76\u521d\u59cb\u5316"
+          "source": "lora_parser",
+          "target": "aaof_command",
+          "label": "AAOF"
         },
         {
-          "source": "n_reverse_speed",
-          "target": "n_reverse_stop",
-          "label": "\u8ba1\u7b97\u53cd\u5411\u901f\u5ea6"
+          "source": "lora_parser",
+          "target": "aare_command",
+          "label": "AARE"
         },
         {
-          "source": "n_reverse_stop",
-          "target": "n_sleep",
-          "label": "\u505c\u6b62\u6761\u4ef6"
+          "source": "aa00_power_on",
+          "target": "calibrated_idle",
+          "label": "\u4e0a\u7535\u540e\u8fd4\u56de\u7a7a\u95f2\u72b6\u6001"
         },
         {
-          "source": "n_sleep",
-          "target": "n_sleep_wake",
-          "label": "\u7761\u7720\u95f4\u9694\u5df2\u8fc7\u6216\u5524\u9192\u6761\u4ef6"
+          "source": "aaxy_command",
+          "target": "opening_entry",
+          "label": "\u5f00\u59cb\u5f00\u542f\uff08commandExecuted\uff09"
         },
         {
-          "source": "n_sleep_wake",
-          "target": "n_operational_loop",
-          "label": "\u5524\u9192\u8fdb\u5165\u5faa\u73af"
+          "source": "aaof_command",
+          "target": "closing_entry",
+          "label": "\u8bbe\u7f6e close_flag"
         },
         {
-          "source": "n_aa00_keep_power",
-          "target": "n_operational_loop",
-          "label": "\u4fdd\u6301\u7535\u6e90\u5f00\u542f"
+          "source": "aare_command",
+          "target": "uncalibrated_loop",
+          "label": "\u91cd\u65b0\u8fdb\u5165\u6807\u5b9a"
         },
         {
-          "source": "n_aa00_keep_power",
-          "target": "n_sleep",
-          "label": "\u7a7a\u95f2\u65f6\u8d85\u65f6"
+          "source": "pb6_trigger",
+          "target": "opening_entry",
+          "label": "PB6 \u8fb9\u6cbf\u68c0\u6d4b\u4e14\u6e05\u9664\u7a7a\u95f2"
         },
         {
-          "source": "n_pb6_wake",
-          "target": "n_forward_entry",
-          "label": "PB6 \u8fb9\u6cbf\u5524\u9192\u89e6\u53d1\u6b63\u5411"
+          "source": "opening_entry",
+          "target": "opening_init",
+          "label": "\u8fdb\u5165\u6761\u4ef6\u6ee1\u8db3"
+        },
+        {
+          "source": "opening_init",
+          "target": "opening_control",
+          "label": "\u521d\u59cb\u5316\u5f00\u542f\u8fd0\u52a8"
+        },
+        {
+          "source": "opening_control",
+          "target": "yaw_stall_opening",
+          "label": "\u6bcf\u4e2a\u63a7\u5236\u5faa\u73af"
+        },
+        {
+          "source": "yaw_stall_opening",
+          "target": "opening_stop_action",
+          "label": "\u68c0\u6d4b\u5230\u5931\u901f"
+        },
+        {
+          "source": "yaw_stall_opening",
+          "target": "opening_control",
+          "label": "\u65e0\u5931\u901f"
+        },
+        {
+          "source": "opening_stop_action",
+          "target": "closing_entry",
+          "label": "close_flag \u4e3a true"
+        },
+        {
+          "source": "opening_stop_action",
+          "target": "post_move_low_power",
+          "label": "\u65e0 close_flag\uff1b\u5f00\u542f\u540e\u8fdb\u5165\u4f4e\u529f\u8017"
+        },
+        {
+          "source": "closing_entry",
+          "target": "closing_init",
+          "label": "\u8fdb\u5165\u6761\u4ef6\u6ee1\u8db3"
+        },
+        {
+          "source": "closing_init",
+          "target": "closing_control",
+          "label": "\u521d\u59cb\u5316\u5173\u95ed\u8fd0\u52a8"
+        },
+        {
+          "source": "closing_control",
+          "target": "yaw_stall_closing",
+          "label": "\u6bcf\u4e2a\u63a7\u5236\u5faa\u73af"
+        },
+        {
+          "source": "yaw_stall_closing",
+          "target": "closing_stop_action",
+          "label": "\u68c0\u6d4b\u5230\u5931\u901f"
+        },
+        {
+          "source": "yaw_stall_closing",
+          "target": "closing_control",
+          "label": "\u65e0\u5931\u901f"
+        },
+        {
+          "source": "closing_stop_action",
+          "target": "post_move_low_power",
+          "label": "\u6b63\u5e38\u505c\u6b62\uff1b\u8fdb\u5165\u4f4e\u529f\u8017"
+        },
+        {
+          "source": "yaw_stall_opening",
+          "target": "opening_stop_action",
+          "label": "\u56e0\u5931\u901f\u800c\u7d27\u6025\u505c\u6b62"
+        },
+        {
+          "source": "post_move_low_power",
+          "target": "calibrated_idle",
+          "label": "\u4f4e\u529f\u8017\u5e8f\u5217\u5b8c\u6210\uff1b\u8fd4\u56de\u7a7a\u95f2"
+        },
+        {
+          "source": "start",
+          "target": "end",
+          "label": "\u5efa\u6a21\u5e8f\u5217\u7ed3\u675f"
         }
       ],
       "parameters": [],
       "metadata": {
-        "entry_node": "n_start"
+        "entry_node": "start"
       },
-      "docstring": "\u4e00\u4e2a\u4efb\u52a1\uff1a\u521d\u59cb\u5316\u3001\u6807\u5b9a\u3001\u89e3\u6790\u6765\u81ea LoRa \u4e0e BLE \u7684\u547d\u4ee4\uff0c\u6267\u884c\u57fa\u4e8e\u504f\u822a\u7684\u6b63\u5411/\u5f00\u542f\u548c\u53cd\u5411/\u5173\u95ed\u7535\u673a\u63a7\u5236\uff0c\u5e26\u6709\u5b89\u5168\u68c0\u67e5\uff0c\u5e76\u7ba1\u7406\u7761\u7720/\u7535\u6e90\u72b6\u6001\u3002"
+      "docstring": "\u5f15\u5bfc\u6807\u5b9a\u3001\u5df2\u6807\u5b9a\u7a7a\u95f2\u5faa\u73af\u3001LoRa/\u84dd\u7259\u6307\u4ee4\u5904\u7406\u3001\u5f00\u542f/\u5173\u95ed\u63a7\u5236\u3001\u5931\u901f\u68c0\u6d4b\u4e0e\u7535\u6e90\u7ba1\u7406\u7684\u6d41\u7a0b\u56fe\u3002"
     }
   ]
 }

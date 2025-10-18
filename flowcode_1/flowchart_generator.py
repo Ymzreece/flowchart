@@ -111,6 +111,28 @@ def call_model(prompt: str, *, response_format: str, model: str) -> str:
         raise SystemExit(f"Unexpected API response format: {response}") from exc
 
 
+def load_include(path: Path) -> str:
+    try:
+        content = path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        raise SystemExit(f"Included file not found: {path}")
+    except OSError as exc:
+        raise SystemExit(f"Failed to read included file {path}: {exc}") from exc
+
+    header = f"\n\n===== Included File: {path} =====\n"
+    footer = "\n===== End Included File =====\n"
+    return f"{header}{content.rstrip()}\n{footer}"
+
+
+def merge_prompt_with_includes(prompt: str, include_paths: list[Path]) -> str:
+    if not include_paths:
+        return prompt
+    includes = []
+    for include_path in include_paths:
+        includes.append(load_include(include_path))
+    return f"{prompt.rstrip()}\n{''.join(includes)}"
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Generate a natural-language explanation using an LLM.")
     parser.add_argument(
@@ -118,6 +140,15 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("prompt.md"),
         help="Path to the prompt file (default: prompt.md).",
+    )
+    parser.add_argument(
+        "--include",
+        "-I",
+        dest="includes",
+        action="append",
+        type=Path,
+        default=[],
+        help="Append the contents of a source file to the prompt (can be used multiple times).",
     )
     parser.add_argument(
         "--output",
@@ -151,6 +182,7 @@ def main(argv: Optional[list[str]] = None) -> None:
     prompt_text = read_prompt(args.prompt)
     if not prompt_text.strip():
         raise SystemExit(f"Prompt file {args.prompt} is empty.")
+    prompt_text = merge_prompt_with_includes(prompt_text, args.includes)
 
     print(f"Using model: {args.model}")
     if args.output:

@@ -1,365 +1,259 @@
 System overview and purpose
-- This firmware runs on an STM32L431 (FreeRTOS/CMSIS-OS) and provides a small on-device UI (OLED + 3 keys) for configuring and operating a radar-driven door device. It stores user configuration in internal Flash, manages a “Do Not Disturb” (DND) mode, supports a hidden door calibration flow, and integrates with several peripherals:
-  - OLED display for UI and animations
-  - Three physical keys (short/long press)
-  - Battery sensor (with on-screen icon and low-battery notifier)
-  - PIR motion sensor (for DND feedback)
-  - Bluetooth modules (HC15-like and XY_MB06BA via AT)
-  - LoRa (rx flag handled)
-  - Face recognition module (for “reset all users”)
-  - Internal Flash for user configs and BLE MAC storage
-- The primary control loop is a state machine in the FreeRTOS task Flash_Task, which drives the top-level behavior and menu navigation, reacting to button events, timers, and flags.
+This FreeRTOS task (Else_Task) is the main motion-control loop for a motorized mechanism (e.g., a door or gate) with these goals:
+- Accept and parse remote commands (LoRa and Bluetooth) and local triggers (GPIO edge, physical push/pull flags).
+- Move the mechanism to an “open” or “closed” target angle using yaw feedback from an IMU.
+- Detect stalls, collisions, and improper motion, and stop safely.
+- Enter a low-power state when idle, and wake when movement is requested.
+- Persist calibration/limit data in Flash and restore on boot.
 
-High-level flow: inputs to outputs
+High-level flow
+- Boot and calibration persistence:
+  - Initialize Flash storage, read back last-known calibration: diff_sumup (total open angle) and check_flag (whether calibration is completed).
+  - If calibrated (check_flag == true), the motor power (SIGNAL_ENABLE) is initially off.
+- Main loop (runs forever, every ~10 ms):
+  1) Update bus current measurement; poll Bluetooth module for commands.
+  2) If not calibrated and a LoRa frame arrives, trigger Auto_Check (calibration/limit procedure).
+  3) If calibrated:
+     - Manage idle timeout and optionally force closing or enter low power.
+     - Parse LoRa “AA..” commands to start opening, closing, or manage power.
+     - Run the “opening” or “closing” control law depending on flags and feedback.
+     - Stop movement when reaching targets, detecting stall/collision, or receiving conflicting commands.
+  4) Handle AA00 “keep power” timeout: keep motor power enabled while messages arrive or while moving; power off after timeout if idle.
+  5) Watch a GPIO (PB6) as a manual trigger to start opening.
+- Throughout, the task gates power to motor and sensors and coordinates low-power sequences (Bluetooth disconnect, IMU sleep, radar config).
+
+Inputs, outputs, and integrations
 - Inputs:
-  - Key presses: 3 buttons generating short press codes 1/2/3 and long press codes 11/12/13
-  - PIR sensor: motion detection
-  - LoRa receive flag: lora_rx_flag (extern)
-  - Battery readings: via Battery_Update()
-  - Timers: HAL_GetTick-based timing for animations and timeouts
-- Processing:
-  - A global system_state enum drives the UI and peripheral actions
-  - Menus render to the OLED; key events drive menu selection and confirmation
-  - Configuration actions load/write Flash with CRC, show progress bars, and verify results
-  - DND mode alters behavior and display
+  - LoRa frames via lora_rx_buf and lora_rx_flag.
+  - Bluetooth commands via XY_MB06BA_CheckAndParseCommands() (details handled in that module).
+  - IMU yaw signal via global yaw (and related extern yaw_* values).
+  - Physical “help” flags ahead_flag, back_flag (e.g., someone pushing/pulling), likely set by other tasks.
+  - GPIO PB6 edge (button/switch/edge sensor).
+  - Bus current via Motor_TryReadBusCurrent.
 - Outputs:
-  - OLED UI displays menus, messages, animations, battery icon
-  - UART messages to HC15-style module (AA… markers, calibration control)
-  - AT commands to XY_MB06BA for Bluetooth disconnects before sleep
-  - Writes to Flash memory for config and BLE address
-  - Face recognition module control (clear all users)
-  - GPIO outputs for power/NMOS control
+  - Motor power relay: SIGNAL_ENABLE GPIO.
+  - Motor control commands via send_data() and motor_drive_cmd() (open/close with speed control).
+  - RPM stop via rpm0_Stop().
+  - Low-power handling: JY61P_UART_Enter_Sleep, LSM6DSV16X_AllSleep, XY_MB06BA_SendATCommand(“AT+DISCONN=x”), LowPower_SetSleepFlag(1), FRadar_SetDistanceAndSave.
+- Persistent storage:
+  - Flash_Storage_Init/Read write and restore diff_sumup and check_flag.
 
-Top-level state machine (Flash_Task)
-- Loop: endless for(;;) with a switch over system_state
-- Common LoRa handling (outside switch):
-  - If not in DND and lora_rx_flag==1: send “AARI55” via HC15, clear flag
-- States:
-  - Do_not_disturb
-    - Sends “AA0055” heartbeat
-    - If lora_rx_flag==1: send “AARF55”, clear flag
-    - Exit condition: any short press on keys 1/2/3 transitions to SYSTEM_IDLE and clears silent_do_not_disturb (note: comment claims “long press key 3”, but code exits on any short press)
-    - If silent_do_not_disturb is true: screen remains blank
-    - Else (non-silent DND): if PIR triggers within last 5 seconds, show “Do not disturb!” framed message; otherwise keep display blank
-  - SYSTEM_IDLE
-    - After 2 seconds of idle: prepares for low-power
-      - Sends AT+DISCONN toggles to XY_MB06BA
-      - Sets certain GPIO pins high, clears OLED, ensures NMOS gate (PC2) off, PowerMgmt_SetLowPowerMode(1)
-    - Clears OLED frequently; short delay
-  - FACE_VERIFYING: delay (placeholder, integration point)
-  - FACE_VERIFY_SUCCESS: no-op here (integration point)
-  - FACE_VERIFY_FAIL: shows “Radar Failed / No detection”, returns to SYSTEM_IDLE and clears all_control
-  - FACE_ENROLL_SUCCESS: shows “Config Success / Settings saved”, transitions to MENU_ACTIVE
-  - FACE_ENROLL_FAIL: transitions to MENU_ACTIVE
-  - FACE_DELETE_SUCCESS: shows “Reset Success / Data cleared”, transitions to MENU_ACTIVE, clears Delete flag
-  - FACE_DELETE_FAIL: shows “Reset Failed / Try again”, transitions to MENU_ACTIVE, clears Delete flag
-  - MENU_ACTIVE
-    - Sets face_enroll_in_progress = true
-    - Calls menu1() (main menu); if not entering DND, processes choice via process_main_menu()
-    - If still not in DND, sets SYSTEM_IDLE
-    - Sets face_enroll_in_progress = false
-  - default: shows “System Error / Unknown state”, then SYSTEM_IDLE
+Key states and transitions
+For flowcharting, treat these as states with explicit triggers:
 
-Key input handling and events
-- Event queue:
-  - KeyEvent_Push(int code) allows an external key-scanning task to feed events into a ring buffer (size 16). If full, oldest is dropped to keep newest.
-  - Key_GetEvent():
-    - Pops from queue if available
-    - If external scanning is not enabled: falls back to internal scan Get_key_Num()
-    - If external scanning is enabled and queue is empty: returns 0 (no event)
-  - Key_Scan_SetExternalMode(bool): enable/disable external feed mode
-- Internal scanner Get_key_Num()
-  - Non-blocking finite state machine per key (three keys), with phases:
-    - IDLE -> BOUNCE_PRESS -> PRESSED -> LONG_REPORTED -> BOUNCE_RELEASE -> IDLE
-  - Returns once per event:
-    - Short press: 1,2,3
-    - Long press (>= 1500ms): 11,12,13
-    - Long press is emitted once when threshold is reached; short press isn’t emitted afterward
-  - Debounce constants:
-    - KEY_DEBOUNCE_TIME_MS = 0 (no debounce currently)
-    - KEY_LONG_PRESS_TIME_MS = 1500
-  - Side effects each scan:
-    - Battery_Update(); OLED_Battery_SetLevel()
-    - Sends HC15_SendMessage("AA0055") heartbeat
-  - Notes and limitations:
-    - With debounce at 0 ms, chattering can occur; consider raising KEY_DEBOUNCE_TIME_MS to 12–20ms
-    - The scanner does battery/UI updates and sends a message every scan; keep scan rate moderate to avoid UART flooding and UI flicker
+- Uncalibrated
+  - Entry: At boot if check_flag == false (or explicitly set by LoRa "AARE" below).
+  - Event: lora_rx_flag == 1
+    - Action: Auto_Check() starts (range/limit calibration).
+    - Post: On success, check_flag set true (happens in Auto_Check). The runtime branch becomes active.
 
-Main menu and navigation (menu1)
-- Presentation: icon-based menu with 3 items. Battery icon and notifier drawn in the corner.
-- Entry behavior:
-  - Resets selection flag to 1 (first item)
-  - Initializes an icon cursor blink
-- Controls:
-  - Key 1 (short): move left (wrap 1↔3)
-  - Key 3 (short): move right (wrap 3↔1)
-  - Key 2 (short): confirm; returns selected item number 1..3
-  - Key 3 (long, code 13): enter Do Not Disturb (silent) immediately; sets system_state=Do_not_disturb and returns 0
-  - Key 2 (long, code 12): opens hidden door calibration flow handle_Reset_menu()
-- Return:
-  - Returns 1..3 for a selection, or 0 if interrupted (DND or calibration)
+- Calibrated, Idle
+  - Entry: check_flag == true; no motion flags set.
+  - Background:
+    - Idle timeout management using Wake_time:
+      - If HAL_GetTick() - Wake_time > 15000 ms and |yaw| < 10 deg:
+        - Enter low power: power down motor and peripherals, disconnect BLE, sleep IMU and radar, set sleep flag.
+      - Else if the timeout exceeds 15000 ms but |yaw| >= 10 deg:
+        - Force a “close” by setting motor_runing_flag_r = 1 to begin closing.
+    - AA00 “keep-power” management:
+      - If aa00_motor_enabled == true and not moving:
+        - If now - last_message_time > MESSAGE_TIMEOUT_MS (note: code uses 100 ms), power off and clear aa00 flag.
+      - If moving, refresh last_message_time to avoid power off.
+    - Manual trigger on PB6:
+      - On any edge (rising or falling), with debouncing and only if both motor_runing_flag and motor_runing_flag_r are 0:
+        - Trigger opening: set motor_runing_flag = 1.
 
-Submenus and flows
-- Config menu (item 1 in main menu)
-  - handle_config_menu()
-    - Intro animation: “Radar Config”
-    - Loads current config for selected_user_id=1 via Flash_LoadUserConfig()
-      - If not found: calls Flash_GetDefaultUserConfig() and shows “Loading defaults...”
-      - Else: shows “Loading config...”
-    - Copies loaded values into editing buffers:
-      - debug_temp_angle, debug_temp_speed, debug_open_or_not_flag
-    - Shows “Config ID: 1”
-    - Opens angle/speed editor menu3_angle_speed()
-      - Items (navigate with key 1/3; action with key 2):
-        1. Angle: cycles Small/Medium/Large
-        2. Speed: cycles Slow/Moderate/Fast
-        3. Auto Close: toggles Yes/No
-        4. Save: returns 1 (commit)
-        5. Exit: returns 0 (cancel)
-      - Selection is highlighted; battery icon overlays
-    - If saved:
-      - Shows “Saving config...”, runs a 2s progress animation
-      - Prepares user_cfg_diy with user_id=1 and selected fields
-      - Erases all user data pages via Flash_EraseAllUserData() (global wipe; see limitation)
-      - Unlock Flash, compute aligned address = FLASH_USER_BASE_ADDR + user_id * 256 (aligned to 8 bytes)
-      - Computes CRC (XOR over all bytes except crc), writes via Flash_Write64BitAligned()
-      - Locks Flash
-      - Verifies by reloading and comparing fields
-      - Shows success or failure message, sets state FACE_ENROLL_SUCCESS or FACE_ENROLL_FAIL
-    - If canceled:
-      - Sets state FACE_ENROLL_FAIL (treated as “no changes saved”)
-- Else Mode menu (item 2 in main menu)
-  - handle_else_mode_menu() opens menu2_else_mode_with_return()
-    - Items:
-      1. Do Not Disturb: sets silent_do_not_disturb=true; system_state=Do_not_disturb; returns
-      2. Door Reset: invokes the same hidden calibration flow handle_Reset_menu()
-      3. Back: return to previous menu
-- Back (item 3 in main menu)
-  - Clears OLED, sets state SYSTEM_IDLE, and clears all_control
+- LoRa command parser (“AA..” commands; runs whenever lora_rx_flag == 1)
+  - AA00
+    - Effect: Motor power on (SIGNAL_ENABLE high), aa00_motor_enabled = true; last_message_time = now.
+    - Purpose: Keep motor powered for presence/detection; does not automatically start motion.
+  - AAxy (x and y are ASCII characters)
+    - x in ‘1’..‘3’ sets Speed_Level_Lora:
+      - 1 -> Speed_from_Lora = 600
+      - 2 -> Speed_from_Lora = 1200
+      - 3 -> Speed_from_Lora = 2000
+      - Any other -> Speed_from_Lora = 1500 (default)
+      - Also sets:
+        - face_control_flag = 1 (angle scaling active)
+        - commandExecuted = true (start opening)
+        - motor_runing_flag = 1 (engage opening)
+        - closing_inpurrt = 1 (signal that if currently closing, switch to opening)
+    - y in ‘1’..‘3’ sets Angle_Level_Lora (angle divisor):
+      - 1 -> smallest angle (threshold = diff_sumup / 3)
+      - 2 -> medium angle (threshold = diff_sumup / 2)
+      - 3 -> largest angle (threshold = diff_sumup / 1)
+    - Special pair OF
+      - Sets close_flag = 1 (request a close after opening finishes).
+    - Special pair RE
+      - Resets calibration mode: check_flag = 0 (forces re-entry into Uncalibrated state) and clears lora_rx_flag.
 
-Delete/reset face users flow
-- handle_delete_menu()
-  - Presents menu2_delete_with_return() with:
-    - 1: Reset All
-    - 2: Reset Single
-    - 3: Back
-  - If 1 (Reset All):
-    - Sets Delete=true
-  - If 2 (Reset Single):
-    - Only shows “Reset Single / Press any key” and waits for any key; no actual single deletion logic is implemented
-  - When Delete==true:
-    - Shows “Resetting...”, starts a 5s progress bar
-    - Calls FaceRec_ClearAllUsers() repeatedly, processes incoming data via FaceRec_Process() if available
-    - If FaceRec_IsDeleteSuccess(): marks delete_success=true and completes progress at 100%
-    - On timeout or failure: delete_success remains false
-  - Sets system_state to FACE_DELETE_SUCCESS or FACE_DELETE_FAIL and resets Delete flag accordingly
+- Opening (forward motion, motor_runing_flag == 1)
+  - Entry conditions (any of):
+    - commandExecuted == true (LoRa AAxy), or ahead_flag == true (user/push assist), or motor_runing_flag == 1 (already engaged by PB6 or forced).
+    - Guard: yaw must be less than diff_sumup and sufficiently far from the target.
+  - On first entry (Motor_Init == 0):
+    - Power on (SIGNAL_ENABLE), record move_start, clear bus current accumulator, reset stall detection state, mark Motor_Init = 1.
+    - Ensure speed control mode active once per move: send_data(speed_control).
+  - Control law:
+    - Determine target threshold:
+      - If face_control_flag == 1: threshold = diff_sumup / angle_divisor (based on Angle_Level_Lora).
+      - Else: threshold = diff_sumup (full open).
+    - Speed command: speed = Motor_P * (threshold - yaw), saturated to [-Speed_from_Lora, +Speed_from_Lora].
+    - Send motor_drive_cmd(0x01, speed, 20, 0, motor_cmd).
+  - Stop conditions (any):
+    - |threshold - yaw| < 5 deg (near target), or |diff_sumup - yaw| < 5 deg (near maximum), or yaw > diff_sumup (overshoot), or Yaw_Stall_Check() returns true (stall/oscillation/wrong direction).
+  - On stop:
+    - Stop RPM, power off motor (SIGNAL_ENABLE low), clear flags:
+      - motor_runing_flag = 0, ahead_flag = back_flag = 0, face_control_flag = 0,
+      - commandExecuted = false, yaw_zero_set = false, stop_set = false,
+      - Reset init flags (Motor_Init = 0, speed_control_Init_flag = 0), and diff_threshold_init = 0.
+    - If close_flag == 1:
+      - Queue a close: commandExecuted_r = 1; motor_runing_flag_r = 1; close_flag = 0.
 
-Hidden “Door Calibration” flow (also exposed via Else Mode)
-- handle_Reset_menu()
-  - On entry: sends “AARE55” via HC15
-  - UI: framed “Door Calibration” screen with instructions
-  - Waits for any key to confirm that the door is open to maximum
-  - Sends “AA0055” via HC15
-  - Shows a 10-second blocking progress bar “Calibrating...”
-  - Shows “Calibration Complete!” screen with a checkmark
-  - Returns to main menu
+- Closing (reverse motion, motor_runing_flag_r == 1)
+  - Entry conditions (any of):
+    - commandExecuted_r == true (requested close), or back_flag == true (user/pull assist), or motor_runing_flag_r == 1 (forced close by idle timeout).
+    - Guard: yaw > 0 and |yaw| > 2 deg (far enough from zero).
+  - On first entry (Motor_Init_r == 0):
+    - Power on, record move_start, clear bus current accumulator, reset stall detection, mark Motor_Init_r = 1.
+    - Ensure speed control mode active once per move: send_data(speed_control).
+  - Control law:
+    - Target threshold = 0 deg (closed).
+    - Speed command: speed = Motor_P * (0 - (yaw + 3)) with a bias, saturated to [-Speed_from_Lora, +Speed_from_Lora].
+    - Send motor_drive_cmd(0x01, speed, 20, 0, motor_cmd).
+  - Stop conditions (any):
+    - |yaw| < 5 deg (near closed), or yaw < 0 (passed closed), or Yaw_Stall_Check() returns true (collision/abnormal), or closing_inpurrt == 1 (an open command arrived mid-close).
+  - On stop:
+    - If no collision (Yaw_Stall_Check returned false) and we are not preempted by opening (closing_inpurrt == 0):
+      - Perform a short back-off: command -1000 for 1 second, then power off motor.
+      - Reset state flags:
+        - motor_runing_flag_r = 0, back_flag = ahead_flag = 0, face_control_flag = 0,
+        - commandExecuted_r = false, yaw_zero_set_r = false, stop_set = false,
+        - Motor_Init_r = 0, speed_control_Init_flag_r = 0, diff_threshold_init_r = 0, close_flag = 0.
+      - Enter low-power sequence:
+        - Power rails toggled (PA8/PA4), JY61P UART to sleep, Bluetooth “disconnect” AT commands sent, IMU sleep, radar distance saved, sleep flag set.
+        - Blocking loop to reset yaw until JY61P_UART_Reset_Yaw returns OK.
+    - If preempted by opening (closing_inpurrt == 1):
+      - Switch to opening: motor_runing_flag = 1; Motor_Init = 0 (so opening re-initializes); closing_inpurrt = 0.
 
-Do Not Disturb mode details
-- Enter triggers:
-  - Long press key 3 from main menu
-  - Else Mode menu choice “Do Not Disturb”
-- Silent vs non-silent behavior:
-  - silent_do_not_disturb=true: blank screen; minimal UI
-  - Else: shows “Do not disturb!” framed message for 5 seconds after PIR motion; otherwise blank
-- Exit trigger:
-  - Code checks for any short press on keys 1,2, or 3; it does not enforce a long press (despite the comment). On exit, clears silent_do_not_disturb and sets SYSTEM_IDLE.
+Stall/collision detection (Yaw_Stall_Check)
+Purpose: stop safely if the yaw feedback indicates the mechanism is stuck, oscillating, or moving the wrong way.
+- Ignored for first 1.5 s after move_start.
+- Initialization (first call of a move):
+  - Snapshot yaw, initialize timers and counters: last_yaw, last_yaw_increment, direction_change_count, last_yaw_abs, motion_direction_error_count.
+- Checks on each call:
+  - Motion direction error:
+    - During opening (motor_runing_flag == 1): if |yaw| decreases compared to the last sample (by > 0.01 deg), count an error.
+    - During closing (motor_runing_flag_r == 1): if |yaw| increases by > 0.01 deg, count an error.
+    - If any (>=1) error is seen, return true (stall) and reset internal state.
+  - Oscillation:
+    - Track sign changes between consecutive yaw increments; if the direction flips 2 or more times, return true and reset.
+  - Low-change timeout:
+    - Compute yaw_change since the last “start” snapshot. If yaw_change > 0.1 deg, reset the snapshot and counters.
+    - If 1.5 s elapse with yaw_change <= 0.1 deg, return true (stalled).
+- Notes:
+  - There are mismatches between comments and thresholds: comments mention “1 s, 3 deg”, while code uses “1.5 s, 0.1 deg”.
+  - A current-based stall threshold (A_Limit) is present but commented out. If used, high bus current could trigger a stall.
 
-Data storage design
-- Flash memory map (STM32L431 256KB total):
-  - Program: 0x08000000–0x0803C000 (240KB)
-  - User data: 0x0803C000–0x0803F800 (14KB = 7 pages)
-  - BLE address: 0x0803F800–0x08040000 (2KB page)
-- User configuration records (user_config_t from Flash.h)
-  - Allocation: 256 bytes per user slot; up to 56 users (fits 14KB region)
-  - Fields used: user_id, open_angle, open_speed, open_or_not_flag, reserved, crc
-  - Address per user: FLASH_USER_BASE_ADDR + user_id * 256, aligned to 8 bytes
-  - CRC: simple XOR of all bytes except the crc byte
-  - Access functions:
-    - Flash_LoadUserConfig(id, cfg):
-      - Checks erased state (0xFF), copies, verifies CRC
-    - Flash_SaveUserConfig(cfg):
-      - Page-aware save: if page is not erased, backs up the entire 2KB page to RAM, erases page, merges updated record into buffer, writes whole page back with 64-bit doublewords
-      - If target area is empty, writes aligned 64-bit chunks directly
-    - Flash_EraseAllUserData():
-      - Erases all 7 user-data pages (global wipe)
-    - Flash_GetDefaultUserConfig(cfg, id):
-      - Sets defaults: angle=1 (labeled 90 in comment but menu labels Small/Medium/Large), speed=1 (moderate), auto close=1 (Yes), computes CRC
-- BLE MAC address storage (separate region)
-  - Structure: 6-byte mac_address, is_valid flag (0x55), reserved (for alignment), crc (XOR)
-  - Stored at BLE_ADDRESS_FLASH_ADDR (0x0803F800), one 2KB page
-  - Flash_LoadBLEAddress():
-    - Rejects erased page, CRC mismatch, invalid flag, all-zeros or all-FF address
-  - Flash_SaveBLEAddress():
-    - Erases page, writes structure with CRC, reads back to verify
-  - Flash_ClearBLEAddress(): erases the page
-- Low-level write helper:
-  - Flash_Write64BitAligned(address, data, size): writes in 64-bit doublewords; requires 8-byte alignment; uses HAL_FLASH_Program with FLASH_TYPEPROGRAM_DOUBLEWORD
+Power management and sleep sequence
+Triggered in three places:
+- Idle timeout (>15 s) and near closed (|yaw| < 10): power rails toggled, Bluetooth disconnects, IMU/Radar sleep, sleep flag set.
+- After a clean close: same as above, plus a blocking loop to reset yaw (JY61P_UART_Reset_Yaw) until it succeeds.
+- AA00 keep-power timeout: if aa00_motor_enabled and idle longer than MESSAGE_TIMEOUT_MS (note: set to 100 ms), motor power is turned off; this does not perform the entire system sleep sequence.
 
-Binary “DIY frame” over UART (not used in this file, but defined)
-- Function: FLASH_SendDIYFrame_UART1(uint16_t uid, uint8_t angle_idx, uint8_t speed_idx, uint8_t open_flag)
-- Port: uses huart2 despite the name
-- Frame: 7 bytes
-  - [0..1] Header: 0xFA 0xCE
-  - [2] UID low byte
-  - [3] UID high byte
-  - [4] Packed nibble: (speed_idx & 0x0F) << 4 | (angle_idx & 0x0F)
-  - [5] Open flag (1=open/auto, 0=closed/manual; interpretation by receiver)
-  - [6] CRC-8/MAXIM over first 6 bytes (init 0x00, poly 0x31 reflected -> XOR 0x8C in LSB-first)
-- Sent with HAL_UART_Transmit_IT()
+Detailed variable roles and flags
+- check_flag: true when calibration (Auto_Check) has completed; controls whether runtime logic is enabled.
+- diff_sumup: total available open angle discovered during calibration; used as the maximum open threshold.
+- aa00_motor_enabled, last_message_time: manage “keep power” behavior after AA00.
+- Wake_time: last activity time; used for 15 s idle timeout. Updated on motion and various events.
+- motor_runing_flag: opening state flag; motor_runing_flag_r: closing state flag.
+- commandExecuted: request to start opening (from LoRa or others); commandExecuted_r: request to start closing.
+- ahead_flag / back_flag: external assist triggers for opening/closing, respectively.
+- face_control_flag: if 1, scale the open target by Angle_Level_Lora; otherwise open to full diff_sumup.
+- Angle_Level_Lora: 1, 2, 3 mapping to open angle as 1/3, 1/2, or full diff_sumup.
+- Speed_Level_Lora / Speed_from_Lora: speed saturation level from LoRa (600, 1200, 2000).
+- close_flag: request to close after finishing an open cycle (set by “AAOF”).
+- closing_inpurrt: allows an open command to preempt a close; if 1 during close, stop and switch to open.
+- Motor_Init / Motor_Init_r: per-move initialization guards for opening/closing.
+- speed_control_Init_flag / _r: ensure speed control mode is enabled once per move.
+- yaw_zero_set, yaw_zero_set_r, stop_set, diff_threshold_init/_r: bookkeeping flags that are cleared on stop.
 
-OLED UI utilities in use
-- Drawing functions (examples):
-  - OLED_Clear, OLED_Update/OLED_Display (refresh), OLED_ClearArea
-  - OLED_ShowStringCentered, OLED_ShowMessageCentered
-  - OLED_DrawRectangle, OLED_DrawLine
-  - OLED_ShowProgressBar(x, y, width, percent, PROGRESS_SPEED_*)
-  - OLED_HighlightMenuLine(index, on)
-  - OLED_DrawIconMenu(selectedIndex, forceRedraw), OLED_InitIconMenuCursor
-  - Battery overlays: OLED_DrawBatteryIconTopRight, OLED_BatteryLowNotifier_Update, OLED_Battery_SetLevel
-  - Animation helper: OLED_ScrollTextInCentered(…, ANIMATION_SLIDE_DOWN, …)
-- Blocking progress helper:
-  - Flash_ShowBlockingProgress(duration_ms): draws a centered animating progress bar with small delays
+GPIO PB6 manual trigger
+- The loop uses GPIO_CheckEdge to detect rising/falling edges on PB6 with debouncing and stores the detected_edge type.
+- If any edge is detected while both motion flags are 0, it increments a small counter (pb6_flag) and triggers opening by setting motor_runing_flag = 1 when the counter reaches 1.
 
-External integrations and side effects
-- HC15-like Bluetooth module: HC15_SendMessage("AA0055"/"AARE55"/"AARI55"/"AARF55") used as status beacons and calibration control markers
-- XY_MB06BA BLE module: AT+DISCONN toggling before entering low power
-- Face recognition module: FaceRec_ClearAllUsers, FaceRec_Process, FaceRec_IsDeleteSuccess, FaceRec_HasDataAvailable (used in reset flow)
-- Radar integration: ld2450_integration.h included; interactions are not shown in this snippet
-- Battery sensor: Battery_Update, Battery_GetInfo; info.percentage displayed on OLED
-- Power control: PowerMgmt_SetLowPowerMode(1); NMOS gate (PC2) forced low before sleep
-- PIR sensor: read via HAL_GPIO_ReadPin(PIR_INPUT_GPIO_Port, PIR_INPUT_Pin)
+Error handling and safety
+- Motor stops immediately on any stopping condition, including target reach, overshoot, stall/collision, or preemption.
+- After closing cleanly (no collision), a short back-off (-1000 speed for 1 s) is applied to relieve mechanical stress before power down.
+- Power rails are actively toggled for peripheral sleep/wake sequencing to reduce idle consumption and leave sensors in a known state.
+- Calibration mode is re-entered by LoRa “AARE”.
 
-Important branches and triggers
-- Main menu selection (menu1):
-  - Key 1 short: move left; Key 3 short: move right
-  - Key 2 short: confirm (1=config, 2=else mode, 3=back)
-  - Key 3 long: enter DND (silent) and return 0
-  - Key 2 long: enter Calibration flow
-- Else Mode submenu:
-  - 1: Enter DND (silent)
-  - 2: Door Reset (Calibration)
-  - 3: Back
-- Config editor submenu (menu3_angle_speed):
-  - Items 1–3: key 2 cycles values, sets debug_temp_* variables and marks config changed
-  - Item 4 Save: returns 1, which triggers Flash erase/write/verify
-  - Item 5 Exit: returns 0 (cancel)
-- Do Not Disturb:
-  - Exit on any short press of keys 1/2/3 (code contradicts comment)
-  - Non-silent shows “Do not disturb!” upon PIR activity for 5s
-- Delete/reset users:
-  - “Reset All”: calls FaceRec_ClearAllUsers, shows progress, awaits success or timeout
-  - “Reset Single”: UI prompt only; no actual implementation
+External modules and assumptions
+- Auto_Check(): performs calibration to determine travel limits; sets diff_sumup and check_flag. Not shown here, but required for correct operation.
+- Motor_* functions: abstract motor command transport and current sensing.
+- XY_MB06BA_*: Bluetooth stack for command parsing and AT control (disconnect commands).
+- IMU drivers: control the JY61P UART IMU and LSM6DSV16X for yaw and sleep management.
+- FRadar_*: configure radar threshold and persist it (code writes 512; a comment mentions 2000 mm, which appears inconsistent).
+- LowPower_SetSleepFlag(1): likely signals another part of the system to actually enter a low-power mode.
 
-Error handling and safeguards
-- Flash writes:
-  - Aligns addresses to 8 bytes, writes with doubleword program
-  - Saves compute CRC and verifies by re-reading the record
-  - If verify fails: shows failure state
-- Flash read:
-  - Detects erased state by checking for all-0xFF words
-  - Validates CRC; returns false on mismatch
-- BLE MAC:
-  - Validates CRC, valid flag, rejects all-zero and all-FF
-  - Page erased on each save; read-back verification performed
-- Key event queue:
-  - On overflow: drops oldest to keep most recent events
-- LoRa flag:
-  - Acks with specific messages; clears flags to avoid reprocessing
-- Default state:
-  - Unknown system_state falls back to error message and SYSTEM_IDLE
-- Limitations and assumptions:
-  - Debounce disabled (KEY_DEBOUNCE_TIME_MS=0). Short press detection may be noisy.
-  - Only user ID 1 is edited. Saving a config erases all user data pages, which is destructive to multi-user scenarios (even though layout supports up to 56 users).
-  - “Reset Single” is not implemented; UI prompts but no deletion logic.
-  - DND exit condition in code is any short press, despite the “long press” comment.
-  - Get_key_Num() performs I/O (battery update and HC15 message) every scan; consider separating concerns or reducing scan frequency.
-  - UART “DIY frame” helper is not invoked in this module.
+Notable inconsistencies and limitations
+- MESSAGE_TIMEOUT_MS is defined as 100 ms while comment states “10s”. If intended to be 10 seconds, adjust the define to 10000.
+- Stall detection comments vs. thresholds mismatch: comments say “1 s / 3 degrees”; code uses 1.5 s and 0.1 deg.
+- Radar distance save comment says 2000 mm, but code uses 512. Verify desired threshold unit and value.
+- Heavy reliance on global externs (yaw, flags) makes reasoning about concurrency harder; ensure atomic updates or task-safe signaling.
+- There is no explicit sanity check that diff_sumup is non-zero or within expected range before using it as a target.
+- closing_inpurrt spelling suggests “close-in-input”; it is used to preempt reverse when an open command arrives. This behavior should be documented for operators since it can interrupt closing motion.
 
-Suggested flowchart structure (nodes and edges)
-- Top-level states:
-  - Start -> MENU_ACTIVE (on boot not shown, but menu is primary interaction)
-  - MENU_ACTIVE -> menu1 loop (Key 1/3 nav, Key 2 confirm, Key 3 long -> Do_not_disturb, Key 2 long -> Calibration)
-  - menu1 confirm:
-    - 1 -> handle_config_menu -> menu3_angle_speed
-      - Angle/Speed/Auto Close cycle with Key 2
-      - Save -> Flash_EraseAllUserData -> Flash_Write64BitAligned -> Verify
-        - Success -> FACE_ENROLL_SUCCESS -> MENU_ACTIVE
-        - Fail -> FACE_ENROLL_FAIL -> MENU_ACTIVE
-      - Exit -> FACE_ENROLL_FAIL -> MENU_ACTIVE
-    - 2 -> handle_else_mode_menu -> menu2_else_mode_with_return
-      - 1 DND -> Do_not_disturb
-      - 2 Door Reset -> handle_Reset_menu -> back to menu1 -> MENU_ACTIVE
-      - 3 Back -> return to menu1 -> MENU_ACTIVE
-    - 3 Back -> SYSTEM_IDLE
-  - Do_not_disturb:
-    - silent? yes -> blank screen; no -> if PIR within 5s, show message
-    - Any short press key 1/2/3 -> SYSTEM_IDLE
-  - SYSTEM_IDLE:
-    - After 2s -> AT+DISCONN toggles, set low power, clear OLED
-    - Any path returns to switch loop
-  - FACE_* states:
-    - FAIL/SUCCESS -> show message -> MENU_ACTIVE
-- Background interactions:
-  - Key_GetEvent:
-    - Pop queue
-    - Fallback to Get_key_Num if external scanning disabled
-      - Per-key FSM, generate short/long press events
-  - Flash routines on Save:
-    - Erase pages
-    - Aligned write
-    - Read-back verify
+Suggested flowchart structure (nodes and branch triggers)
+- Start
+  - Init Flash, restore diff_sumup and check_flag
+  - If check_flag: motor power off
+- Loop (10 ms)
+  - Update bus current; BLE parse
+  - Branch: Calibrated?
+    - No:
+      - If lora_rx_flag: Auto_Check(); clear rx buffer; Wake_time = now
+      - Go to Loop end
+    - Yes:
+      - Idle timeout branch:
+        - If now - Wake_time > 15000 and |yaw| < 10: Low-power sequence, set sleep flag
+        - Else if now - Wake_time > 15000: motor_runing_flag_r = 1
+      - LoRa parser branch (if lora_rx_flag):
+        - If “AA00”: power on; aa00_motor_enabled = true; last_message_time = now
+        - Else if “AAxy”: set speed/angle levels; face_control_flag=1; commandExecuted=1; motor_runing_flag=1; closing_inpurrt=1
+        - Else if “AAOF”: close_flag=1
+        - Else if “AARE”: check_flag=0 (re-enter calibration)
+      - Opening controller branch:
+        - Condition: (commandExecuted || ahead_flag) and yaw < diff_sumup and separation > 2 deg OR motor_runing_flag==1
+        - If Motor_Init==0: power on; move_start=now; init; speed_control once
+        - Compute threshold and speed; send command
+        - Stop if near target/overshoot/stall
+          - On stop: stop motor, clear flags, power off
+          - If close_flag: set commandExecuted_r=1; motor_runing_flag_r=1
+        - Else: if not in conditions: clear forward flags
+      - Closing controller branch:
+        - Condition: (commandExecuted_r || back_flag) and yaw > 0 and |yaw|>2 deg OR motor_runing_flag_r==1
+        - If Motor_Init_r==0: power on; move_start=now; init; speed_control once
+        - Compute speed toward 0; send command
+        - Stop if near zero/undershoot/stall or closing_inpurrt==1
+          - If no collision and not preempted: back-off, power down, low-power sequence
+          - If preempted: switch to opening (motor_runing_flag=1; Motor_Init=0)
+        - Else: if not in conditions: clear reverse flags
+      - AA00 keep-power branch:
+        - If aa00_motor_enabled:
+          - If moving: last_message_time = now
+          - Else if now - last_message_time > MESSAGE_TIMEOUT_MS: power off; aa00_motor_enabled=false
+      - PB6 edge branch:
+        - If edge detected and no motion: motor_runing_flag=1 (start opening)
+  - Loop end: osDelay(10)
 
-Operational tips for non-developers
-- To configure radar behavior:
-  - From main menu, select the first icon (Config)
-  - Use left/right to navigate; press confirm to enter
-  - Adjust Angle, Speed, and Auto Close; navigate to Save and press confirm
-  - Wait for the “Config Success” message
-- To enter Do Not Disturb:
-  - From main menu, long-press the right key (or choose Else Mode -> Do Not Disturb)
-  - In silent DND, the screen stays blank; press any key to exit
-- To calibrate door maximum opening:
-  - Long-press the middle key on the main menu, or choose Else Mode -> Door Reset
-  - Follow on-screen prompts and confirm; wait for progress to complete
-- To reset face users:
-  - Use the Delete menu (if wired to UI elsewhere). “Reset All” is implemented; “Reset Single” is only a placeholder prompt.
+Data and timing constants
+- Motor_P = 40: proportional gain from angle error to speed.
+- Speed limits from LoRa: 600 / 1200 / 2000.
+- Angle divisors: 3 / 2 / 1 for small/medium/large opens.
+- Forward stop tolerance: 5 degrees near thresholds.
+- Reverse bias: 3 degrees added in control term to ensure closing force.
+- Idle timeout to sleep/force-close: 15000 ms.
+- AA00 timeout: defined as 100 ms (verify).
 
-Glossary of key modules and functions
-- Flash storage:
-  - Flash_LoadUserConfig, Flash_SaveUserConfig, Flash_EraseAllUserData, Flash_GetDefaultUserConfig
-  - Flash_LoadBLEAddress, Flash_SaveBLEAddress, Flash_ClearBLEAddress
-  - Flash_Write64BitAligned (internal)
-- UI/menus:
-  - menu1 (main), menu2_delete_with_return, menu2_else_mode_with_return, menu3_angle_speed
-  - handle_config_menu, handle_delete_menu, handle_else_mode_menu, handle_Reset_menu
-  - OLED_* drawing, battery overlays, progress bar, animations
-- Keys:
-  - Key_Scan_SetExternalMode, KeyEvent_Push, Key_GetEvent, Get_key_Num (FSM)
-- State machine:
-  - Flash_Task (main loop), process_main_menu
-- External:
-  - HC15_SendMessage (beacons and calibration control)
-  - XY_MB06BA_SendATCommand (pre-sleep)
-  - FaceRec_* for user reset
-  - Battery_Update/Battery_GetInfo for battery readings
-  - PowerMgmt_SetLowPowerMode, GPIO control (NMOS)
-
-Potential improvements and cautions
-- Re-enable debouncing with a nonzero KEY_DEBOUNCE_TIME_MS (e.g., 12–20ms).
-- Separate peripheral updates (battery, HC15 heartbeats) from key scanning, or throttle scanning with KEY_SCAN_INTERVAL_MS.
-- Fix DND exit logic or update user-facing comments to match behavior.
-- Avoid erasing all user data when saving a single user; use page-aware update (Flash_SaveUserConfig) or an index layer.
-- Implement the “Reset Single” flow or remove the menu option.
-- Align function name FLASH_SendDIYFrame_UART1 with actual UART used (huart2) if enabling it.
-
-This documentation focuses on how each menu and state is triggered, what each selection does, and how data persists, so a flowchart engine can map nodes (states/menus) and edges (key presses, flags, timeouts) directly.
+This narrative enumerates all commands, branches, and triggers so a downstream flowchart can model the state machine, including motion start/stop conditions, low-power transitions, and AA00 keep-power management.

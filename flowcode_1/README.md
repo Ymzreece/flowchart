@@ -33,16 +33,19 @@ Alternatively, you can place it in a `.env` file and load it manually, or edit `
 
 ## Usage
 
-1. Edit `prompt.md` with the text you want the model to use (e.g., copy/paste code, describe a repo, etc.).
-2. Run the generator (defaults to rich-text output):
+1. Edit `prompt.md` with the instructions you want the model to follow (keep high-level guidance here).
+2. Provide source files directly via `--include` (optional, can be repeated) so you don’t have to paste code into the prompt template.
+3. Run the generator (defaults to rich-text output):
 
    ```bash
    python flowchart_generator.py \
      --prompt prompt.md \
+     --include path/to/source.c \
+     --include path/to/README.md \
       --output flow_explanation.txt
    ```
 
-3. The response is written to `flow_explanation.txt`. Keep this file for Stage 2 (`flowcode_2/graph_generator.py`) to turn into a structured flowchart.
+4. The response is written to `flow_explanation.txt`. Keep this file for Stage 2 (`flowcode_2/graph_generator.py`) to turn into a structured flowchart.
 
 ## Next Steps
 
