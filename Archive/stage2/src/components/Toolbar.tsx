@@ -1,11 +1,15 @@
 import { ChangeEvent } from "react";
 import { useFlowStore } from "@hooks/useFlowStore";
 import type { ModuleGraph } from "@lib/graphSchema";
+import { useTranslation } from "@i18n/useTranslation";
+import { availableLanguages, type SupportedLanguage } from "@i18n/strings";
 
 export function Toolbar() {
   const loadGraph = useFlowStore((state) => state.loadGraph);
   const currentModule = useFlowStore((state) => state.currentModule);
   const currentFunction = useFlowStore((state) => state.currentFunction);
+  const setLanguage = useFlowStore((state) => state.setLanguage);
+  const { t, language } = useTranslation();
 
   const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -36,12 +40,22 @@ export function Toolbar() {
   return (
     <div className="toolbar">
       <label className="toolbar__upload">
-        <span>Import JSON</span>
+        <span>{t("importJson")}</span>
         <input type="file" accept="application/json" onChange={handleFileUpload} hidden />
       </label>
       <button type="button" className="toolbar__button" onClick={handleExport} disabled={!currentFunction}>
-        Export JSON
+        {t("exportJson")}
       </button>
+      <label className="toolbar__language">
+        <span>{t("languageLabel")}</span>
+        <select value={language} onChange={(event) => setLanguage(event.target.value as SupportedLanguage)}>
+          {availableLanguages.map((entry) => (
+            <option key={entry.value} value={entry.value}>
+              {t(entry.labelKey)}
+            </option>
+          ))}
+        </select>
+      </label>
       {currentFunction && (
         <div className="toolbar__info">
           <strong>{currentFunction.name}</strong>

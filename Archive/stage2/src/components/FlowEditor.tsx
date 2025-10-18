@@ -15,6 +15,7 @@ import "reactflow/dist/style.css";
 import { useFlowStore } from "@hooks/useFlowStore";
 import { toReactFlowGraph } from "@lib/transformer";
 import { highlightConnectedEdges, highlightNodes } from "@lib/highlightUtils";
+import { useTranslation } from "@i18n/useTranslation";
 
 export function FlowEditor() {
   return (
@@ -28,6 +29,8 @@ function FlowEditorInner() {
   const currentFunction = useFlowStore((state) => state.currentFunction);
   const selectNode = useFlowStore((state) => state.selectNode);
   const selectedNodeId = useFlowStore((state) => state.selectedNodeId);
+  const language = useFlowStore((state) => state.language);
+  const { t } = useTranslation();
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -39,10 +42,10 @@ function FlowEditorInner() {
       setEdges([]);
       return;
     }
-    const { nodes: rfNodes, edges: rfEdges } = toReactFlowGraph(currentFunction);
+    const { nodes: rfNodes, edges: rfEdges } = toReactFlowGraph(currentFunction, language);
     setNodes(rfNodes);
     setEdges(rfEdges);
-  }, [currentFunction, setNodes, setEdges]);
+  }, [currentFunction, language, setNodes, setEdges]);
 
   const onConnect = (connection: Connection) => {
     setEdges((eds) => addEdge(connection, eds));
@@ -95,7 +98,7 @@ function FlowEditorInner() {
       </ReactFlow>
       {!hasNodes && (
         <div className="flow-empty">
-          <p>Import a flow JSON file to begin editing.</p>
+          <p>{t("fallbackMessage")}</p>
         </div>
       )}
     </div>

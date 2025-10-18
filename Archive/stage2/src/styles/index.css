@@ -82,6 +82,23 @@ html,
   color: #4b5563;
 }
 
+.toolbar__language {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #1f2937;
+}
+
+.toolbar__language select {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: #1f2937;
+  font-size: 0.9rem;
+}
+
 .function-layout {
   flex: 1;
   display: grid;

@@ -1,13 +1,19 @@
+import { useMemo } from "react";
 import { useFlowStore } from "@hooks/useFlowStore";
+import { useTranslation } from "@i18n/useTranslation";
+import { createContentTranslator } from "@i18n/translator";
 
 export function NodeSidebar() {
   const currentFunction = useFlowStore((state) => state.currentFunction);
   const selectedNodeId = useFlowStore((state) => state.selectedNodeId);
+  const language = useFlowStore((state) => state.language);
+  const { t } = useTranslation();
+  const translator = useMemo(() => createContentTranslator(language), [language]);
 
   if (!currentFunction) {
     return (
       <aside className="node-sidebar">
-        <p>Load a graph to get started.</p>
+        <p>{t("loadGraphPrompt")}</p>
       </aside>
     );
   }
@@ -16,24 +22,24 @@ export function NodeSidebar() {
 
   return (
     <aside className="node-sidebar">
-      <h2>Node Details</h2>
+      <h2>{t("nodeDetails")}</h2>
       {node ? (
         <dl>
-          <dt>ID</dt>
+          <dt>{t("fieldId")}</dt>
           <dd>{node.id}</dd>
-          <dt>Type</dt>
+          <dt>{t("fieldType")}</dt>
           <dd>{node.kind}</dd>
           {node.summary && (
             <>
-              <dt>Summary</dt>
-              <dd>{node.summary}</dd>
+              <dt>{t("fieldSummary")}</dt>
+              <dd>{translator.translateNodeLabel(node.summary, node.metadata)}</dd>
             </>
           )}
-          <dt>Code</dt>
+          <dt>{t("fieldCode")}</dt>
           <dd>{node.label}</dd>
           {node.location && (
             <>
-              <dt>Source</dt>
+              <dt>{t("fieldSource")}</dt>
               <dd>
                 {node.location.file_path}:{node.location.line}
               </dd>
@@ -41,7 +47,7 @@ export function NodeSidebar() {
           )}
         </dl>
       ) : (
-        <p>Select a node to inspect its details.</p>
+        <p>{t("selectNodePrompt")}</p>
       )}
     </aside>
   );

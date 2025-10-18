@@ -1,280 +1,365 @@
-**System overview and context**
+System overview and purpose
+- This firmware runs on an STM32L431 (FreeRTOS/CMSIS-OS) and provides a small on-device UI (OLED + 3 keys) for configuring and operating a radar-driven door device. It stores user configuration in internal Flash, manages a “Do Not Disturb” (DND) mode, supports a hidden door calibration flow, and integrates with several peripherals:
+  - OLED display for UI and animations
+  - Three physical keys (short/long press)
+  - Battery sensor (with on-screen icon and low-battery notifier)
+  - PIR motion sensor (for DND feedback)
+  - Bluetooth modules (HC15-like and XY_MB06BA via AT)
+  - LoRa (rx flag handled)
+  - Face recognition module (for “reset all users”)
+  - Internal Flash for user configs and BLE MAC storage
+- The primary control loop is a state machine in the FreeRTOS task Flash_Task, which drives the top-level behavior and menu navigation, reacting to button events, timers, and flags.
 
-This firmware runs on an STM32L431-based door-control unit that combines face-recognition, radar/LiDAR sensing, and remote communications (LoRa and Bluetooth) to manage door opening behaviour. A small OLED display and three physical keys provide local interaction. The code you supplied focuses on the “Flash task” thread that supervises user interaction, menu navigation, persistent storage of user-specific door parameters, and integration with other subsystems (battery monitoring, PIR sensor, LoRa, Bluetooth, radar calibration, face recognition). Device state is tracked through a global `system_state` enum, and most logic pivots on state transitions triggered by button events, sensor inputs, or external commands.
+High-level flow: inputs to outputs
+- Inputs:
+  - Key presses: 3 buttons generating short press codes 1/2/3 and long press codes 11/12/13
+  - PIR sensor: motion detection
+  - LoRa receive flag: lora_rx_flag (extern)
+  - Battery readings: via Battery_Update()
+  - Timers: HAL_GetTick-based timing for animations and timeouts
+- Processing:
+  - A global system_state enum drives the UI and peripheral actions
+  - Menus render to the OLED; key events drive menu selection and confirmation
+  - Configuration actions load/write Flash with CRC, show progress bars, and verify results
+  - DND mode alters behavior and display
+- Outputs:
+  - OLED UI displays menus, messages, animations, battery icon
+  - UART messages to HC15-style module (AA… markers, calibration control)
+  - AT commands to XY_MB06BA for Bluetooth disconnects before sleep
+  - Writes to Flash memory for config and BLE address
+  - Face recognition module control (clear all users)
+  - GPIO outputs for power/NMOS control
 
-**High-level flow from inputs to outputs**
+Top-level state machine (Flash_Task)
+- Loop: endless for(;;) with a switch over system_state
+- Common LoRa handling (outside switch):
+  - If not in DND and lora_rx_flag==1: send “AARI55” via HC15, clear flag
+- States:
+  - Do_not_disturb
+    - Sends “AA0055” heartbeat
+    - If lora_rx_flag==1: send “AARF55”, clear flag
+    - Exit condition: any short press on keys 1/2/3 transitions to SYSTEM_IDLE and clears silent_do_not_disturb (note: comment claims “long press key 3”, but code exits on any short press)
+    - If silent_do_not_disturb is true: screen remains blank
+    - Else (non-silent DND): if PIR triggers within last 5 seconds, show “Do not disturb!” framed message; otherwise keep display blank
+  - SYSTEM_IDLE
+    - After 2 seconds of idle: prepares for low-power
+      - Sends AT+DISCONN toggles to XY_MB06BA
+      - Sets certain GPIO pins high, clears OLED, ensures NMOS gate (PC2) off, PowerMgmt_SetLowPowerMode(1)
+    - Clears OLED frequently; short delay
+  - FACE_VERIFYING: delay (placeholder, integration point)
+  - FACE_VERIFY_SUCCESS: no-op here (integration point)
+  - FACE_VERIFY_FAIL: shows “Radar Failed / No detection”, returns to SYSTEM_IDLE and clears all_control
+  - FACE_ENROLL_SUCCESS: shows “Config Success / Settings saved”, transitions to MENU_ACTIVE
+  - FACE_ENROLL_FAIL: transitions to MENU_ACTIVE
+  - FACE_DELETE_SUCCESS: shows “Reset Success / Data cleared”, transitions to MENU_ACTIVE, clears Delete flag
+  - FACE_DELETE_FAIL: shows “Reset Failed / Try again”, transitions to MENU_ACTIVE, clears Delete flag
+  - MENU_ACTIVE
+    - Sets face_enroll_in_progress = true
+    - Calls menu1() (main menu); if not entering DND, processes choice via process_main_menu()
+    - If still not in DND, sets SYSTEM_IDLE
+    - Sets face_enroll_in_progress = false
+  - default: shows “System Error / Unknown state”, then SYSTEM_IDLE
 
-1. **Inputs collected continually**
-   - Three hardware keys (short press, long press).
-   - Battery sensor readings.
-   - PIR motion sensor.
-   - LoRa “lora_rx_flag” indicator from radio stack.
-   - Face-recognition success/fail callbacks (through global flags).
-   - Bluetooth/XY-MB06BA module connection feedback.
-2. **Event processing**
-   - Key events are debounced and queued; UI logic pulls from a queue-like interface, making the code safe for polling or interrupt-driven key scanning.
-   - The FreeRTOS `Flash_Task` loops forever, checking `system_state` and delegating to menu handlers or service routines accordingly.
-3. **State-driven actions**
-   - If idle, the system waits for user input, shows minimal UI, and can drop into low-power mode.
-   - Menu states render OLED screens, accept user choices, and call specific handlers (configuration, delete, do-not-disturb, door reset).
-   - Face enrolment / deletion states present progress bars and status messages, using radar/face modules to complete operations.
-   - Do-not-disturb state suppresses outputs and listens for an exit key press or PIR motion triggers.
-4. **Outputs**
-   - OLED feedback (menus, progress bars, status prompts).
-   - Flash memory updates for user configuration or BLE MAC address.
-   - UART/HC15 Bluetooth module messages (diagnostic strings such as `AA0055`, `AARE55`, etc.).
-   - XY-MB06BA module AT commands to manage Bluetooth disconnection.
-   - LoRa responses (`AARI55`, `AARF55`) when packets arrive.
-   - GPIO control for power management (e.g., NMOS gate, door actuators).
+Key input handling and events
+- Event queue:
+  - KeyEvent_Push(int code) allows an external key-scanning task to feed events into a ring buffer (size 16). If full, oldest is dropped to keep newest.
+  - Key_GetEvent():
+    - Pops from queue if available
+    - If external scanning is not enabled: falls back to internal scan Get_key_Num()
+    - If external scanning is enabled and queue is empty: returns 0 (no event)
+  - Key_Scan_SetExternalMode(bool): enable/disable external feed mode
+- Internal scanner Get_key_Num()
+  - Non-blocking finite state machine per key (three keys), with phases:
+    - IDLE -> BOUNCE_PRESS -> PRESSED -> LONG_REPORTED -> BOUNCE_RELEASE -> IDLE
+  - Returns once per event:
+    - Short press: 1,2,3
+    - Long press (>= 1500ms): 11,12,13
+    - Long press is emitted once when threshold is reached; short press isn’t emitted afterward
+  - Debounce constants:
+    - KEY_DEBOUNCE_TIME_MS = 0 (no debounce currently)
+    - KEY_LONG_PRESS_TIME_MS = 1500
+  - Side effects each scan:
+    - Battery_Update(); OLED_Battery_SetLevel()
+    - Sends HC15_SendMessage("AA0055") heartbeat
+  - Notes and limitations:
+    - With debounce at 0 ms, chattering can occur; consider raising KEY_DEBOUNCE_TIME_MS to 12–20ms
+    - The scanner does battery/UI updates and sends a message every scan; keep scan rate moderate to avoid UART flooding and UI flicker
 
----
+Main menu and navigation (menu1)
+- Presentation: icon-based menu with 3 items. Battery icon and notifier drawn in the corner.
+- Entry behavior:
+  - Resets selection flag to 1 (first item)
+  - Initializes an icon cursor blink
+- Controls:
+  - Key 1 (short): move left (wrap 1↔3)
+  - Key 3 (short): move right (wrap 3↔1)
+  - Key 2 (short): confirm; returns selected item number 1..3
+  - Key 3 (long, code 13): enter Do Not Disturb (silent) immediately; sets system_state=Do_not_disturb and returns 0
+  - Key 2 (long, code 12): opens hidden door calibration flow handle_Reset_menu()
+- Return:
+  - Returns 1..3 for a selection, or 0 if interrupted (DND or calibration)
 
-### Core subsystems and their responsibilities
+Submenus and flows
+- Config menu (item 1 in main menu)
+  - handle_config_menu()
+    - Intro animation: “Radar Config”
+    - Loads current config for selected_user_id=1 via Flash_LoadUserConfig()
+      - If not found: calls Flash_GetDefaultUserConfig() and shows “Loading defaults...”
+      - Else: shows “Loading config...”
+    - Copies loaded values into editing buffers:
+      - debug_temp_angle, debug_temp_speed, debug_open_or_not_flag
+    - Shows “Config ID: 1”
+    - Opens angle/speed editor menu3_angle_speed()
+      - Items (navigate with key 1/3; action with key 2):
+        1. Angle: cycles Small/Medium/Large
+        2. Speed: cycles Slow/Moderate/Fast
+        3. Auto Close: toggles Yes/No
+        4. Save: returns 1 (commit)
+        5. Exit: returns 0 (cancel)
+      - Selection is highlighted; battery icon overlays
+    - If saved:
+      - Shows “Saving config...”, runs a 2s progress animation
+      - Prepares user_cfg_diy with user_id=1 and selected fields
+      - Erases all user data pages via Flash_EraseAllUserData() (global wipe; see limitation)
+      - Unlock Flash, compute aligned address = FLASH_USER_BASE_ADDR + user_id * 256 (aligned to 8 bytes)
+      - Computes CRC (XOR over all bytes except crc), writes via Flash_Write64BitAligned()
+      - Locks Flash
+      - Verifies by reloading and comparing fields
+      - Shows success or failure message, sets state FACE_ENROLL_SUCCESS or FACE_ENROLL_FAIL
+    - If canceled:
+      - Sets state FACE_ENROLL_FAIL (treated as “no changes saved”)
+- Else Mode menu (item 2 in main menu)
+  - handle_else_mode_menu() opens menu2_else_mode_with_return()
+    - Items:
+      1. Do Not Disturb: sets silent_do_not_disturb=true; system_state=Do_not_disturb; returns
+      2. Door Reset: invokes the same hidden calibration flow handle_Reset_menu()
+      3. Back: return to previous menu
+- Back (item 3 in main menu)
+  - Clears OLED, sets state SYSTEM_IDLE, and clears all_control
 
-#### 1. State machine and main FreeRTOS task (`Flash_Task`)
-- Runs continually, switching behaviour based on `system_state`.
-- Handles side chores every loop: LoRa message acknowledgement, low-power entry, drawing blank screens.
-- Key states and actions:
-  - **`SYSTEM_IDLE`**: waits two seconds before initiating low-power mode (Bluetooth disconnect commands, turning off display, powering down NMOS). Keeps clearing the display.
-  - **`MENU_ACTIVE`**: launches the top-level menu (see below), then depending on selection, returns to idle unless Do Not Disturb was activated.
-  - **`Do_not_disturb`**: sends command to Bluetooth module, suppresses display if in silent mode, still responds to PIR events by showing “Do not disturb!” for 5 seconds. Keys 1/2/3 exit the mode.
-  - **Face operation states** (`FACE_VERIFYING`, `FACE_VERIFY_SUCCESS`, `FACE_VERIFY_FAIL`, `FACE_ENROLL_SUCCESS`, `FACE_ENROLL_FAIL`, `FACE_DELETE_SUCCESS`, `FACE_DELETE_FAIL`): display appropriate messages, manage progress bars, and return to menu or idle on completion/failure.
-  - **Default**: catches any undefined state, shows “System Error”, resets to idle.
-- Error handling: if writing to flash or other operations fail, the state machine moves to the appropriate fail state (e.g., `FACE_ENROLL_FAIL`). Unknown states fall back to idle with a warning.
+Delete/reset face users flow
+- handle_delete_menu()
+  - Presents menu2_delete_with_return() with:
+    - 1: Reset All
+    - 2: Reset Single
+    - 3: Back
+  - If 1 (Reset All):
+    - Sets Delete=true
+  - If 2 (Reset Single):
+    - Only shows “Reset Single / Press any key” and waits for any key; no actual single deletion logic is implemented
+  - When Delete==true:
+    - Shows “Resetting...”, starts a 5s progress bar
+    - Calls FaceRec_ClearAllUsers() repeatedly, processes incoming data via FaceRec_Process() if available
+    - If FaceRec_IsDeleteSuccess(): marks delete_success=true and completes progress at 100%
+    - On timeout or failure: delete_success remains false
+  - Sets system_state to FACE_DELETE_SUCCESS or FACE_DELETE_FAIL and resets Delete flag accordingly
 
-#### 2. Key scanning and event queue
-- Three physical buttons (indices 0–2) map to numeric event codes:
-  - **Short presses** return codes `1`, `2`, `3`.
-  - **Long presses** (≥ 1500 ms) return `11`, `12`, `13`.
-- `Get_key_Num()` runs a non-blocking finite-state machine per button to debounce and detect long presses:
-  - Stages: `IDLE` → `BOUNCE_PRESS` → `PRESSED` → (`LONG_REPORTED`) → `BOUNCE_RELEASE` → back to `IDLE`.
-  - Only one event is emitted per press to avoid duplication.
-- `KeyEvent_Push()` and `Key_GetEvent()` implement a small (16-element) FIFO queue:
-  - If an external scanning thread is used, it pushes key codes into the queue.
-  - Menu logic always consumes from `Key_GetEvent()`, which pulls from the queue first, otherwise falls back to `Get_key_Num()` when external scanning isn’t active.
-  - Queue overflow discards the oldest event to preserve the latest input.
-- Side effects inside key scanning include battery status updates (refresh battery icon) and periodic `HC15_SendMessage("AA0055")`, implying the key poller doubles as a general housekeeping routine.
+Hidden “Door Calibration” flow (also exposed via Else Mode)
+- handle_Reset_menu()
+  - On entry: sends “AARE55” via HC15
+  - UI: framed “Door Calibration” screen with instructions
+  - Waits for any key to confirm that the door is open to maximum
+  - Sends “AA0055” via HC15
+  - Shows a 10-second blocking progress bar “Calibrating...”
+  - Shows “Calibration Complete!” screen with a checkmark
+  - Returns to main menu
 
-#### 3. Top-level icon menu (`menu1`)
-- Presents three icon options:
-  1. **Config** (`flag == 1`)
-  2. **Else Mode** (`flag == 2`)
-  3. **Back** (`flag == 3`)
-- Navigation/confirm keys:
-  - **Key 1** (short press) moves selection left; wraps from 1 to 3.
-  - **Key 3** moves selection right; wraps from 3 to 1.
-  - **Key 2** confirms and returns the selected flag.
-  - **Key 13** (long press on key 3) activates Do Not Disturb immediately (`silent_do_not_disturb = true`) and exits the menu.
-  - **Key 12** (long press on key 2) opens the hidden Door Calibration routine.
-- Display logic redraws icons only when the selection changes; always overlays battery status.
+Do Not Disturb mode details
+- Enter triggers:
+  - Long press key 3 from main menu
+  - Else Mode menu choice “Do Not Disturb”
+- Silent vs non-silent behavior:
+  - silent_do_not_disturb=true: blank screen; minimal UI
+  - Else: shows “Do not disturb!” framed message for 5 seconds after PIR motion; otherwise blank
+- Exit trigger:
+  - Code checks for any short press on keys 1,2, or 3; it does not enforce a long press (despite the comment). On exit, clears silent_do_not_disturb and sets SYSTEM_IDLE.
 
-#### 4. Configuration workflow (`handle_config_menu`)
-- Triggered when `menu1` returns `1`.
-- Steps:
-  1. Slides in “Radar Config” animation.
-  2. Selects `user_id = 1` (currently single-user assumption).
-  3. Attempts to load configuration from flash; if missing, loads defaults (`angle=1`, `speed=1`, `auto-close=1`).
-  4. Shows the current user ID and config values.
-  5. Enters **menu3 (Angle/Speed)** for modification.
-- **Menu3 (Angle-Speed-Auto Close)**:
-  - Five options navigated by key 1/3:
-    1. Cycle door angle among `Small`, `Medium`, `Large`.
-    2. Cycle door speed among `Slow`, `Moderate`, `Fast`.
-    3. Toggle “Auto Close” between `Yes` and `No`.
-    4. **Save** (commits changes, returns 1).
-    5. **Exit** (cancel, returns 0).
-  - Key 2 applies the change for the highlighted option or confirms save/exit.
-  - Changing any option sets a “config changed” flag so the screen refreshes with new values.
-  - `debug_change_state` tracks editing stage, presumably for instrumentation.
-- Saving details:
-  - If user chose Save (`config_result == 1`), the firmware:
-    - Displays a “Saving config...” message and progress bar for ~2 seconds.
-    - Populates `user_cfg_diy` with the chosen parameters.
-    - Erases the entire user data Flash region (`Flash_EraseAllUserData()`), then writes the new configuration at an 8-byte aligned address (`FLASH_USER_BASE_ADDR + user_id * 256`).
-    - Adds CRC to detect corruption; verifies by re-loading and comparing fields.
-  - Success triggers `FACE_ENROLL_SUCCESS` state; failure sets `FACE_ENROLL_FAIL`.
-- Cancelling the menu (Exit without saving) immediately sets `FACE_ENROLL_FAIL` to return to the menu gracefully.
+Data storage design
+- Flash memory map (STM32L431 256KB total):
+  - Program: 0x08000000–0x0803C000 (240KB)
+  - User data: 0x0803C000–0x0803F800 (14KB = 7 pages)
+  - BLE address: 0x0803F800–0x08040000 (2KB page)
+- User configuration records (user_config_t from Flash.h)
+  - Allocation: 256 bytes per user slot; up to 56 users (fits 14KB region)
+  - Fields used: user_id, open_angle, open_speed, open_or_not_flag, reserved, crc
+  - Address per user: FLASH_USER_BASE_ADDR + user_id * 256, aligned to 8 bytes
+  - CRC: simple XOR of all bytes except the crc byte
+  - Access functions:
+    - Flash_LoadUserConfig(id, cfg):
+      - Checks erased state (0xFF), copies, verifies CRC
+    - Flash_SaveUserConfig(cfg):
+      - Page-aware save: if page is not erased, backs up the entire 2KB page to RAM, erases page, merges updated record into buffer, writes whole page back with 64-bit doublewords
+      - If target area is empty, writes aligned 64-bit chunks directly
+    - Flash_EraseAllUserData():
+      - Erases all 7 user-data pages (global wipe)
+    - Flash_GetDefaultUserConfig(cfg, id):
+      - Sets defaults: angle=1 (labeled 90 in comment but menu labels Small/Medium/Large), speed=1 (moderate), auto close=1 (Yes), computes CRC
+- BLE MAC address storage (separate region)
+  - Structure: 6-byte mac_address, is_valid flag (0x55), reserved (for alignment), crc (XOR)
+  - Stored at BLE_ADDRESS_FLASH_ADDR (0x0803F800), one 2KB page
+  - Flash_LoadBLEAddress():
+    - Rejects erased page, CRC mismatch, invalid flag, all-zeros or all-FF address
+  - Flash_SaveBLEAddress():
+    - Erases page, writes structure with CRC, reads back to verify
+  - Flash_ClearBLEAddress(): erases the page
+- Low-level write helper:
+  - Flash_Write64BitAligned(address, data, size): writes in 64-bit doublewords; requires 8-byte alignment; uses HAL_FLASH_Program with FLASH_TYPEPROGRAM_DOUBLEWORD
 
-#### 5. Else Mode menu (`handle_else_mode_menu`)
-- Triggered when `menu1` returns `2`.
-- Presents three text options via `menu2_else_mode_with_return()`:
-  1. **Do Not Disturb** – sets `silent_do_not_disturb = true` and `system_state = Do_not_disturb`, clears the display.
-  2. **Door Reset** – invokes the hidden calibration handler `handle_Reset_menu()`.
-  3. **Back** – returns to the main menu.
-- Navigation identical to other vertical menus: key 1 moves up, key 3 moves down, key 2 selects.
+Binary “DIY frame” over UART (not used in this file, but defined)
+- Function: FLASH_SendDIYFrame_UART1(uint16_t uid, uint8_t angle_idx, uint8_t speed_idx, uint8_t open_flag)
+- Port: uses huart2 despite the name
+- Frame: 7 bytes
+  - [0..1] Header: 0xFA 0xCE
+  - [2] UID low byte
+  - [3] UID high byte
+  - [4] Packed nibble: (speed_idx & 0x0F) << 4 | (angle_idx & 0x0F)
+  - [5] Open flag (1=open/auto, 0=closed/manual; interpretation by receiver)
+  - [6] CRC-8/MAXIM over first 6 bytes (init 0x00, poly 0x31 reflected -> XOR 0x8C in LSB-first)
+- Sent with HAL_UART_Transmit_IT()
 
-#### 6. Door calibration hidden menu (`handle_Reset_menu`)
-- Accessed via long press on key 2 in the top-level menu or via Else Mode → Door Reset.
-- Procedure:
-  1. Sends `HC15_SendMessage("AARE55")` to notify Bluetooth module.
-  2. Draws a framed instruction screen prompting user to open the door to the maximum angle and press any key.
-  3. Waits for any key event.
-  4. Sends `AA0055` to revert the Bluetooth signalling.
-  5. Runs a 10-second blocking progress bar (`Flash_ShowBlockingProgress(10000)`) to simulate calibration.
-  6. Shows a “Calibration Complete!” screen with a tick mark.
-  7. Returns to the top-level menu (screen cleared).
+OLED UI utilities in use
+- Drawing functions (examples):
+  - OLED_Clear, OLED_Update/OLED_Display (refresh), OLED_ClearArea
+  - OLED_ShowStringCentered, OLED_ShowMessageCentered
+  - OLED_DrawRectangle, OLED_DrawLine
+  - OLED_ShowProgressBar(x, y, width, percent, PROGRESS_SPEED_*)
+  - OLED_HighlightMenuLine(index, on)
+  - OLED_DrawIconMenu(selectedIndex, forceRedraw), OLED_InitIconMenuCursor
+  - Battery overlays: OLED_DrawBatteryIconTopRight, OLED_BatteryLowNotifier_Update, OLED_Battery_SetLevel
+  - Animation helper: OLED_ScrollTextInCentered(…, ANIMATION_SLIDE_DOWN, …)
+- Blocking progress helper:
+  - Flash_ShowBlockingProgress(duration_ms): draws a centered animating progress bar with small delays
 
-#### 7. Reset/Delete menu (`handle_delete_menu`)
-- Triggered when `menu1` returns `3`? (Actually return value 3 is “Back”, which sets system to idle. Delete menu might be invoked elsewhere or via face recognition UI.)
-- Uses `menu2_delete_with_return()` to present:
-  1. **Reset All**
-  2. **Reset Single**
-  3. **Back**
-- Choosing Reset All sets `Delete = true` and starts the delete process:
-  - Shows “Resetting...” message with a progress bar for up to 5 seconds.
-  - Calls `FaceRec_ClearAllUsers()` repeatedly and checks `FaceRec_IsDeleteSuccess()` to determine completion.
-  - Updates progress bar to 100% when success response is detected.
-  - Sets `system_state` to `FACE_DELETE_SUCCESS` or `FACE_DELETE_FAIL`.
-- Choosing Reset Single shows “Reset Single – Press any key” but doesn’t yet implement actual single-user deletion logic (placeholder).
-- Back returns without changes.
+External integrations and side effects
+- HC15-like Bluetooth module: HC15_SendMessage("AA0055"/"AARE55"/"AARI55"/"AARF55") used as status beacons and calibration control markers
+- XY_MB06BA BLE module: AT+DISCONN toggling before entering low power
+- Face recognition module: FaceRec_ClearAllUsers, FaceRec_Process, FaceRec_IsDeleteSuccess, FaceRec_HasDataAvailable (used in reset flow)
+- Radar integration: ld2450_integration.h included; interactions are not shown in this snippet
+- Battery sensor: Battery_Update, Battery_GetInfo; info.percentage displayed on OLED
+- Power control: PowerMgmt_SetLowPowerMode(1); NMOS gate (PC2) forced low before sleep
+- PIR sensor: read via HAL_GPIO_ReadPin(PIR_INPUT_GPIO_Port, PIR_INPUT_Pin)
 
-#### 8. Do Not Disturb state logic (`system_state == Do_not_disturb`)
-- Entered from:
-  - Long press key 3 in menu (`menu1`), which sets the `silent_do_not_disturb` flag.
-  - Else Mode → Do Not Disturb.
-- Behaviour:
-  - Sends `AA0055` command every loop iteration.
-  - If LoRa flag is set, sends `AARF55` and clears the flag.
-  - Any short press key 1/2/3 exits Do Not Disturb (note: comment says “long press key 3 to exit,” but code triggers on any short press, which might be a mismatch to clarify).
-  - When `silent_do_not_disturb` is true, the OLED remains blank.
-  - If not silent, a PIR trigger (pin high) causes a timed message “Do not disturb!” to display for 5 seconds before clearing.
+Important branches and triggers
+- Main menu selection (menu1):
+  - Key 1 short: move left; Key 3 short: move right
+  - Key 2 short: confirm (1=config, 2=else mode, 3=back)
+  - Key 3 long: enter DND (silent) and return 0
+  - Key 2 long: enter Calibration flow
+- Else Mode submenu:
+  - 1: Enter DND (silent)
+  - 2: Door Reset (Calibration)
+  - 3: Back
+- Config editor submenu (menu3_angle_speed):
+  - Items 1–3: key 2 cycles values, sets debug_temp_* variables and marks config changed
+  - Item 4 Save: returns 1, which triggers Flash erase/write/verify
+  - Item 5 Exit: returns 0 (cancel)
+- Do Not Disturb:
+  - Exit on any short press of keys 1/2/3 (code contradicts comment)
+  - Non-silent shows “Do not disturb!” upon PIR activity for 5s
+- Delete/reset users:
+  - “Reset All”: calls FaceRec_ClearAllUsers, shows progress, awaits success or timeout
+  - “Reset Single”: UI prompt only; no actual implementation
 
-#### 9. Power management and idle behaviour
-- `SYSTEM_IDLE` tries to reduce power after 2 seconds of inactivity:
-  - Sends multiple `AT+DISCONN` commands to XY_MB06BA module (with short delays) to ensure disconnection.
-  - Sets specific GPIO pins high/low to power down the door actuator driver (e.g., gating NMOS).
-  - Calls `PowerMgmt_SetLowPowerMode(1)` presumably to reduce MCU consumption.
-  - Clears the OLED.
-- Idle loops continue to clear the display and delay, keeping the device ready to wake (likely through button events or interrupts elsewhere in the system).
+Error handling and safeguards
+- Flash writes:
+  - Aligns addresses to 8 bytes, writes with doubleword program
+  - Saves compute CRC and verifies by re-reading the record
+  - If verify fails: shows failure state
+- Flash read:
+  - Detects erased state by checking for all-0xFF words
+  - Validates CRC; returns false on mismatch
+- BLE MAC:
+  - Validates CRC, valid flag, rejects all-zero and all-FF
+  - Page erased on each save; read-back verification performed
+- Key event queue:
+  - On overflow: drops oldest to keep most recent events
+- LoRa flag:
+  - Acks with specific messages; clears flags to avoid reprocessing
+- Default state:
+  - Unknown system_state falls back to error message and SYSTEM_IDLE
+- Limitations and assumptions:
+  - Debounce disabled (KEY_DEBOUNCE_TIME_MS=0). Short press detection may be noisy.
+  - Only user ID 1 is edited. Saving a config erases all user data pages, which is destructive to multi-user scenarios (even though layout supports up to 56 users).
+  - “Reset Single” is not implemented; UI prompts but no deletion logic.
+  - DND exit condition in code is any short press, despite the “long press” comment.
+  - Get_key_Num() performs I/O (battery update and HC15 message) every scan; consider separating concerns or reducing scan frequency.
+  - UART “DIY frame” helper is not invoked in this module.
 
----
+Suggested flowchart structure (nodes and edges)
+- Top-level states:
+  - Start -> MENU_ACTIVE (on boot not shown, but menu is primary interaction)
+  - MENU_ACTIVE -> menu1 loop (Key 1/3 nav, Key 2 confirm, Key 3 long -> Do_not_disturb, Key 2 long -> Calibration)
+  - menu1 confirm:
+    - 1 -> handle_config_menu -> menu3_angle_speed
+      - Angle/Speed/Auto Close cycle with Key 2
+      - Save -> Flash_EraseAllUserData -> Flash_Write64BitAligned -> Verify
+        - Success -> FACE_ENROLL_SUCCESS -> MENU_ACTIVE
+        - Fail -> FACE_ENROLL_FAIL -> MENU_ACTIVE
+      - Exit -> FACE_ENROLL_FAIL -> MENU_ACTIVE
+    - 2 -> handle_else_mode_menu -> menu2_else_mode_with_return
+      - 1 DND -> Do_not_disturb
+      - 2 Door Reset -> handle_Reset_menu -> back to menu1 -> MENU_ACTIVE
+      - 3 Back -> return to menu1 -> MENU_ACTIVE
+    - 3 Back -> SYSTEM_IDLE
+  - Do_not_disturb:
+    - silent? yes -> blank screen; no -> if PIR within 5s, show message
+    - Any short press key 1/2/3 -> SYSTEM_IDLE
+  - SYSTEM_IDLE:
+    - After 2s -> AT+DISCONN toggles, set low power, clear OLED
+    - Any path returns to switch loop
+  - FACE_* states:
+    - FAIL/SUCCESS -> show message -> MENU_ACTIVE
+- Background interactions:
+  - Key_GetEvent:
+    - Pop queue
+    - Fallback to Get_key_Num if external scanning disabled
+      - Per-key FSM, generate short/long press events
+  - Flash routines on Save:
+    - Erase pages
+    - Aligned write
+    - Read-back verify
 
-### Persistence, flash layout, and CRC protection
+Operational tips for non-developers
+- To configure radar behavior:
+  - From main menu, select the first icon (Config)
+  - Use left/right to navigate; press confirm to enter
+  - Adjust Angle, Speed, and Auto Close; navigate to Save and press confirm
+  - Wait for the “Config Success” message
+- To enter Do Not Disturb:
+  - From main menu, long-press the right key (or choose Else Mode -> Do Not Disturb)
+  - In silent DND, the screen stays blank; press any key to exit
+- To calibrate door maximum opening:
+  - Long-press the middle key on the main menu, or choose Else Mode -> Door Reset
+  - Follow on-screen prompts and confirm; wait for progress to complete
+- To reset face users:
+  - Use the Delete menu (if wired to UI elsewhere). “Reset All” is implemented; “Reset Single” is only a placeholder prompt.
 
-- Flash address map:
-  - **Program code**: 0x08000000–0x0803C000 (240 KB).
-  - **User data**: 0x0803C000–0x0803F800 (14 KB) for up to 56 user profiles (256 bytes each).
-  - **BLE address**: 0x0803F800–0x08040000 (2 KB), isolated from user data to avoid conflicts.
-- `user_config_t` structure (from `Flash.h`):
-  - Contains `user_id`, `open_angle`, `open_speed`, `open_or_not_flag`, reserved bytes, and an 8-bit CRC.
-- Flash handlers ensure 8-byte alignment when writing (`Flash_Write64BitAligned`), as required by STM32L4 double-word programming.
-- Functions:
-  - `Flash_LoadUserConfig` reads the block, checks for erased state (all 0xFF), and validates CRC.
-  - `Flash_SaveUserConfig` manages page erasure when necessary, logs CRC, and writes aligned data.
-  - `Flash_EraseAllUserData` wipes all seven 2KB pages reserved for user configs.
-  - `Flash_GetDefaultUserConfig` supplies fallback values.
-- BLE-specific functions mirror the approach with `ble_address_storage_t`: store a MAC, validity flag (0x55), and CRC.
+Glossary of key modules and functions
+- Flash storage:
+  - Flash_LoadUserConfig, Flash_SaveUserConfig, Flash_EraseAllUserData, Flash_GetDefaultUserConfig
+  - Flash_LoadBLEAddress, Flash_SaveBLEAddress, Flash_ClearBLEAddress
+  - Flash_Write64BitAligned (internal)
+- UI/menus:
+  - menu1 (main), menu2_delete_with_return, menu2_else_mode_with_return, menu3_angle_speed
+  - handle_config_menu, handle_delete_menu, handle_else_mode_menu, handle_Reset_menu
+  - OLED_* drawing, battery overlays, progress bar, animations
+- Keys:
+  - Key_Scan_SetExternalMode, KeyEvent_Push, Key_GetEvent, Get_key_Num (FSM)
+- State machine:
+  - Flash_Task (main loop), process_main_menu
+- External:
+  - HC15_SendMessage (beacons and calibration control)
+  - XY_MB06BA_SendATCommand (pre-sleep)
+  - FaceRec_* for user reset
+  - Battery_Update/Battery_GetInfo for battery readings
+  - PowerMgmt_SetLowPowerMode, GPIO control (NMOS)
 
----
+Potential improvements and cautions
+- Re-enable debouncing with a nonzero KEY_DEBOUNCE_TIME_MS (e.g., 12–20ms).
+- Separate peripheral updates (battery, HC15 heartbeats) from key scanning, or throttle scanning with KEY_SCAN_INTERVAL_MS.
+- Fix DND exit logic or update user-facing comments to match behavior.
+- Avoid erasing all user data when saving a single user; use page-aware update (Flash_SaveUserConfig) or an index layer.
+- Implement the “Reset Single” flow or remove the menu option.
+- Align function name FLASH_SendDIYFrame_UART1 with actual UART used (huart2) if enabling it.
 
-### Communications and external integrations
-
-- **HC15 Bluetooth module (`bluetooth_comm.h`)**
-  - `HC15_SendMessage()` used throughout; sample commands:
-    - `AA0055` likely a keep-alive or status request.
-    - `AARE55`, `AARI55`, `AARF55` used during calibration, LoRa response, and Do Not Disturb sequences.
-- **LoRa integration**
-  - `lora_rx_flag` external global triggers responses; when set, the Flash task replies with `AARI55` (in general state) or `AARF55` (Do Not Disturb context).
-- **XY_MB06BA module**
-  - `XY_MB06BA_SendATCommand("AT+DISCONN=1")`/`("AT+DISCONN=0")` toggled to manage Bluetooth disconnection in idle state; commands are sent twice in quick succession (perhaps for reliability).
-- **Face recognition module (`face_recognition.h`)**
-  - `FaceRec_ClearAllUsers`, `FaceRec_HasDataAvailable`, `FaceRec_Process`, `FaceRec_IsDeleteSuccess` manage deletion progress.
-  - `face_enroll_in_progress` flag indicates when menu interactions relate to enrollment/config.
-- **Radar/LiDAR (LD2450)**
-  - Not directly manipulated in this excerpt, but configuration is labelled “Radar Config,” implying these values communicate with radar integration via other modules.
-- **PIR sensor**
-  - Polled via `HAL_GPIO_ReadPin(PIR_INPUT_GPIO_Port, PIR_INPUT_Pin)` to flash Do Not Disturb messages when motion is detected.
-- **Battery sensor**
-  - `Battery_Update()`/`Battery_GetInfo()` returns a struct with a battery percentage; then draws battery level on the OLED.
-
----
-
-### Menus and branches summary
-
-- **Main Icon Menu (`menu1`)**
-  - Option 1 (Config) → `handle_config_menu()`.
-  - Option 2 (Else Mode) → `handle_else_mode_menu()`.
-  - Option 3 (Back) → sets `SYSTEM_IDLE` and clears control flag.
-  - Long press key 3 anywhere here → Do Not Disturb.
-  - Long press key 2 → Hidden Door Calibration.
-
-- **Configuration sub-menu**
-  - Angle/Speed screen has five items: Angle, Speed, Auto Close, Save, Exit.
-  - Angle cycles: `Small → Medium → Large` (presumably 90°, 120°, 180°).
-  - Speed cycles: `Slow → Moderate → Fast`.
-  - Auto Close toggles `Yes ↔ No`.
-  - Save writes config, progress bar.
-  - Exit cancels.
-
-- **Else Mode menu**
-  - Choice 1: Do Not Disturb.
-  - Choice 2: Door Reset (Calibration).
-  - Choice 3: Back.
-
-- **Delete menu (with back)**
-  - Choice 1: Reset All (calls face modules to clear all users).
-  - Choice 2: Reset Single (UI stub).
-  - Choice 3: Back.
-
----
-
-### Loops, timing, and background tasks
-
-- Most menu loops (`menu1`, `menu2_*`, `menu3_angle_speed`) poll `Key_GetEvent()` in a while-loop, with small `osDelay` calls (5–10 ms) to reduce CPU usage and flicker.
-- `Flash_ShowBlockingProgress` uses `HAL_GetTick()` to measure elapsed time, updates the progress bar roughly every 20 ms, and calls `osDelay(5)` inside the loop to yield.
-- `Flash_Task` includes `osDelay(1)` at the end of each iteration to avoid monopolizing the CPU.
-- Delete process loops while less than timeout, updates progress bar, polls `FaceRec_*` functions, sleeps 5 ms when there is no new data.
-- Idle state includes 50 ms delay after clearing display.
-
----
-
-### Error handling and fallback behaviour
-
-- Flash writes are wrapped with success checks; `save_success` gate ensures user is told “Config Saved” or “Save Failed.” Failures lead to `FACE_ENROLL_FAIL`.
-- Flash loads first check for erased state, then run CRC; CRC failure means configuration is treated as absent.
-- BLE MAC load/save functions return boolean success, verifying both CRC and validity flag; they also reject all-zero or all-FF addresses.
-- On unknown states in the main task, the user sees “System Error” and the system resets to idle.
-- `Get_key_Num()` ensures spurious bounces below the debounce threshold produce no key codes.
-- Delete process includes a 5-second timeout; if `FaceRec_IsDeleteSuccess()` never returns true, the code exits with `FACE_DELETE_FAIL`.
-
----
-
-### Assumptions and limitations
-
-- Only one user configuration (`user_id = 1`) is actively used, even though storage supports up to 56. Multi-user selection UI is not implemented.
-- Single-phase write: `handle_config_menu` erases the entire user data region before writing the new config. This is safe only if the system stores one record; with multiple users, this would wipe other entries.
-- Do Not Disturb exit responds to any short press; comments mention “long press key 3,” so documentation or behaviour should be reconciled.
-- `KEY_DEBOUNCE_TIME_MS` is set to zero in the supplied constants—likely adjusted for testing. In production it should be non-zero to remove mechanical bounce.
-- Calibration routine is blocking (waits 10 seconds); during that period, other tasks may be delayed.
-- Several external references (`lora_rx_flag`, `info`, `face_rec_running`) are not defined here, implying integration with other modules in the project.
-
----
-
-### Data structures and storage summary
-
-- **User config**
-  - Stored per-user (256-byte slot).
-  - Fields for door angle (1–3), speed (1–3), auto close flag (1/2).
-  - Protected by 8-bit XOR CRC.
-  - Flash addresses are forced to 8-byte alignment and require page erase before rewrite.
-- **BLE address**
-  - Stored separately in a 16-byte structure with MAC (6 bytes), validity flag, reserved padding, and CRC.
-  - The code ensures the MAC is neither all zeros nor all 0xFF.
-- **DIY frame sender (UART)**
-  - `FLASH_SendDIYFrame_UART1` prepares a 7-byte binary frame: `FA CE` header, UID low/high, speed/angle nibble, open flag, CRC8. Currently marked `__attribute__((unused))`.
-
----
-
-### Practical guidance for cross-functional teams
-
-- **Operations / product**: The UI presented to end users is simple:
-  - Three top-level icons: configure door behaviour, enter do-not-disturb or calibration, or exit.
-  - Config menu cycles through angle, speed, auto-close; Save is a deliberate choice.
-  - Hidden calibration can be triggered intentionally; progress bar communicates when to wait.
-  - Delete/reset is accessible (likely via another path) with clear “Reset all vs single” options.
-- **Firmware**: If more users must be supported, menu logic for user selection and non-destructive flash writes must be expanded (current erase-all strategy would lose other users).
-- **QA**: Testing should cover all state transitions, including timeouts in delete, verifying that flash writes succeed under power-off conditions, and confirming that command strings to HC15/XY modules match integration expectations.
-- **DevOps / manufacturing**: BLE MAC can be provisioned through `Flash_SaveBLEAddress`, ensuring CRC integrity. The flash map avoids collision with the main firmware image.
-- **UX**: Upgrades should align comments and behaviours (e.g., do-not-disturb exit). Battery icon updates happen within key scanning, so frequent key polling is necessary to keep status fresh.
-
-This walkthrough should arm cross-functional stakeholders with a clear understanding of how the system reacts to user input, manages state, writes persistent settings, and communicates with other modules.
+This documentation focuses on how each menu and state is triggered, what each selection does, and how data persists, so a flowchart engine can map nodes (states/menus) and edges (key presses, flags, timeouts) directly.

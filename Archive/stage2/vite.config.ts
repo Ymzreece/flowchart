@@ -13,6 +13,7 @@ export default defineConfig({
       "@hooks": fileURLToPath(new URL("./src/hooks", import.meta.url)),
       "@lib": fileURLToPath(new URL("./src/lib", import.meta.url)),
       "@services": fileURLToPath(new URL("./src/services", import.meta.url)),
+      "@i18n": fileURLToPath(new URL("./src/i18n", import.meta.url)),
     },
   },
 });

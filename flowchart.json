@@ -1,467 +1,321 @@
 {
   "metadata": {
-    "title": "Door Control Firmware - Flash_Task State Machine Flow",
-    "summary": "Structured flow reflecting the Flash_Task loop, menus, states, and background activities including config, do-not-disturb, calibration, and delete flows.",
+    "title": "Radar Door UI Firmware - Flowchart",
+    "summary": "Structured flowchart of the on-device UI state machine, menus, and peripheral interactions for the radar-driven door firmware.",
     "language": "text"
   },
-  "entry_node": "start",
+  "entry_node": "S_START",
   "nodes": [
     {
-      "id": "start",
-      "title": "System Start",
-      "summary": "Firmware boot and initial entry into the Flash_Task loop",
+      "id": "S_START",
+      "title": "Start / Boot",
+      "summary": "System boots and enters the main UI loop.",
       "detail": null,
       "type": "start"
     },
     {
-      "id": "main_dispatch",
-      "title": "Flash_Task Main Dispatcher",
-      "summary": "Continually checks system_state and delegates to menus or services",
+      "id": "N_MENU_ACTIVE",
+      "title": "Main Flash_Task Loop",
+      "summary": "Top-level state machine loop driving UI and peripheral actions; renders menus and reacts to events.",
+      "detail": null,
+      "type": "loop"
+    },
+    {
+      "id": "N_MENU_MAIN",
+      "title": "Main Menu (3 items)",
+      "summary": "Icon-based main menu with 3 items; handles navigation and selection, plus long-press actions.",
       "detail": null,
       "type": "process"
     },
     {
-      "id": "system_idle",
+      "id": "N_DND",
+      "title": "Do Not Disturb",
+      "summary": "DND mode with silent/non-silent display behavior and PIR feedback; exits on any short press.",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "N_IDLE",
       "title": "SYSTEM_IDLE",
-      "summary": "Idle state: wait for input, then possibly enter low-power mode",
-      "detail": "After ~2 seconds of inactivity, initiate low-power power-down sequence (BT disconnects, display off, NMOS gating, etc.)",
-      "type": "loop"
-    },
-    {
-      "id": "top_menu",
-      "title": "Top-level Icon Menu (menu1)",
-      "summary": "Icon choices: Config, Else Mode, Back; supports navigation and long-press actions",
-      "detail": "Short presses rotate selection; long-press on key3 enters Do Not Disturb; long-press on key2 enters Door Calibration",
-      "type": "process"
-    },
-    {
-      "id": "top_menu_nav_loop",
-      "title": "Top Menu Navigation Loop",
-      "summary": "Handles Key1/Key3 navigation; updates selected icon; wraps around",
+      "summary": "Idle state; after timeout triggers low-power preparation and UI clearing, then resumes activity.",
       "detail": null,
       "type": "loop"
     },
     {
-      "id": "menu_config",
-      "title": "Handle Config Menu (menu1 -> 1)",
-      "summary": "Launch Radar Config flow and user config editing",
-      "detail": null,
-      "type": "process"
-    },
-    {
-      "id": "menu_else_mode",
-      "title": "Handle Else Mode Menu (menu1 -> 2)",
-      "summary": "Do Not Disturb, Door Calibration (hidden), Back",
-      "detail": null,
-      "type": "process"
-    },
-    {
-      "id": "do_not_disturb",
-      "title": "Do Not Disturb State",
-      "summary": "Suppress outputs; exit on key press; optionally silent; PIC/Motion triggers display if not silent",
-      "detail": "Sends AA0055 each loop; if LoRa flag set, send AARF55; PIR triggers display when not silent",
-      "type": "loop"
-    },
-    {
-      "id": "door_calibration_flow",
-      "title": "Hidden Door Calibration Flow",
-      "summary": "Notify Bluetooth, prompt user, wait for key, run calibration progress, then return",
-      "detail": null,
-      "type": "process"
-    },
-    {
-      "id": "delete_menu",
-      "title": "Reset/Delete Menu",
-      "summary": "Options to Reset All or Reset Single (not fully implemented)",
-      "detail": null,
-      "type": "process"
-    },
-    {
-      "id": "delete_all_flow",
-      "title": "Reset All Flow",
-      "summary": "Progress bar; clear all users; determine success/fail",
-      "detail": null,
-      "type": "process"
-    },
-    {
-      "id": "face_op_progress",
-      "title": "Face Operation Progress",
-      "summary": "Face enrollment/verification/delete progress states",
-      "detail": "Includes FACE_VERIFYING, FACE_ENROLL_SUCCESS/FAIL, FACE_DELETE_SUCCESS/FAIL",
-      "type": "process"
-    },
-    {
-      "id": "face_verify_in_progress",
+      "id": "N_FACE_VERIFY",
       "title": "FACE_VERIFYING",
-      "summary": "Face verification in progress",
+      "summary": "Placeholder for face verification flow integration.",
       "detail": null,
       "type": "process"
     },
     {
-      "id": "face_verify_success",
+      "id": "N_FACE_VERIFY_SUC",
       "title": "FACE_VERIFY_SUCCESS",
-      "summary": "Face verification succeeded",
+      "summary": "Face verification success path (no special handling in this flow).",
       "detail": null,
       "type": "process"
     },
     {
-      "id": "face_verify_fail",
+      "id": "N_FACE_VERIFY_FAIL",
       "title": "FACE_VERIFY_FAIL",
-      "summary": "Face verification failed",
+      "summary": "Face verification failed; returns to idle and resets controls.",
       "detail": null,
       "type": "process"
     },
     {
-      "id": "face_enroll_success",
+      "id": "N_FACE_ENROLL_SUC",
       "title": "FACE_ENROLL_SUCCESS",
-      "summary": "Face enroll completed",
+      "summary": "Config save succeeded; returns to main menu.",
       "detail": null,
       "type": "process"
     },
     {
-      "id": "face_enroll_fail",
+      "id": "N_FACE_ENROLL_FAIL",
       "title": "FACE_ENROLL_FAIL",
-      "summary": "Face enroll failed",
+      "summary": "Config save failed; returns to main menu.",
       "detail": null,
       "type": "process"
     },
     {
-      "id": "face_delete_in_progress",
-      "title": "FACE_DELETE_IN_PROGRESS",
-      "summary": "Deleting face data in progress",
-      "detail": null,
-      "type": "process"
-    },
-    {
-      "id": "face_delete_success",
+      "id": "N_FACE_DELETE_SUC",
       "title": "FACE_DELETE_SUCCESS",
-      "summary": "All face data deleted successfully",
+      "summary": "Reset of all face data succeeded; returns to main menu.",
       "detail": null,
       "type": "process"
     },
     {
-      "id": "face_delete_fail",
+      "id": "N_FACE_DELETE_FAIL",
       "title": "FACE_DELETE_FAIL",
-      "summary": "Face delete operation failed",
+      "summary": "Reset of face data failed; returns to main menu.",
       "detail": null,
       "type": "process"
     },
     {
-      "id": "config_menu",
-      "title": "Configuration Workflow (config menu)",
-      "summary": "Radar Config \u2192 user config \u2192 angle/speed editing",
+      "id": "N_HANDLE_CONFIG",
+      "title": "handle_config_menu",
+      "summary": "Config flow entry: load current user config, show defaults if missing, and open angle/speed editor.",
+      "detail": null,
+      "type": "call"
+    },
+    {
+      "id": "N_MENU3_AngSpeed",
+      "title": "menu3_angle_speed",
+      "summary": "Angle/Speed/Auto Close editor with Save/Exit options.",
       "detail": null,
       "type": "process"
     },
     {
-      "id": "config_radar_anim",
-      "title": "Radar Config Animation",
-      "summary": "Slide-in animation during config",
+      "id": "N_HANDLE_ELSE_MODE",
+      "title": "handle_else_mode_menu",
+      "summary": "Else Mode submenu: DND, Door Reset, Back.",
+      "detail": null,
+      "type": "call"
+    },
+    {
+      "id": "N_HANDLE_RESET",
+      "title": "handle_Reset_menu",
+      "summary": "Hidden Door Calibration flow: beacon signals, 10s progress, then return to menu.",
+      "detail": null,
+      "type": "call"
+    },
+    {
+      "id": "N_HANDLE_DELETE",
+      "title": "handle_delete_menu",
+      "summary": "Delete/Reset flow: Reset All or Reset Single prompts.",
+      "detail": null,
+      "type": "call"
+    },
+    {
+      "id": "N_DELETE_SINGLE_PROMPT",
+      "title": "Reset Single Prompt",
+      "summary": "Prompts for single reset; no single-delete logic implemented yet.",
       "detail": null,
       "type": "process"
     },
     {
-      "id": "config_user_load",
-      "title": "Load or Defaults for User Config",
-      "summary": "Attempt to load from flash; fall back to defaults",
+      "id": "N_DELETE_PROGRESS",
+      "title": "Delete All Progress",
+      "summary": "5s progress bar while clearing all user data; reports success or failure.",
       "detail": null,
       "type": "process"
     },
     {
-      "id": "config_angle_speed_screen",
-      "title": "Angle/Speed/Auto Close Screen",
-      "summary": "5 options: Angle, Speed, Auto Close, Save, Exit",
+      "id": "N_FLASH_SAVE_CONFIG",
+      "title": "Flash Save Config",
+      "summary": "Erase, write, and verify a user config in flash with CRC checks.",
       "detail": null,
       "type": "process"
     },
     {
-      "id": "config_saving_progress",
-      "title": "Saving config...",
-      "summary": "Progress bar ~2 seconds while erasing/writing flash and CRC",
-      "detail": null,
-      "type": "loop"
-    },
-    {
-      "id": "config_flash_write",
-      "title": "Flash Write for User Config",
-      "summary": "Erase necessary pages; write 8-byte aligned; CRC",
+      "id": "N_SYS_ERROR",
+      "title": "System Error",
+      "summary": "Default/unknown state; shows error then returns to idle.",
       "detail": null,
       "type": "process"
     },
     {
-      "id": "config_crc_verify",
-      "title": "CRC Verification",
-      "summary": "Reload and verify CRC after write",
-      "detail": null,
-      "type": "process"
-    },
-    {
-      "id": "config_back_to_menu",
-      "title": "Return to Top Menu",
-      "summary": "After configuration, return to top-level menu",
-      "detail": null,
-      "type": "process"
-    },
-    {
-      "id": "lora_rx_handling",
-      "title": "LoRa RX Handling",
-      "summary": "Respond to packets with AARI55 / AARF55 as appropriate",
-      "detail": null,
-      "type": "process"
-    },
-    {
-      "id": "battery_update_loop",
-      "title": "Battery Update Background",
-      "summary": "Periodically refresh battery status and UI",
-      "detail": null,
-      "type": "loop"
-    },
-    {
-      "id": "pir_check",
-      "title": "PIR Motion Check",
-      "summary": "Poll PIR and trigger Do Not Disturb messages if active",
-      "detail": null,
-      "type": "process"
-    },
-    {
-      "id": "end",
+      "id": "N_END",
       "title": "End",
-      "summary": "Flow termination point (not typically reached in normal operation)",
+      "summary": "Flow terminated for this path.",
       "detail": null,
       "type": "end"
     }
   ],
   "edges": [
     {
-      "source": "start",
-      "target": "system_idle",
-      "label": "boot / power-on"
+      "source": "S_START",
+      "target": "N_MENU_ACTIVE",
+      "label": "Power-on complete -> enter main loop"
     },
     {
-      "source": "system_idle",
-      "target": "top_menu",
-      "label": "Key press to wake / user activity"
+      "source": "N_MENU_ACTIVE",
+      "target": "N_MENU_MAIN",
+      "label": "Render main menu and await input"
     },
     {
-      "source": "top_menu",
-      "target": "top_menu_nav_loop",
-      "label": "Key1 short press (navigate left)"
+      "source": "N_MENU_MAIN",
+      "target": "N_HANDLE_CONFIG",
+      "label": "Item 1 selected (short)"
     },
     {
-      "source": "top_menu",
-      "target": "top_menu_nav_loop",
-      "label": "Key3 short press (navigate right)"
+      "source": "N_MENU_MAIN",
+      "target": "N_HANDLE_ELSE_MODE",
+      "label": "Item 2 selected (short)"
     },
     {
-      "source": "top_menu_nav_loop",
-      "target": "top_menu",
-      "label": "Navigation updated (loop)"
+      "source": "N_MENU_MAIN",
+      "target": "N_IDLE",
+      "label": "Item 3 Back (short)"
     },
     {
-      "source": "top_menu",
-      "target": "menu_config",
-      "label": "Key2 pressed with selection = Config"
+      "source": "N_MENU_MAIN",
+      "target": "N_DND",
+      "label": "Key 3 long (13) enters DND"
     },
     {
-      "source": "top_menu",
-      "target": "menu_else_mode",
-      "label": "Key2 pressed with selection = Else Mode"
+      "source": "N_MENU_MAIN",
+      "target": "N_HANDLE_RESET",
+      "label": "Key 2 long (12) enters Calibration"
     },
     {
-      "source": "top_menu",
-      "target": "system_idle",
-      "label": "Key2 pressed with selection = Back"
+      "source": "N_DND",
+      "target": "N_DND",
+      "label": "PIR motion within last 5s (non-silent)"
     },
     {
-      "source": "top_menu",
-      "target": "do_not_disturb",
-      "label": "Long press on Key3 -> Do Not Disturb"
+      "source": "N_DND",
+      "target": "N_DND",
+      "label": "No PIR motion within last 5s"
     },
     {
-      "source": "top_menu",
-      "target": "door_calibration_flow",
-      "label": "Long press on Key2 -> Door Calibration"
+      "source": "N_DND",
+      "target": "N_IDLE",
+      "label": "short press any key -> exit DND"
     },
     {
-      "source": "menu_config",
-      "target": "config_menu",
-      "label": "Enter Radar Config / Config flow"
+      "source": "N_IDLE",
+      "target": "N_MENU_MAIN",
+      "label": "Key press wakes up -> main menu"
     },
     {
-      "source": "config_menu",
-      "target": "config_radar_anim",
-      "label": "Start Radar Config animation"
+      "source": "N_MENU_ACTIVE",
+      "target": "N_SYS_ERROR",
+      "label": "Unhandled state (default)"
     },
     {
-      "source": "config_radar_anim",
-      "target": "config_user_load",
-      "label": "Select user_id=1 and load config"
+      "source": "N_SYS_ERROR",
+      "target": "N_END",
+      "label": "Terminate flow"
     },
     {
-      "source": "config_user_load",
-      "target": "config_angle_speed_screen",
-      "label": "Load existing or defaults -> go to Angle/Speed screen"
+      "source": "N_HANDLE_CONFIG",
+      "target": "N_MENU3_AngSpeed",
+      "label": "Enter config editor"
     },
     {
-      "source": "config_angle_speed_screen",
-      "target": "config_saving_progress",
-      "label": "Choose Save"
+      "source": "N_MENU3_AngSpeed",
+      "target": "N_FLASH_SAVE_CONFIG",
+      "label": "Select Save (Item 4)"
     },
     {
-      "source": "config_angle_speed_screen",
-      "target": "config_back_to_menu",
-      "label": "Choose Exit without saving"
+      "source": "N_MENU3_AngSpeed",
+      "target": "N_FACE_ENROLL_FAIL",
+      "label": "Exit cancel (Item 5)"
     },
     {
-      "source": "config_saving_progress",
-      "target": "face_enroll_success",
-      "label": "Save success (CRC ok)"
+      "source": "N_FLASH_SAVE_CONFIG",
+      "target": "N_FACE_ENROLL_SUC",
+      "label": "Save successful"
     },
     {
-      "source": "config_saving_progress",
-      "target": "face_enroll_fail",
-      "label": "Save failure (CRC error)"
+      "source": "N_FLASH_SAVE_CONFIG",
+      "target": "N_FACE_ENROLL_FAIL",
+      "label": "Save failed"
     },
     {
-      "source": "face_enroll_success",
-      "target": "top_menu",
-      "label": "Return to Top Menu"
+      "source": "N_FACE_ENROLL_SUC",
+      "target": "N_MENU_ACTIVE",
+      "label": "Return to main menu"
     },
     {
-      "source": "face_enroll_fail",
-      "target": "top_menu",
-      "label": "Return to Top Menu"
+      "source": "N_FACE_ENROLL_FAIL",
+      "target": "N_MENU_ACTIVE",
+      "label": "Return to main menu"
     },
     {
-      "source": "menu_else_mode",
-      "target": "do_not_disturb",
-      "label": "Select Do Not Disturb"
+      "source": "N_HANDLE_ELSE_MODE",
+      "target": "N_DND",
+      "label": "1: Do Not Disturb"
     },
     {
-      "source": "menu_else_mode",
-      "target": "door_calibration_flow",
-      "label": "Select Door Reset (Calibration)"
+      "source": "N_HANDLE_ELSE_MODE",
+      "target": "N_HANDLE_RESET",
+      "label": "2: Door Reset"
     },
     {
-      "source": "menu_else_mode",
-      "target": "top_menu",
-      "label": "Select Back"
+      "source": "N_HANDLE_ELSE_MODE",
+      "target": "N_MENU_MAIN",
+      "label": "3: Back"
     },
     {
-      "source": "door_calibration_flow",
-      "target": "door_calibration_flow",
-      "label": "Start calibration",
-      "forwards": true
+      "source": "N_HANDLE_RESET",
+      "target": "N_MENU_ACTIVE",
+      "label": "Calibration complete -> Back to main"
     },
     {
-      "source": "door_calibration_flow",
-      "target": "door_calibration_flow",
-      "label": "Open door to max angle and press key (step)"
+      "source": "N_HANDLE_DELETE",
+      "target": "N_DELETE_PROGRESS",
+      "label": "1: Reset All"
     },
     {
-      "source": "door_calibration_flow",
-      "target": "door_calibration_flow",
-      "label": "Bluetooth notify AARE55 / AA0055 sequence"
+      "source": "N_HANDLE_DELETE",
+      "target": "N_DELETE_SINGLE_PROMPT",
+      "label": "2: Reset Single"
     },
     {
-      "source": "door_calibration_flow",
-      "target": "top_menu",
-      "label": "Calibration Complete -> Return to Top Menu"
+      "source": "N_DELETE_SINGLE_PROMPT",
+      "target": "N_HANDLE_DELETE",
+      "label": "any key -> return"
     },
     {
-      "source": "delete_menu",
-      "target": "delete_all_flow",
-      "label": "Reset All selected"
+      "source": "N_DELETE_PROGRESS",
+      "target": "N_FACE_DELETE_SUC",
+      "label": "success"
     },
     {
-      "source": "delete_menu",
-      "target": "delete_all_flow",
-      "label": "Reset All selected (alternate path)"
+      "source": "N_DELETE_PROGRESS",
+      "target": "N_FACE_DELETE_FAIL",
+      "label": "failure/timeout"
     },
     {
-      "source": "delete_menu",
-      "target": "top_menu",
-      "label": "Back selected"
+      "source": "N_FACE_DELETE_SUC",
+      "target": "N_MENU_ACTIVE",
+      "label": "Return to main"
     },
     {
-      "source": "delete_all_flow",
-      "target": "face_delete_success",
-      "label": "Delete success"
-    },
-    {
-      "source": "delete_all_flow",
-      "target": "face_delete_fail",
-      "label": "Delete fail"
-    },
-    {
-      "source": "face_delete_success",
-      "target": "top_menu",
-      "label": "Return to Top Menu"
-    },
-    {
-      "source": "face_delete_fail",
-      "target": "top_menu",
-      "label": "Return to Top Menu"
-    },
-    {
-      "source": "face_op_progress",
-      "target": "face_verify_success",
-      "label": "Verification success"
-    },
-    {
-      "source": "face_verify_in_progress",
-      "target": "face_verify_success",
-      "label": "Success"
-    },
-    {
-      "source": "face_verify_in_progress",
-      "target": "face_verify_fail",
-      "label": "Fail"
-    },
-    {
-      "source": "face_verify_success",
-      "target": "top_menu",
-      "label": "Return to Top Menu"
-    },
-    {
-      "source": "face_verify_fail",
-      "target": "top_menu",
-      "label": "Return to Top Menu"
-    },
-    {
-      "source": "lora_rx_handling",
-      "target": "face_verify_success",
-      "label": "AARI55 (verify) received"
-    },
-    {
-      "source": "lora_rx_handling",
-      "target": "face_enroll_success",
-      "label": "AARF55 (hard/Do Not Disturb context) received"
-    },
-    {
-      "source": "battery_update_loop",
-      "target": "top_menu",
-      "label": "Battery status updated"
-    },
-    {
-      "source": "pir_check",
-      "target": "do_not_disturb",
-      "label": "PIR detected (not silent)"
-    },
-    {
-      "source": "do_not_disturb",
-      "target": "top_menu",
-      "label": "Any short press exits Do Not Disturb"
-    },
-    {
-      "source": "do_not_disturb",
-      "target": "do_not_disturb",
-      "label": "PIR motion during silent keeps display blank"
-    },
-    {
-      "source": "top_menu",
-      "target": "end",
-      "label": "End of flow (idle termination not typical)"
+      "source": "N_FACE_DELETE_FAIL",
+      "target": "N_MENU_ACTIVE",
+      "label": "Return to main"
     }
   ]
 }

@@ -1,12 +1,15 @@
 import type { Edge, Node } from "reactflow";
 import type { FunctionGraph } from "./graphSchema";
+import type { SupportedLanguage } from "@i18n/strings";
+import { createContentTranslator } from "@i18n/translator";
 
 interface ReactFlowGraph {
   nodes: Node[];
   edges: Edge[];
 }
 
-export function toReactFlowGraph(fn: FunctionGraph): ReactFlowGraph {
+export function toReactFlowGraph(fn: FunctionGraph, language: SupportedLanguage = "en"): ReactFlowGraph {
+  const translator = createContentTranslator(language);
   const nodes: Node[] = fn.nodes.map((node, index) => ({
     id: node.id,
     position: {
@@ -14,8 +17,8 @@ export function toReactFlowGraph(fn: FunctionGraph): ReactFlowGraph {
       y: Math.floor(index / 4) * 160,
     },
     data: {
-      label: node.summary ?? node.label,
-      summary: node.summary,
+      label: translator.translateNodeLabel(node.summary ?? node.label, node.metadata),
+      summary: node.summary ? translator.translateNodeLabel(node.summary, node.metadata) : node.summary,
       code: node.label,
       kind: node.kind,
       location: node.location,
@@ -33,7 +36,7 @@ export function toReactFlowGraph(fn: FunctionGraph): ReactFlowGraph {
       id: `${edge.source}-${edge.target}-${edge.label ?? "edge"}`,
       source: edge.source,
       target: edge.target,
-      label: edge.label,
+      label: translator.translateEdgeLabel(edge.label, edge.metadata),
       data: metadata,
       animated: originalAnimated,
       markerEnd: {

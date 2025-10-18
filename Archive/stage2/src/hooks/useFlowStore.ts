@@ -1,28 +1,35 @@
 import { create } from "zustand";
 import type { FunctionGraph, ModuleGraph } from "@lib/graphSchema";
+import type { SupportedLanguage } from "@i18n/strings";
 
 interface FlowState {
   currentModule: ModuleGraph | null;
   currentFunction: FunctionGraph | null;
   selectedNodeId: string | null;
+  language: SupportedLanguage;
   loadGraph: (graph: ModuleGraph | FunctionGraph) => void;
   updateFunction: (fn: FunctionGraph | null) => void;
   selectNode: (nodeId: string | null) => void;
+  setLanguage: (language: SupportedLanguage) => void;
 }
 
 export const useFlowStore = create<FlowState>((set) => ({
   currentModule: null,
   currentFunction: null,
   selectedNodeId: null,
+  language: "en",
   loadGraph: (graph) =>
-    set(() => {
+    set((state) => {
       if ("functions" in graph) {
+        const detectedLanguage = (graph.metadata?.language as SupportedLanguage | undefined) ?? state.language;
         return {
           currentModule: graph,
           currentFunction: graph.functions[0] ?? null,
           selectedNodeId: null,
+          language: detectedLanguage,
         };
       }
+      const detectedLanguage = state.language;
       return {
         currentModule: {
           language: "unknown",
@@ -30,6 +37,7 @@ export const useFlowStore = create<FlowState>((set) => ({
         },
         currentFunction: graph,
         selectedNodeId: null,
+        language: detectedLanguage,
       };
     }),
   updateFunction: (fn) =>
@@ -55,4 +63,5 @@ export const useFlowStore = create<FlowState>((set) => ({
       };
     }),
   selectNode: (nodeId) => set({ selectedNodeId: nodeId }),
+  setLanguage: (language) => set({ language }),
 }));

@@ -6,7 +6,7 @@ This module converts the natural-language explanation produced by `flowcode_1` i
 
 ```
 flowcode_2/
-├── graph_generator.py       # LLM call: explanation → flowchart.json
+├── graph_generator.py       # LLM calls: explanation → flowchart_en.json & flowchart_zh.json
 ├── pyproject.toml
 ├── README.md
 ├── src/
@@ -24,19 +24,21 @@ flowcode_2/
 ## Workflow
 
 1. Run `flowcode_1/flowchart_generator.py` to produce `flow_explanation.txt` (rich text narrative).
-2. Convert that explanation into graph JSON:
+2. Convert that explanation into English and Chinese graph JSON:
 
    ```bash
    python graph_generator.py \
      --input ../flow_explanation.txt \
-     --output flowchart.json
+     --output-prefix flowchart
    ```
 
-3. Render or export the graph:
+   This generates `flowchart_en.json` and `flowchart_zh.json`.
+
+3. Render or export either graph:
 
    ```bash
    python -m flowcode_renderer.cli \
-     --input flowchart.json \
+     --input flowchart_en.json \
      --output flowchart.stage2.json \
      --format stage2
    ```
@@ -45,7 +47,7 @@ flowcode_2/
 
 ## Features
 
-- Converts explanations to node/edge graphs using `graph_generator.py` (LLM-powered).
+- Converts explanations to node/edge graphs using `graph_generator.py` (LLM-powered) with bilingual output (`*_en.json`, `*_zh.json`).
 - Parses the JSON node/edge graph (`parse_graph`) and falls back to legacy outline if needed (`--input-format text`).
 - Renders to:
   - **Terminal**: hierarchical view using `rich`.
@@ -71,28 +73,28 @@ python ../flowcode_1/flowchart_generator.py \
   --output flow_explanation.txt
 ```
 
-Convert explanation → graph JSON:
+Convert explanation → bilingual graph JSON:
 
 ```bash
 python graph_generator.py \
   --input ../flow_explanation.txt \
-  --output flowchart.json
+  --output-prefix flowchart
 ```
 
 Render graph (terminal / Graphviz / Stage 2):
 
 ```bash
 python -m flowcode_renderer.cli \
-  --input flowchart.json \
+  --input flowchart_en.json \
   --format terminal
 
 python -m flowcode_renderer.cli \
-  --input flowchart.json \
+  --input flowchart_en.json \
   --format graphviz \
   --output flowchart.dot
 
 python -m flowcode_renderer.cli \
-  --input flowchart.json \
+  --input flowchart_en.json \
   --format stage2 \
   --output flowchart.stage2.json
 ```

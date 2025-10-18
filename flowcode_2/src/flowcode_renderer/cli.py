@@ -17,8 +17,8 @@ def build_parser() -> argparse.ArgumentParser:
         "--input",
         "-i",
         type=Path,
-        default=Path("flowchart.json"),
-        help="Path to flowchart JSON (default: flowchart.json).",
+        default=Path("flowchart_en.json"),
+        help="Path to flowchart JSON (default: flowchart_en.json).",
     )
     parser.add_argument(
         "--input-format",
