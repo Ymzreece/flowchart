@@ -1,0 +1,22 @@
+{
+  "name": "@reececantcode/flowcode",
+  "version": "0.1.0",
+  "description": "Thin Node wrapper that forwards to the Flowcode Python CLI",
+  "bin": {
+    "flowcode": "bin/flowcode.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "commonjs",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ymzreece/flowchart"
+  },
+  "keywords": ["flowchart", "cli", "openai", "renderer", "flowcode"],
+  "files": [
+    "bin"
+  ]
+}
+
