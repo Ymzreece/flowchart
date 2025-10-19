@@ -1,0 +1,161 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+from typing import Optional
+
+
+REPO_ROOT = Path(__file__).resolve().parent
+STAGE1 = REPO_ROOT / "flowcode_1" / "flowchart_generator.py"
+STAGE2 = REPO_ROOT / "flowcode_2" / "graph_generator.py"
+PROMPT = REPO_ROOT / "flowcode_1" / "prompt.md"
+
+
+def ensure_api_key() -> None:
+    if os.getenv("OPENAI_API_KEY"):
+        return
+    env_path = REPO_ROOT / ".env"
+    if not env_path.exists():
+        return
+    try:
+        lines = [line.strip() for line in env_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    except Exception:
+        return
+
+    # Look for explicit OPENAI_API_KEY formats first
+    for line in lines:
+        if line.startswith("OPENAI_API_KEY="):
+            os.environ["OPENAI_API_KEY"] = line.split("=", 1)[1].strip()
+            return
+        if line.lower().startswith("openai_api_key:"):
+            os.environ["OPENAI_API_KEY"] = line.split(":", 1)[1].strip()
+            return
+
+    # Fallback: find a token-looking line (e.g., sk-... or sk-proj-...)
+    for line in lines:
+        token = line.strip()
+        if token.startswith("sk-"):
+            os.environ["OPENAI_API_KEY"] = token
+            return
+        if token.lower() == "api:" and len(lines) > 1:
+            # Some files use two-line format: `api:` then key on next line
+            idx = lines.index(line)
+            if idx + 1 < len(lines):
+                os.environ["OPENAI_API_KEY"] = lines[idx + 1].strip()
+                return
+
+
+def run(cmd: list[str], *, cwd: Optional[Path] = None, env: Optional[dict[str, str]] = None) -> None:
+    print("$", " ".join(cmd))
+    subprocess.run(cmd, cwd=str(cwd) if cwd else None, env=env, check=True)
+
+
+def convert_to_stage2(input_json: Path, output_json: Path) -> None:
+    sys.path.insert(0, str(REPO_ROOT / "flowcode_2" / "src"))
+    try:
+        from flowcode_renderer.parser import parse_graph
+        from flowcode_renderer.converter import graph_to_stage2_module
+    except Exception as exc:  # pragma: no cover
+        raise SystemExit(
+            "Failed to import flowcode_renderer. Ensure dependencies are installed and PYTHONPATH is set."
+        ) from exc
+
+    graph = parse_graph(input_json)
+    module = graph_to_stage2_module(graph)
+    output_json.write_text(json.dumps(module, indent=2), encoding="utf-8")
+    print(f"Wrote Stage2-compatible JSON to {output_json}")
+
+
+def build_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(description="Run the full Flowcode pipeline on a single file.")
+    p.add_argument("filename", type=Path, help="Path to the file to include in the prompt.")
+    p.add_argument("--open-ui", action="store_true", help="Launch the Stage 2 dev server after generation.")
+    p.add_argument("--explanation", type=Path, default=REPO_ROOT / "flow_explanation.txt", help="Path for the generated explanation (default: flow_explanation.txt).")
+    p.add_argument("--output-prefix", type=str, default="flowchart", help="Base name for generated flowchart JSON (default: flowchart_*.json).")
+    p.add_argument("--model-stage1", type=str, default="gpt-5", help="Model for Stage 1 (default: gpt-5).")
+    p.add_argument("--model-stage2", type=str, default="gpt-5-nano", help="Model for Stage 2 (default: gpt-5-nano).")
+    return p
+
+
+def main(argv: Optional[list[str]] = None) -> None:
+    args = build_parser().parse_args(argv)
+
+    if not args.filename.exists():
+        raise SystemExit(f"Input file not found: {args.filename}")
+    include_path = args.filename.resolve()
+    # Ensure explanation path is absolute so subprocess writes to expected location
+    explanation_path = args.explanation
+    if not explanation_path.is_absolute():
+        explanation_path = (Path.cwd() / explanation_path).resolve()
+    if not PROMPT.exists():
+        raise SystemExit(f"Prompt file not found: {PROMPT}")
+    if not STAGE1.exists():
+        raise SystemExit(f"Stage 1 script not found: {STAGE1}")
+    if not STAGE2.exists():
+        raise SystemExit(f"Stage 2 script not found: {STAGE2}")
+
+    ensure_api_key()
+    if not os.getenv("OPENAI_API_KEY"):
+        raise SystemExit(
+            "OPENAI_API_KEY not set. Export it or put it in .env (OPENAI_API_KEY=..., or api: on one line and the key on the next)."
+        )
+
+    # Step 1: Narrative generation
+    run([
+        sys.executable,
+        str(STAGE1),
+        "--prompt",
+        str(PROMPT),
+        "--include",
+        str(include_path),
+        "--model",
+        str(args.model_stage1),
+        "--output",
+        str(explanation_path),
+    ], cwd=REPO_ROOT)
+
+    # Verify Step 1 output
+    if not explanation_path.exists() or explanation_path.stat().st_size == 0:
+        raise SystemExit(f"Step 1 failed: explanation not found or empty: {explanation_path}")
+    print(f"Generated explanation: {explanation_path}")
+
+    # Step 2: Bilingual graph generation
+    run([
+        sys.executable,
+        str(STAGE2),
+        "--input",
+        str(explanation_path),
+        "--model",
+        str(args.model_stage2),
+        "--output-prefix",
+        args.output_prefix,
+    ], cwd=REPO_ROOT)
+
+    # Step 3: Stage2 JSON export (both languages if present)
+    en = REPO_ROOT / f"{args.output_prefix}_en.json"
+    zh = REPO_ROOT / f"{args.output_prefix}_zh.json"
+    # Verify Step 2 outputs
+    if not en.exists() or en.stat().st_size == 0:
+        raise SystemExit(f"Step 2 failed: expected graph JSON not found or empty: {en}")
+    if not zh.exists() or zh.stat().st_size == 0:
+        raise SystemExit(f"Step 2 failed: expected graph JSON not found or empty: {zh}")
+    print(f"Generated flowcharts: {en}, {zh}")
+    if en.exists():
+        convert_to_stage2(en, REPO_ROOT / f"{args.output_prefix}_en.stage2.json")
+    if zh.exists():
+        convert_to_stage2(zh, REPO_ROOT / f"{args.output_prefix}_zh.stage2.json")
+    print("Converted flowcharts to Stage2 JSON.")
+
+    # Optional Step 4: launch UI
+    if args.open_ui:
+        print("Starting Stage 2 dev server (press Ctrl+C to stop)...")
+        run(["npm", "run", "dev", "--prefix", str(REPO_ROOT / "Archive" / "stage2")])
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

@@ -1,259 +1,232 @@
-System overview and purpose
-This FreeRTOS task (Else_Task) is the main motion-control loop for a motorized mechanism (e.g., a door or gate) with these goals:
-- Accept and parse remote commands (LoRa and Bluetooth) and local triggers (GPIO edge, physical push/pull flags).
-- Move the mechanism to an “open” or “closed” target angle using yaw feedback from an IMU.
-- Detect stalls, collisions, and improper motion, and stop safely.
-- Enter a low-power state when idle, and wake when movement is requested.
-- Persist calibration/limit data in Flash and restore on boot.
+Overview and purpose
+This file implements the main control loop for a small embedded system that drives a motorized mechanism (e.g., a smart door/handle or gate) based on sensor feedback, radio commands, and local inputs. It:
 
-High-level flow
-- Boot and calibration persistence:
-  - Initialize Flash storage, read back last-known calibration: diff_sumup (total open angle) and check_flag (whether calibration is completed).
-  - If calibrated (check_flag == true), the motor power (SIGNAL_ENABLE) is initially off.
-- Main loop (runs forever, every ~10 ms):
-  1) Update bus current measurement; poll Bluetooth module for commands.
-  2) If not calibrated and a LoRa frame arrives, trigger Auto_Check (calibration/limit procedure).
-  3) If calibrated:
-     - Manage idle timeout and optionally force closing or enter low power.
-     - Parse LoRa “AA..” commands to start opening, closing, or manage power.
-     - Run the “opening” or “closing” control law depending on flags and feedback.
-     - Stop movement when reaching targets, detecting stall/collision, or receiving conflicting commands.
-  4) Handle AA00 “keep power” timeout: keep motor power enabled while messages arrive or while moving; power off after timeout if idle.
-  5) Watch a GPIO (PB6) as a manual trigger to start opening.
-- Throughout, the task gates power to motor and sensors and coordinates low-power sequences (Bluetooth disconnect, IMU sleep, radar config).
+- Accepts LoRa and Bluetooth (XY_MB06BA) commands to open, close, and keep the motor power enabled.
+- Uses a yaw angle from an IMU to determine how far the mechanism has moved and when to stop.
+- Detects stalls, collisions, or wrong-direction motion using yaw dynamics and current sensing.
+- Performs an initial calibration/limit procedure (“Auto_Check”) and persists the result in flash.
+- Enters a low-power sleep state when idle and wakes on activity.
+- Allows manual triggering via a GPIO edge (PB6) and via inferred human push/pull (ahead_flag/back_flag).
 
-Inputs, outputs, and integrations
-- Inputs:
-  - LoRa frames via lora_rx_buf and lora_rx_flag.
-  - Bluetooth commands via XY_MB06BA_CheckAndParseCommands() (details handled in that module).
-  - IMU yaw signal via global yaw (and related extern yaw_* values).
-  - Physical “help” flags ahead_flag, back_flag (e.g., someone pushing/pulling), likely set by other tasks.
-  - GPIO PB6 edge (button/switch/edge sensor).
-  - Bus current via Motor_TryReadBusCurrent.
-- Outputs:
-  - Motor power relay: SIGNAL_ENABLE GPIO.
-  - Motor control commands via send_data() and motor_drive_cmd() (open/close with speed control).
-  - RPM stop via rpm0_Stop().
-  - Low-power handling: JY61P_UART_Enter_Sleep, LSM6DSV16X_AllSleep, XY_MB06BA_SendATCommand(“AT+DISCONN=x”), LowPower_SetSleepFlag(1), FRadar_SetDistanceAndSave.
-- Persistent storage:
-  - Flash_Storage_Init/Read write and restore diff_sumup and check_flag.
+High-level flow: inputs to outputs
+- Power-up and resume
+  - Initialize, stop the motor, read calibration from flash (diff_sumup and check_flag).
+  - If calibration exists (check_flag), start in normal mode; otherwise wait for a LoRa frame to trigger Auto_Check calibration.
 
-Key states and transitions
-For flowcharting, treat these as states with explicit triggers:
+- Event inputs the task continuously monitors:
+  - LoRa frames in lora_rx_buf (lora_rx_flag indicates new data).
+  - Bluetooth commands from XY_MB06BA_CheckAndParseCommands().
+  - Yaw angle and motion from the IMU (LSM6DSV16X and JY61P).
+  - Bus current from Motor_TryReadBusCurrent.
+  - Physical push/pull flags (ahead_flag/back_flag) set elsewhere.
+  - A local GPIO input (PB6) edge for manual open.
+  - An “AA00 power-hold” state driven by periodic LoRa “AA00” messages.
 
-- Uncalibrated
-  - Entry: At boot if check_flag == false (or explicitly set by LoRa "AARE" below).
-  - Event: lora_rx_flag == 1
-    - Action: Auto_Check() starts (range/limit calibration).
-    - Post: On success, check_flag set true (happens in Auto_Check). The runtime branch becomes active.
+- Decision and control:
+  - If calibration not completed (check_flag == false): any LoRa frame triggers Auto_Check to establish limits (diff_sumup) and set check_flag, then normal control begins.
+  - If calibrated:
+    - Handle AAxx and other LoRa commands:
+      - AA00: keep motor power enabled (no movement).
+      - AAxy (x=speed level 1–3, y=angle level 1–3): command open with chosen speed and partial angle.
+      - AAOF: request closing after opening completes.
+      - AARE: request re-calibration (check_flag cleared).
+    - Start opening when commanded or when ahead_flag indicates a physical push in the opening direction or when PB6 is toggled.
+    - Start closing when commanded or when back_flag indicates pull toward closed or after idle timeout.
+    - While moving, compute a speed command from yaw error and clamp it to safety limits; stop when reaching target angle, overshooting, stall is detected, or a switch-over is requested.
 
-- Calibrated, Idle
-  - Entry: check_flag == true; no motion flags set.
-  - Background:
-    - Idle timeout management using Wake_time:
-      - If HAL_GetTick() - Wake_time > 15000 ms and |yaw| < 10 deg:
-        - Enter low power: power down motor and peripherals, disconnect BLE, sleep IMU and radar, set sleep flag.
-      - Else if the timeout exceeds 15000 ms but |yaw| >= 10 deg:
-        - Force a “close” by setting motor_runing_flag_r = 1 to begin closing.
-    - AA00 “keep-power” management:
-      - If aa00_motor_enabled == true and not moving:
-        - If now - last_message_time > MESSAGE_TIMEOUT_MS (note: code uses 100 ms), power off and clear aa00 flag.
-      - If moving, refresh last_message_time to avoid power off.
-    - Manual trigger on PB6:
-      - On any edge (rising or falling), with debouncing and only if both motor_runing_flag and motor_runing_flag_r are 0:
-        - Trigger opening: set motor_runing_flag = 1.
+- Outputs and side effects:
+  - Motor enable pin toggled and drive commands sent via motor_drive_cmd/send_data.
+  - Low-power transitions: put IMU and Bluetooth to sleep; set radar threshold and a sleep flag.
+  - Persist calibration and radar distance to flash.
+  - Reset yaw on full close.
 
-- LoRa command parser (“AA..” commands; runs whenever lora_rx_flag == 1)
-  - AA00
-    - Effect: Motor power on (SIGNAL_ENABLE high), aa00_motor_enabled = true; last_message_time = now.
-    - Purpose: Keep motor powered for presence/detection; does not automatically start motion.
-  - AAxy (x and y are ASCII characters)
-    - x in ‘1’..‘3’ sets Speed_Level_Lora:
-      - 1 -> Speed_from_Lora = 600
-      - 2 -> Speed_from_Lora = 1200
-      - 3 -> Speed_from_Lora = 2000
-      - Any other -> Speed_from_Lora = 1500 (default)
-      - Also sets:
-        - face_control_flag = 1 (angle scaling active)
-        - commandExecuted = true (start opening)
-        - motor_runing_flag = 1 (engage opening)
-        - closing_inpurrt = 1 (signal that if currently closing, switch to opening)
-    - y in ‘1’..‘3’ sets Angle_Level_Lora (angle divisor):
-      - 1 -> smallest angle (threshold = diff_sumup / 3)
-      - 2 -> medium angle (threshold = diff_sumup / 2)
-      - 3 -> largest angle (threshold = diff_sumup / 1)
-    - Special pair OF
-      - Sets close_flag = 1 (request a close after opening finishes).
-    - Special pair RE
-      - Resets calibration mode: check_flag = 0 (forces re-entry into Uncalibrated state) and clears lora_rx_flag.
+Core concepts and state flags
+- check_flag: “System calibrated and ready.” Determines if Auto_Check is needed.
+- diff_sumup: Stored maximum opening yaw (angle span) from calibration; used as target.
+- motor_runing_flag / motor_runing_flag_r: Opening vs. closing movement in progress.
+- commandExecuted / commandExecuted_r: Latched intent to open/close from a radio command.
+- ahead_flag / back_flag: External signals meaning the user pushed/pulled the mechanism physically.
+- face_control_flag, Speed_Level_Lora, Angle_Level_Lora: Shape a partial opening (“face control”) with adjustable speed and angle.
+- closing_inpurrt: A switch-over marker. If a new open command arrives while closing, this forces the close to stop and hand over to open.
+- aa00_motor_enabled and last_message_time: Hold motor power on as long as AA00 messages keep arriving or the mechanism is moving.
 
-- Opening (forward motion, motor_runing_flag == 1)
-  - Entry conditions (any of):
-    - commandExecuted == true (LoRa AAxy), or ahead_flag == true (user/push assist), or motor_runing_flag == 1 (already engaged by PB6 or forced).
-    - Guard: yaw must be less than diff_sumup and sufficiently far from the target.
-  - On first entry (Motor_Init == 0):
-    - Power on (SIGNAL_ENABLE), record move_start, clear bus current accumulator, reset stall detection state, mark Motor_Init = 1.
-    - Ensure speed control mode active once per move: send_data(speed_control).
-  - Control law:
-    - Determine target threshold:
-      - If face_control_flag == 1: threshold = diff_sumup / angle_divisor (based on Angle_Level_Lora).
-      - Else: threshold = diff_sumup (full open).
-    - Speed command: speed = Motor_P * (threshold - yaw), saturated to [-Speed_from_Lora, +Speed_from_Lora].
-    - Send motor_drive_cmd(0x01, speed, 20, 0, motor_cmd).
-  - Stop conditions (any):
-    - |threshold - yaw| < 5 deg (near target), or |diff_sumup - yaw| < 5 deg (near maximum), or yaw > diff_sumup (overshoot), or Yaw_Stall_Check() returns true (stall/oscillation/wrong direction).
+Main components and how they interact
+- Else_Task (FreeRTOS task loop)
+  - Initializes, restores calibration, and then loops every 10 ms to:
+    - Update bus current telemetry.
+    - Parse Bluetooth commands (XY_MB06BA_CheckAndParseCommands).
+    - If not calibrated, run Auto_Check when any LoRa frame arrives and store results to flash.
+    - If calibrated, parse LoRa AAxx commands and set flags accordingly.
+    - Manage idle timeouts to auto-close or enter low power.
+    - Run the motion controller for open and for close (two mirrored branches).
+    - Check for stalls with Yaw_Stall_Check to protect hardware and users.
+    - Maintain AA00 power-hold and shut down power on timeout if not moving.
+    - Watch PB6 edges and trigger an open if idle.
+
+- LoRa command parsing (within Else_Task)
+  - AA00: Set motor enable pin high and mark aa00_motor_enabled; the task will keep the motor powered while messages arrive or while motion is happening.
+  - AAxy: x is speed level, y is angle level.
+    - Speed levels: 1→600, 2→1200, 3→2000 (drive command clamp).
+    - Angle levels: 1→open to one-third of the calibrated yaw; 2→half; 3→full, unless face_control_flag is off (then always full).
+    - Sets flags to start opening immediately and allows interrupting a closing motion.
+  - AAOF: After finishing an open, immediately start closing.
+  - AARE: Clear check_flag to force a re-calibration mode next time a frame arrives.
+
+- Motion control (open)
+  - Entry condition:
+    - A command (commandExecuted) or ahead_flag is set, the current yaw is below the target (yaw < diff_sumup), and the gap is meaningful (> 2 deg), or motor_runing_flag already latched.
+  - On first entry:
+    - Enable motor power, reset timers and current readings, and switch controller to speed mode (send_data(speed_control)).
+  - Target angle:
+    - Calculate threshold = diff_sumup / angle_divisor (1→/3; 2→/2; 3→/1). If not “face control”, use full diff_sumup.
+  - Speed command:
+    - speed = Motor_P * (threshold - yaw), clamped to ±Speed_from_Lora; send via motor_drive_cmd.
+  - Stop conditions:
+    - Near target (|threshold − yaw| < 5 deg) OR near full open (|diff_sumup − yaw| < 5 deg)
+    - Yaw exceeded diff_sumup (overshoot) OR Yaw_Stall_Check() signals stall/collision.
   - On stop:
-    - Stop RPM, power off motor (SIGNAL_ENABLE low), clear flags:
-      - motor_runing_flag = 0, ahead_flag = back_flag = 0, face_control_flag = 0,
-      - commandExecuted = false, yaw_zero_set = false, stop_set = false,
-      - Reset init flags (Motor_Init = 0, speed_control_Init_flag = 0), and diff_threshold_init = 0.
-    - If close_flag == 1:
-      - Queue a close: commandExecuted_r = 1; motor_runing_flag_r = 1; close_flag = 0.
+    - Stop motor, drop power, clear flags. If AAOF was set, immediately queue a closing (commandExecuted_r = 1).
 
-- Closing (reverse motion, motor_runing_flag_r == 1)
-  - Entry conditions (any of):
-    - commandExecuted_r == true (requested close), or back_flag == true (user/pull assist), or motor_runing_flag_r == 1 (forced close by idle timeout).
-    - Guard: yaw > 0 and |yaw| > 2 deg (far enough from zero).
-  - On first entry (Motor_Init_r == 0):
-    - Power on, record move_start, clear bus current accumulator, reset stall detection, mark Motor_Init_r = 1.
-    - Ensure speed control mode active once per move: send_data(speed_control).
-  - Control law:
-    - Target threshold = 0 deg (closed).
-    - Speed command: speed = Motor_P * (0 - (yaw + 3)) with a bias, saturated to [-Speed_from_Lora, +Speed_from_Lora].
-    - Send motor_drive_cmd(0x01, speed, 20, 0, motor_cmd).
-  - Stop conditions (any):
-    - |yaw| < 5 deg (near closed), or yaw < 0 (passed closed), or Yaw_Stall_Check() returns true (collision/abnormal), or closing_inpurrt == 1 (an open command arrived mid-close).
+- Motion control (close)
+  - Entry condition:
+    - A command (commandExecuted_r) or back_flag is set and yaw > 0 and |yaw| > 2 deg, or the latched motor_runing_flag_r is set.
+  - On first entry:
+    - Enable motor power, reset timers/current, switch to speed mode.
+  - Target angle:
+    - Always 0 degrees (fully closed). The math subtracts (yaw + 3) to add a small bias to ensure firm closure.
+  - Speed command:
+    - speed = Motor_P * (0 − (yaw + 3)), clamped to ±Speed_from_Lora; send via motor_drive_cmd.
+  - Stop conditions:
+    - Near closed (|yaw| < 5 deg) OR stall detected (Yaw_Stall_Check()) OR undershoot (yaw < 0) OR a new open command arrived mid-close (closing_inpurrt == 1).
   - On stop:
-    - If no collision (Yaw_Stall_Check returned false) and we are not preempted by opening (closing_inpurrt == 0):
-      - Perform a short back-off: command -1000 for 1 second, then power off motor.
-      - Reset state flags:
-        - motor_runing_flag_r = 0, back_flag = ahead_flag = 0, face_control_flag = 0,
-        - commandExecuted_r = false, yaw_zero_set_r = false, stop_set = false,
-        - Motor_Init_r = 0, speed_control_Init_flag_r = 0, diff_threshold_init_r = 0, close_flag = 0.
-      - Enter low-power sequence:
-        - Power rails toggled (PA8/PA4), JY61P UART to sleep, Bluetooth “disconnect” AT commands sent, IMU sleep, radar distance saved, sleep flag set.
-        - Blocking loop to reset yaw until JY61P_UART_Reset_Yaw returns OK.
-    - If preempted by opening (closing_inpurrt == 1):
-      - Switch to opening: motor_runing_flag = 1; Motor_Init = 0 (so opening re-initializes); closing_inpurrt = 0.
+    - If it was a clean close (no collision and not interrupted), briefly back-drive to snug fit, stop, power down, put peripherals to sleep, save radar threshold, and reset yaw to zero.
+    - If interrupted by a new open command, hand over to opening (set motor_runing_flag = 1).
 
-Stall/collision detection (Yaw_Stall_Check)
-Purpose: stop safely if the yaw feedback indicates the mechanism is stuck, oscillating, or moving the wrong way.
-- Ignored for first 1.5 s after move_start.
-- Initialization (first call of a move):
-  - Snapshot yaw, initialize timers and counters: last_yaw, last_yaw_increment, direction_change_count, last_yaw_abs, motion_direction_error_count.
-- Checks on each call:
-  - Motion direction error:
-    - During opening (motor_runing_flag == 1): if |yaw| decreases compared to the last sample (by > 0.01 deg), count an error.
-    - During closing (motor_runing_flag_r == 1): if |yaw| increases by > 0.01 deg, count an error.
-    - If any (>=1) error is seen, return true (stall) and reset internal state.
-  - Oscillation:
-    - Track sign changes between consecutive yaw increments; if the direction flips 2 or more times, return true and reset.
-  - Low-change timeout:
-    - Compute yaw_change since the last “start” snapshot. If yaw_change > 0.1 deg, reset the snapshot and counters.
-    - If 1.5 s elapse with yaw_change <= 0.1 deg, return true (stalled).
-- Notes:
-  - There are mismatches between comments and thresholds: comments mention “1 s, 3 deg”, while code uses “1.5 s, 0.1 deg”.
-  - A current-based stall threshold (A_Limit) is present but commented out. If used, high bus current could trigger a stall.
+- Stall and safety detection: Yaw_Stall_Check
+  - Begins checking 1.5 s after motion start to avoid startup transients.
+  - Three safety checks:
+    - Wrong-direction motion: during opening, |yaw| should increase; during closing, |yaw| should decrease. A violation triggers an immediate stop.
+    - Oscillation: repeated sign changes in yaw increments indicate oscillation; more than two reversals triggers a stop.
+    - Insufficient progress: if yaw changes by less than a small threshold for 1.5 s, treat as stalled and stop.
+  - Note: Some numeric thresholds in comments and code differ; see “Assumptions and limitations.”
 
-Power management and sleep sequence
-Triggered in three places:
-- Idle timeout (>15 s) and near closed (|yaw| < 10): power rails toggled, Bluetooth disconnects, IMU/Radar sleep, sleep flag set.
-- After a clean close: same as above, plus a blocking loop to reset yaw (JY61P_UART_Reset_Yaw) until it succeeds.
-- AA00 keep-power timeout: if aa00_motor_enabled and idle longer than MESSAGE_TIMEOUT_MS (note: set to 100 ms), motor power is turned off; this does not perform the entire system sleep sequence.
+- Low-power management
+  - If idle > 15 s:
+    - If near closed (|yaw| < 10 deg), put the system to sleep:
+      - Disable motor power.
+      - Put Bluetooth and IMU to sleep, toggle power control GPIOs.
+      - Save radar threshold (FRadar_SetDistanceAndSave) and set LowPower_SetSleepFlag(1).
+    - Else (door is not near closed), schedule an automatic close by setting motor_runing_flag_r = 1.
 
-Detailed variable roles and flags
-- check_flag: true when calibration (Auto_Check) has completed; controls whether runtime logic is enabled.
-- diff_sumup: total available open angle discovered during calibration; used as the maximum open threshold.
-- aa00_motor_enabled, last_message_time: manage “keep power” behavior after AA00.
-- Wake_time: last activity time; used for 15 s idle timeout. Updated on motion and various events.
-- motor_runing_flag: opening state flag; motor_runing_flag_r: closing state flag.
-- commandExecuted: request to start opening (from LoRa or others); commandExecuted_r: request to start closing.
-- ahead_flag / back_flag: external assist triggers for opening/closing, respectively.
-- face_control_flag: if 1, scale the open target by Angle_Level_Lora; otherwise open to full diff_sumup.
-- Angle_Level_Lora: 1, 2, 3 mapping to open angle as 1/3, 1/2, or full diff_sumup.
-- Speed_Level_Lora / Speed_from_Lora: speed saturation level from LoRa (600, 1200, 2000).
-- close_flag: request to close after finishing an open cycle (set by “AAOF”).
-- closing_inpurrt: allows an open command to preempt a close; if 1 during close, stop and switch to open.
-- Motor_Init / Motor_Init_r: per-move initialization guards for opening/closing.
-- speed_control_Init_flag / _r: ensure speed control mode is enabled once per move.
-- yaw_zero_set, yaw_zero_set_r, stop_set, diff_threshold_init/_r: bookkeeping flags that are cleared on stop.
+- AA00 power-hold window
+  - While aa00_motor_enabled:
+    - If the mechanism is moving, keep refreshing the timeout.
+    - If not moving and the timeout elapses, drop motor power and clear the flag.
+  - Important: The constant MESSAGE_TIMEOUT_MS is set to 100, but comments say “10 seconds.” Confirm and correct this value; otherwise the motor may power off after only ~100 ms without messages.
 
-GPIO PB6 manual trigger
-- The loop uses GPIO_CheckEdge to detect rising/falling edges on PB6 with debouncing and stores the detected_edge type.
-- If any edge is detected while both motion flags are 0, it increments a small counter (pb6_flag) and triggers opening by setting motor_runing_flag = 1 when the counter reaches 1.
+- Manual trigger via PB6
+  - Debounced edge detection on GPIOB pin 6 using GPIO_CheckEdge.
+  - If idle (no opening/closing active), any edge triggers an open (motor_runing_flag = 1).
 
-Error handling and safety
-- Motor stops immediately on any stopping condition, including target reach, overshoot, stall/collision, or preemption.
-- After closing cleanly (no collision), a short back-off (-1000 speed for 1 s) is applied to relieve mechanical stress before power down.
-- Power rails are actively toggled for peripheral sleep/wake sequencing to reduce idle consumption and leave sensors in a known state.
-- Calibration mode is re-entered by LoRa “AARE”.
+Branches, loops, and error handling
+- Main loop: runs forever, every 10 ms.
+- Two symmetric motion branches: opening and closing; both:
+  - Guard entry with multiple flags/sensors.
+  - One-time initialization blocks to enable power and set speed mode.
+  - Compute a speed command proportional to yaw error and clamp it.
+  - Multiple stop conditions including geometric thresholds, overshoot/undershoot, and stall detection.
+  - Reset and cleanup blocks that clear state, drop power, and optionally enter low-power sleep.
+- Switch-over logic: closing_inpurrt allows a new open command to preempt a closing motion seamlessly.
+- Error/stall handling: Yaw_Stall_Check signals wrong direction, oscillation, or no-progress; on detection, motion is stopped and the detection state is reset for the next move.
+- Idle and sleep handling: a 15 s watchdog drives either low-power sleep or auto-close, depending on current yaw.
 
-External modules and assumptions
-- Auto_Check(): performs calibration to determine travel limits; sets diff_sumup and check_flag. Not shown here, but required for correct operation.
-- Motor_* functions: abstract motor command transport and current sensing.
-- XY_MB06BA_*: Bluetooth stack for command parsing and AT control (disconnect commands).
-- IMU drivers: control the JY61P UART IMU and LSM6DSV16X for yaw and sleep management.
-- FRadar_*: configure radar threshold and persist it (code writes 512; a comment mentions 2000 mm, which appears inconsistent).
-- LowPower_SetSleepFlag(1): likely signals another part of the system to actually enter a low-power mode.
+External integrations
+- LoRa interface
+  - lora_rx_buf, lora_rx_flag are assumed to be maintained by an interrupt/driver elsewhere.
+  - Commands used here:
+    - AA00: power-hold (supply enable only).
+    - AAxy: speed and angle levels for opening.
+    - AAOF: request to close after opening.
+    - AARE: re-enable calibration mode.
+- Bluetooth (XY_MB06BA)
+  - XY_MB06BA_CheckAndParseCommands() to receive commands.
+  - XY_MB06BA_SendATCommand("AT+DISCONN=x") used to manage connections around sleep.
+- IMU and yaw
+  - LSM6DSV16X_Handle imu_handle used for sleep control (LSM6DSV16X_AllSleep).
+  - JY61P yaw sensor controlled via UART routines (JY61P_UART_Enter_Sleep, JY61P_UART_Reset_Yaw).
+  - Yaw variables (yaw, yaw_zero, yaw_offset, etc.) are provided by another module; yaw is used as the sole motion feedback.
+- Motor driver
+  - motor_drive_cmd sends speed commands; send_data(speed_control) configures speed-close-loop mode.
+  - rpm0_Stop stops the motor; bus current is sampled by Motor_TryReadBusCurrent.
+  - Motor_SetBusCurrentSlot(2) selects a measurement channel.
+- Radar/proximity
+  - FRadar_SetDistanceAndSave(&s_fradar, 512) sets and persists a distance threshold before sleep.
+- Flash storage
+  - Flash_Storage_Init/Read/Write used to persist calibration results (diff_sumup and check_flag).
+  - gyro_calib_storage.h is included; gyro calibration is likely handled elsewhere.
+- Low power
+  - LowPower_SetSleepFlag(1) marks the system for sleep; GPIOA pins 8 and 4, plus the motor enable pin, are toggled to manage supplies.
 
-Notable inconsistencies and limitations
-- MESSAGE_TIMEOUT_MS is defined as 100 ms while comment states “10s”. If intended to be 10 seconds, adjust the define to 10000.
-- Stall detection comments vs. thresholds mismatch: comments say “1 s / 3 degrees”; code uses 1.5 s and 0.1 deg.
-- Radar distance save comment says 2000 mm, but code uses 512. Verify desired threshold unit and value.
-- Heavy reliance on global externs (yaw, flags) makes reasoning about concurrency harder; ensure atomic updates or task-safe signaling.
-- There is no explicit sanity check that diff_sumup is non-zero or within expected range before using it as a target.
-- closing_inpurrt spelling suggests “close-in-input”; it is used to preempt reverse when an open command arrives. This behavior should be documented for operators since it can interrupt closing motion.
+Data and persistence
+- Calibration
+  - diff_sumup: the calibrated maximum yaw range considered “full open.”
+  - check_flag: whether calibration completed successfully.
+  - Both values are restored on boot and likely updated by Auto_Check (invoked elsewhere) and saved by flash_storage.
+- Runtime telemetry
+  - Current (current_raw, g_motor_bus_current_A) is read and available for diagnostics; a current-based stall trip is present but currently commented out.
+- Configuration levels via LoRa
+  - Speed levels map to clamped command magnitudes.
+  - Angle levels scale the open target for partial opening.
 
-Suggested flowchart structure (nodes and branch triggers)
-- Start
-  - Init Flash, restore diff_sumup and check_flag
-  - If check_flag: motor power off
-- Loop (10 ms)
-  - Update bus current; BLE parse
-  - Branch: Calibrated?
-    - No:
-      - If lora_rx_flag: Auto_Check(); clear rx buffer; Wake_time = now
-      - Go to Loop end
-    - Yes:
-      - Idle timeout branch:
-        - If now - Wake_time > 15000 and |yaw| < 10: Low-power sequence, set sleep flag
-        - Else if now - Wake_time > 15000: motor_runing_flag_r = 1
-      - LoRa parser branch (if lora_rx_flag):
-        - If “AA00”: power on; aa00_motor_enabled = true; last_message_time = now
-        - Else if “AAxy”: set speed/angle levels; face_control_flag=1; commandExecuted=1; motor_runing_flag=1; closing_inpurrt=1
-        - Else if “AAOF”: close_flag=1
-        - Else if “AARE”: check_flag=0 (re-enter calibration)
-      - Opening controller branch:
-        - Condition: (commandExecuted || ahead_flag) and yaw < diff_sumup and separation > 2 deg OR motor_runing_flag==1
-        - If Motor_Init==0: power on; move_start=now; init; speed_control once
-        - Compute threshold and speed; send command
-        - Stop if near target/overshoot/stall
-          - On stop: stop motor, clear flags, power off
-          - If close_flag: set commandExecuted_r=1; motor_runing_flag_r=1
-        - Else: if not in conditions: clear forward flags
-      - Closing controller branch:
-        - Condition: (commandExecuted_r || back_flag) and yaw > 0 and |yaw|>2 deg OR motor_runing_flag_r==1
-        - If Motor_Init_r==0: power on; move_start=now; init; speed_control once
-        - Compute speed toward 0; send command
-        - Stop if near zero/undershoot/stall or closing_inpurrt==1
-          - If no collision and not preempted: back-off, power down, low-power sequence
-          - If preempted: switch to opening (motor_runing_flag=1; Motor_Init=0)
-        - Else: if not in conditions: clear reverse flags
-      - AA00 keep-power branch:
-        - If aa00_motor_enabled:
-          - If moving: last_message_time = now
-          - Else if now - last_message_time > MESSAGE_TIMEOUT_MS: power off; aa00_motor_enabled=false
-      - PB6 edge branch:
-        - If edge detected and no motion: motor_runing_flag=1 (start opening)
-  - Loop end: osDelay(10)
+Assumptions and limitations to be aware of
+- Timing constants and comments mismatch:
+  - MESSAGE_TIMEOUT_MS is 100 in code but commented as “10s.” Decide on the desired behavior and adjust the constant or comment accordingly.
+  - Yaw_Stall_Check comments mention “1 second / 3 degrees,” but code uses 1.5 seconds and 0.1 degrees. Align thresholds to actual requirements and update comments.
+- Yaw sign conventions:
+  - Opening expects yaw to increase; closing expects it to decrease toward zero. If IMU orientation changes, this logic must be adjusted.
+- Globals and cross-module state:
+  - Many flags and variables are extern (ahead_flag, back_flag, yaw, diff_sumup, Wake_time). Ensure they are updated atomically and consistently across tasks/ISRs.
+- Safety and robustness:
+  - Collision detection is based purely on yaw dynamics; the current-based trip is commented out. If hardware allows, re-enable or parameterize current-based protection.
+  - Magic numbers (Motor_P=40, angular thresholds 5 deg, bias +3 deg) may need tuning per mechanism.
+- Power management:
+  - Sleep/wake sequences toggle GPIOs and disconnect/reconnect BLE; confirm the order is correct for your board to avoid brownouts or lockups.
+- AAxx command parsing:
+  - Only ASCII digits ‘1’–‘3’ are accepted for speed/angle. ‘OF’ and ‘RE’ are special strings. Unexpected values are mostly ignored; consider adding explicit rejection/ACKs.
 
-Data and timing constants
-- Motor_P = 40: proportional gain from angle error to speed.
-- Speed limits from LoRa: 600 / 1200 / 2000.
-- Angle divisors: 3 / 2 / 1 for small/medium/large opens.
-- Forward stop tolerance: 5 degrees near thresholds.
-- Reverse bias: 3 degrees added in control term to ensure closing force.
-- Idle timeout to sleep/force-close: 15000 ms.
-- AA00 timeout: defined as 100 ms (verify).
+User-visible scenarios
+- Open partially with LoRa
+  - Send AA21 (speed level 2, angle level 1).
+  - The motor powers on, switches to speed mode, and opens to one-third of the calibrated angle at moderate speed. It stops near the target or on stall.
+  - If AAOF was also sent earlier, it will close after opening completes.
 
-This narrative enumerates all commands, branches, and triggers so a downstream flowchart can model the state machine, including motion start/stop conditions, low-power transitions, and AA00 keep-power management.
+- Keep motor powered with AA00
+  - Periodically send AA00 to keep the motor power enabled while no movement is commanded. If messages stop beyond the timeout, power is removed.
+
+- Recalibration (Auto_Check)
+  - Send AARE to clear calibration. On the next LoRa frame arrival, Auto_Check runs, finds limits, sets check_flag, and persists diff_sumup. Normal control resumes thereafter.
+
+- Manual or physical interaction
+  - A PB6 press toggles an open if idle.
+  - If someone pushes/pulls the mechanism (ahead_flag/back_flag asserted), the system starts opening/closing accordingly.
+
+- Idle timeout
+  - If no activity for 15 seconds:
+    - If nearly closed, the system sleeps (BLE and IMU go to sleep, radar threshold saved).
+    - If not closed, it initiates an automatic close.
+
+Summary of state transitions
+- Idle (powered) → Opening
+  - Trigger: LoRa AAxy, ahead_flag, PB6 edge, or a closing preempted by a new open.
+- Opening → Open stop
+  - Trigger: near target, overshoot, or stall detection.
+  - Optional transition to Closing if AAOF had been requested.
+- Idle (powered) → Closing
+  - Trigger: LoRa close intent, back_flag, or idle > 15 s while not near closed.
+- Closing → Closed stop
+  - Trigger: near zero yaw, undershoot, or stall.
+  - If clean close and not interrupted: snug fit, power down, and possibly sleep.
+- Any Motion → Preempted/open
+  - Trigger: New open command during closing (closing_inpurrt).
+
+This explanation should give non-developers and cross-functional stakeholders a clear picture of how commands, sensors, and control logic combine to move the mechanism safely, when it sleeps, and how it recovers and persists calibration.
