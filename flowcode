@@ -5,6 +5,8 @@ import argparse
 import json
 import os
 import subprocess
+import webbrowser
+import time
 import sys
 from pathlib import Path
 from typing import Optional
@@ -71,6 +73,31 @@ def convert_to_stage2(input_json: Path, output_json: Path) -> None:
     print(f"Wrote Stage2-compatible JSON to {output_json}")
 
 
+def launch_ui_with_graph(stage2_json: Path) -> None:
+    public_dir = REPO_ROOT / "Archive" / "stage2" / "public"
+    public_dir.mkdir(parents=True, exist_ok=True)
+    dest = public_dir / stage2_json.name
+    try:
+        dest.write_text(stage2_json.read_text(encoding="utf-8"), encoding="utf-8")
+    except Exception as exc:
+        raise SystemExit(f"Failed to prepare graph for UI: {exc}")
+    print(f"Placed {stage2_json} at {dest}")
+
+    # Start Vite dev server and open browser to auto-load the graph
+    proc = subprocess.Popen(["npm", "run", "dev", "--prefix", str(REPO_ROOT / "Archive" / "stage2")])
+    url = f"http://localhost:5173/?graph=/{stage2_json.name}"
+    time.sleep(2)
+    try:
+        webbrowser.open(url)
+        print(f"Opened browser at {url}")
+    except Exception:
+        print(f"Please open {url} in your browser.")
+    try:
+        proc.wait()
+    except KeyboardInterrupt:
+        proc.terminate()
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Run the full Flowcode pipeline on a single file.")
     p.add_argument("filename", type=Path, help="Path to the file to include in the prompt.")
@@ -83,7 +110,25 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Optional[list[str]] = None) -> None:
-    args = build_parser().parse_args(argv)
+    argv_list = list(argv or [])
+    # Support subcommand: view <stage2_json or source_file>
+    if argv_list[:1] == ["view"]:
+        if len(argv_list) < 2:
+            raise SystemExit("Usage: flowcode view <flowchart_*.stage2.json | source_file>")
+        target = Path(argv_list[1])
+        if not target.exists():
+            raise SystemExit(f"File not found: {target}")
+        # If a Stage2 JSON is provided, open it directly
+        if str(target).endswith(".stage2.json"):
+            launch_ui_with_graph(target.resolve())
+            return
+        # Otherwise, treat as source file: generate then open UI with English by default
+        gen_args = build_parser().parse_args([str(target)])
+        # Run generation
+        args = gen_args
+        # fallthrough to generation logic below; after conversion, open UI
+    else:
+        args = build_parser().parse_args(argv)
 
     if not args.filename.exists():
         raise SystemExit(f"Input file not found: {args.filename}")
@@ -152,7 +197,10 @@ def main(argv: Optional[list[str]] = None) -> None:
     print("Converted flowcharts to Stage2 JSON.")
 
     # Optional Step 4: launch UI
-    if args.open_ui:
+    if argv_list[:1] == ["view"]:
+        # Open English by default after generation
+        launch_ui_with_graph(REPO_ROOT / f"{args.output_prefix}_en.stage2.json")
+    elif args.open_ui:
         print("Starting Stage 2 dev server (press Ctrl+C to stop)...")
         run(["npm", "run", "dev", "--prefix", str(REPO_ROOT / "Archive" / "stage2")])
 

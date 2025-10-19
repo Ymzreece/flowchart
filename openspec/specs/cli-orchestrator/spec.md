@@ -48,3 +48,13 @@ The CLI SHALL attempt to discover the OpenAI API key and provide actionable erro
 - Then the CLI extracts a value that looks like an OpenAI key and sets `OPENAI_API_KEY` for the subprocesses
 - And continues execution normally.
 
+### Requirement: `flowcode view <filename>` auto-opens UI with the graph
+The CLI SHALL provide a `view` subcommand that starts the UI and preloads the generated Stage 2 JSON without manual file upload.
+
+#### Scenario: Viewing a flowchart for a file
+- Given Stage 2 JSON does not yet exist for `<filename>`
+- When the user runs `flowcode view <filename>`
+- Then the CLI generates the artifacts (Steps 1–3) if needed
+- And copies the selected language Stage 2 JSON into the frontend's static directory
+- And starts the dev server
+- And opens the default browser to the app with a `?graph=/flowchart_en.stage2.json` query that auto-loads the graph.

@@ -1,0 +1,601 @@
+{
+  "language": "en",
+  "metadata": {
+    "title": "Control loop graph for motorized mechanism (embedded system)",
+    "summary": "Structured flowchart of the main control loop: initialization, calibration handling, inputs (LoRa, Bluetooth, IMU, GPIO), motion control (open/close), stall safety, power management, and persistence.",
+    "language": "en"
+  },
+  "functions": [
+    {
+      "name": "Control loop graph for motorized mechanism (embedded system)",
+      "nodes": [
+        {
+          "id": "N1",
+          "kind": "start",
+          "label": "System starts, initializes hardware, and resumes a known state.",
+          "summary": "System starts, initializes hardware, and resumes a known state.",
+          "metadata": {
+            "title": "Power-Up and Resume",
+            "detail": null,
+            "type": "start"
+          }
+        },
+        {
+          "id": "N2",
+          "kind": "statement",
+          "label": "Set up sensors/IO, ensure motor is idle, and prepare for operation.",
+          "summary": "Set up sensors/IO, ensure motor is idle, and prepare for operation.",
+          "metadata": {
+            "title": "Initialize peripherals and stop motor",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "N3",
+          "kind": "statement",
+          "label": "Load diff_sumup and check_flag from flash storage.",
+          "summary": "Load diff_sumup and check_flag from flash storage.",
+          "metadata": {
+            "title": "Read calibration data from flash",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "N4",
+          "kind": "conditional",
+          "label": "Is the system already calibrated (check_flag true)?",
+          "summary": "Is the system already calibrated (check_flag true)?",
+          "metadata": {
+            "title": "Calibration presence check",
+            "detail": null,
+            "type": "decision"
+          }
+        },
+        {
+          "id": "N6",
+          "kind": "loop",
+          "label": "If not calibrated, wait for a LoRa frame to trigger Auto_Check.",
+          "summary": "If not calibrated, wait for a LoRa frame to trigger Auto_Check.",
+          "metadata": {
+            "title": "Await LoRa frame for Auto_Check",
+            "detail": null,
+            "type": "loop"
+          }
+        },
+        {
+          "id": "N7",
+          "kind": "statement",
+          "label": "Run Auto_Check to determine limits and maximum yaw (diff_sumup).",
+          "summary": "Run Auto_Check to determine limits and maximum yaw (diff_sumup).",
+          "metadata": {
+            "title": "Auto_Check calibration",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "N8",
+          "kind": "loop",
+          "label": "Main 10 ms control loop for normal operation.",
+          "summary": "Main 10 ms control loop for normal operation.",
+          "metadata": {
+            "title": "Enter normal operation loop",
+            "detail": null,
+            "type": "loop"
+          }
+        },
+        {
+          "id": "N9",
+          "kind": "call",
+          "label": "Parse commands from XY_MB06BA device.",
+          "summary": "Parse commands from XY_MB06BA device.",
+          "metadata": {
+            "title": "Bluetooth command parsing",
+            "detail": null,
+            "type": "call"
+          }
+        },
+        {
+          "id": "N10",
+          "kind": "call",
+          "label": "Process inbound LoRa frames and update lora_rx_buf.",
+          "summary": "Process inbound LoRa frames and update lora_rx_buf.",
+          "metadata": {
+            "title": "LoRa frame parsing",
+            "detail": null,
+            "type": "call"
+          }
+        },
+        {
+          "id": "N11",
+          "kind": "statement",
+          "label": "Handle AA00, AAxy, AAOF and AARE command types.",
+          "summary": "Handle AA00, AAxy, AAOF and AARE command types.",
+          "metadata": {
+            "title": "LoRa/command handling",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "N12",
+          "kind": "statement",
+          "label": "Update yaw and motion feedback from IMU sensors.",
+          "summary": "Update yaw and motion feedback from IMU sensors.",
+          "metadata": {
+            "title": "IMU/Yaw update",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "N13",
+          "kind": "statement",
+          "label": "Read motor bus current for safety/diagnostics.",
+          "summary": "Read motor bus current for safety/diagnostics.",
+          "metadata": {
+            "title": "Bus current read",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "N14",
+          "kind": "statement",
+          "label": "Read ahead_flag, back_flag and PB6 edge signals.",
+          "summary": "Read ahead_flag, back_flag and PB6 edge signals.",
+          "metadata": {
+            "title": "External flags and manual input check",
+            "detail": null,
+            "type": "io"
+          }
+        },
+        {
+          "id": "N15",
+          "kind": "conditional",
+          "label": "Decision: is the AA00 power-hold state currently active?",
+          "summary": "Decision: is the AA00 power-hold state currently active?",
+          "metadata": {
+            "title": "AA00 power-hold active?",
+            "detail": null,
+            "type": "decision"
+          }
+        },
+        {
+          "id": "N16",
+          "kind": "statement",
+          "label": "Keep motor power on while AA00 is enabling motion or holding power.",
+          "summary": "Keep motor power on while AA00 is enabling motion or holding power.",
+          "metadata": {
+            "title": "Maintain motor power while AA00 is active",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "N17",
+          "kind": "conditional",
+          "label": "Should the system start opening now based on commands/flags?",
+          "summary": "Should the system start opening now based on commands/flags?",
+          "metadata": {
+            "title": "Open motion decision",
+            "detail": null,
+            "type": "decision"
+          }
+        },
+        {
+          "id": "N18",
+          "kind": "loop",
+          "label": "Open motion loop that drives opening until a stop condition is met.",
+          "summary": "Open motion loop that drives opening until a stop condition is met.",
+          "metadata": {
+            "title": "Open motion loop",
+            "detail": null,
+            "type": "loop"
+          }
+        },
+        {
+          "id": "N19",
+          "kind": "statement",
+          "label": "Enable motor power, reset timers, and switch to speed mode for opening.",
+          "summary": "Enable motor power, reset timers, and switch to speed mode for opening.",
+          "metadata": {
+            "title": "Open motion initialization",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "N20",
+          "kind": "statement",
+          "label": "Compute target yaw threshold from diff_sumup and angle level.",
+          "summary": "Compute target yaw threshold from diff_sumup and angle level.",
+          "metadata": {
+            "title": "Open target threshold calculation",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "N21",
+          "kind": "statement",
+          "label": "speed = Motor_P * (threshold - yaw), clamped to safety limits.",
+          "summary": "speed = Motor_P * (threshold - yaw), clamped to safety limits.",
+          "metadata": {
+            "title": "Open speed command calculation",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "N22",
+          "kind": "conditional",
+          "label": "Evaluate if the opening should stop due to target, overshoot, or stall.",
+          "summary": "Evaluate if the opening should stop due to target, overshoot, or stall.",
+          "metadata": {
+            "title": "Open stop condition check",
+            "detail": null,
+            "type": "decision"
+          }
+        },
+        {
+          "id": "N23",
+          "kind": "statement",
+          "label": "Stop motor, clear flags; possibly queue close if AAOF was set.",
+          "summary": "Stop motor, clear flags; possibly queue close if AAOF was set.",
+          "metadata": {
+            "title": "Open stop actions",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "N24",
+          "kind": "conditional",
+          "label": "If AAOF was requested, prepare to close after finishing the open.",
+          "summary": "If AAOF was requested, prepare to close after finishing the open.",
+          "metadata": {
+            "title": "AAOF triggers close",
+            "detail": null,
+            "type": "decision"
+          }
+        },
+        {
+          "id": "N25",
+          "kind": "loop",
+          "label": "Initiate the closing motion loop.",
+          "summary": "Initiate the closing motion loop.",
+          "metadata": {
+            "title": "Start close motion",
+            "detail": null,
+            "type": "loop"
+          }
+        },
+        {
+          "id": "N26",
+          "kind": "statement",
+          "label": "Enable motor power and prepare speed mode for closing.",
+          "summary": "Enable motor power and prepare speed mode for closing.",
+          "metadata": {
+            "title": "Close motion initialization",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "N27",
+          "kind": "statement",
+          "label": "Compute target (0) and speed for closing with bias.",
+          "summary": "Compute target (0) and speed for closing with bias.",
+          "metadata": {
+            "title": "Close target and speed calculation",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "N28",
+          "kind": "statement",
+          "label": "Compute and send closing speed command to motor.",
+          "summary": "Compute and send closing speed command to motor.",
+          "metadata": {
+            "title": "Close speed calculation and command",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "N29",
+          "kind": "conditional",
+          "label": "Check if closed, undershot, stall, or interrupted.",
+          "summary": "Check if closed, undershot, stall, or interrupted.",
+          "metadata": {
+            "title": "Close stop condition check",
+            "detail": null,
+            "type": "decision"
+          }
+        },
+        {
+          "id": "N30",
+          "kind": "statement",
+          "label": "Handle close completion or interruption; snug the fit or switch to open.",
+          "summary": "Handle close completion or interruption; snug the fit or switch to open.",
+          "metadata": {
+            "title": "Close stop action",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "N31",
+          "kind": "conditional",
+          "label": "If a new open command arrives mid-close, switch to open motion.",
+          "summary": "If a new open command arrives mid-close, switch to open motion.",
+          "metadata": {
+            "title": "Open interruption during close",
+            "detail": null,
+            "type": "decision"
+          }
+        },
+        {
+          "id": "N32",
+          "kind": "statement",
+          "label": "Begin opening after interruption during closing.",
+          "summary": "Begin opening after interruption during closing.",
+          "metadata": {
+            "title": "Switch to open motion",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "N33",
+          "kind": "statement",
+          "label": "Power down peripherals, reset yaw, and save radar threshold.",
+          "summary": "Power down peripherals, reset yaw, and save radar threshold.",
+          "metadata": {
+            "title": "Post-close power-down and sleep prep",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "N35",
+          "kind": "conditional",
+          "label": "Decide between entering sleep or auto-close after idle period.",
+          "summary": "Decide between entering sleep or auto-close after idle period.",
+          "metadata": {
+            "title": "Idle timeout management",
+            "detail": null,
+            "type": "decision"
+          }
+        },
+        {
+          "id": "N36",
+          "kind": "statement",
+          "label": "Sleep IMU, Bluetooth, and radar; power down as configured.",
+          "summary": "Sleep IMU, Bluetooth, and radar; power down as configured.",
+          "metadata": {
+            "title": "Enter low-power sleep",
+            "detail": null,
+            "type": "process"
+          }
+        },
+        {
+          "id": "N37",
+          "kind": "statement",
+          "label": "Wake up on activity and resume normal operation.",
+          "summary": "Wake up on activity and resume normal operation.",
+          "metadata": {
+            "title": "Wake from sleep",
+            "detail": null,
+            "type": "edge"
+          }
+        },
+        {
+          "id": "N38",
+          "kind": "end",
+          "label": "Optional termination point for the diagram.",
+          "summary": "Optional termination point for the diagram.",
+          "metadata": {
+            "title": "End",
+            "detail": null,
+            "type": "end"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "N1",
+          "target": "N2"
+        },
+        {
+          "source": "N2",
+          "target": "N3"
+        },
+        {
+          "source": "N3",
+          "target": "N4"
+        },
+        {
+          "source": "N4",
+          "target": "N8",
+          "label": "calibration_present = true"
+        },
+        {
+          "source": "N4",
+          "target": "N6",
+          "label": "calibration_present = false"
+        },
+        {
+          "source": "N6",
+          "target": "N7"
+        },
+        {
+          "source": "N7",
+          "target": "N8"
+        },
+        {
+          "source": "N8",
+          "target": "N9"
+        },
+        {
+          "source": "N9",
+          "target": "N10"
+        },
+        {
+          "source": "N10",
+          "target": "N11"
+        },
+        {
+          "source": "N11",
+          "target": "N12"
+        },
+        {
+          "source": "N12",
+          "target": "N13"
+        },
+        {
+          "source": "N13",
+          "target": "N14"
+        },
+        {
+          "source": "N14",
+          "target": "N15",
+          "label": "AA00 active"
+        },
+        {
+          "source": "N14",
+          "target": "N16",
+          "label": "AA00 inactive"
+        },
+        {
+          "source": "N15",
+          "target": "N8"
+        },
+        {
+          "source": "N16",
+          "target": "N17"
+        },
+        {
+          "source": "N17",
+          "target": "N18"
+        },
+        {
+          "source": "N18",
+          "target": "N19"
+        },
+        {
+          "source": "N19",
+          "target": "N20"
+        },
+        {
+          "source": "N20",
+          "target": "N21"
+        },
+        {
+          "source": "N21",
+          "target": "N22"
+        },
+        {
+          "source": "N22",
+          "target": "N23",
+          "label": "stop"
+        },
+        {
+          "source": "N22",
+          "target": "N21",
+          "label": "continue"
+        },
+        {
+          "source": "N23",
+          "target": "N24"
+        },
+        {
+          "source": "N24",
+          "target": "N25"
+        },
+        {
+          "source": "N25",
+          "target": "N26"
+        },
+        {
+          "source": "N26",
+          "target": "N27"
+        },
+        {
+          "source": "N27",
+          "target": "N28"
+        },
+        {
+          "source": "N28",
+          "target": "N29"
+        },
+        {
+          "source": "N29",
+          "target": "N30"
+        },
+        {
+          "source": "N30",
+          "target": "N31"
+        },
+        {
+          "source": "N31",
+          "target": "N32",
+          "label": "interrupted_by_open"
+        },
+        {
+          "source": "N31",
+          "target": "N33",
+          "label": "no_interrupt"
+        },
+        {
+          "source": "N32",
+          "target": "N17",
+          "label": "switch_to_open_motion"
+        },
+        {
+          "source": "N33",
+          "target": "N8"
+        },
+        {
+          "source": "N8",
+          "target": "N35",
+          "label": "idle_timeout"
+        },
+        {
+          "source": "N35",
+          "target": "N36",
+          "label": "sleep"
+        },
+        {
+          "source": "N36",
+          "target": "N9",
+          "label": "wake_on_activity"
+        },
+        {
+          "source": "N36",
+          "target": "N37",
+          "label": "wake_event"
+        },
+        {
+          "source": "N37",
+          "target": "N8",
+          "label": "resume"
+        },
+        {
+          "source": "N18",
+          "target": "N23",
+          "label": "continue_open_after_init"
+        }
+      ],
+      "parameters": [],
+      "metadata": {
+        "entry_node": "N1"
+      },
+      "docstring": "Structured flowchart of the main control loop: initialization, calibration handling, inputs (LoRa, Bluetooth, IMU, GPIO), motion control (open/close), stall safety, power management, and persistence."
+    }
+  ]
+}

@@ -11,6 +11,24 @@ export function FunctionView() {
 
   useEffect(() => {
     if (hasLoadedSample) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const graphUrl = params.get("graph");
+
+    if (graphUrl) {
+      fetch(graphUrl)
+        .then((r) => r.json())
+        .then((parsed) => {
+          loadGraph(parsed);
+          setHasLoadedSample(true);
+        })
+        .catch(() => {
+          loadGraph(sampleGraph);
+          setHasLoadedSample(true);
+        });
+      return;
+    }
+
     loadGraph(sampleGraph);
     setHasLoadedSample(true);
   }, [hasLoadedSample, loadGraph]);

@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 from importlib import resources
+import sys
 from pathlib import Path
 from typing import Optional
 
@@ -170,8 +171,8 @@ def _stage2_generate_graphs(explanation: str, *, model: str, show_prompt: bool) 
     return data_en, data_zh
 
 
-def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="Run the full Flowcode pipeline on a single file.")
+def build_generate_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(prog="flowcode", description="Generate flowcharts from a source file.")
     p.add_argument("filename", type=Path, help="Path to the file to include in the prompt.")
     p.add_argument("--open-ui", action="store_true", help="Launch the Stage 2 dev server after generation.")
     p.add_argument("--explanation", type=Path, default=Path("flow_explanation.txt"), help="Path for the generated explanation (default: flow_explanation.txt).")
@@ -182,41 +183,99 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
-def main(argv: Optional[list[str]] = None) -> None:
-    args = build_parser().parse_args(argv)
+def build_view_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(prog="flowcode view", description="Generate (if needed) and view a flowchart in the UI.")
+    p.add_argument("filename", type=Path, help="Path to the file to include in the prompt.")
+    p.add_argument("--explanation", type=Path, default=Path("flow_explanation.txt"), help="Path for the generated explanation (default: flow_explanation.txt).")
+    p.add_argument("--output-prefix", type=str, default="flowchart", help="Base name for generated flowchart JSON (default: flowchart_*.json).")
+    p.add_argument("--model-stage1", type=str, default=DEFAULT_STAGE1_MODEL, help=f"Model for Stage 1 (default: {DEFAULT_STAGE1_MODEL}).")
+    p.add_argument("--model-stage2", type=str, default=DEFAULT_STAGE2_MODEL, help=f"Model for Stage 2 (default: {DEFAULT_STAGE2_MODEL}).")
+    p.add_argument("--lang", choices=("en", "zh"), default="en", help="Language to view (default: en).")
+    p.add_argument("--show-prompts", action="store_true", help="Echo prompts sent to the model.")
+    return p
 
-    include_path = args.filename
+
+def _generate_pipeline(include_path: Path, *, explanation: Path, output_prefix: str, model_stage1: str, model_stage2: str, show_prompts: bool) -> tuple[Path, Path]:
     if not include_path.exists():
         raise SystemExit(f"Input file not found: {include_path}")
 
-    # Stage 1 — narrative
-    narrative = _stage1_generate_narrative(include_path, model=args.model_stage1, show_prompt=args.show_prompts)
-    args.explanation.write_text(narrative, encoding="utf-8")
-    print(f"Wrote explanation to {args.explanation}")
+    narrative = _stage1_generate_narrative(include_path, model=model_stage1, show_prompt=show_prompts)
+    explanation.write_text(narrative, encoding="utf-8")
+    print(f"Wrote explanation to {explanation}")
 
-    # Stage 2 — bilingual graphs
-    en, zh = _stage2_generate_graphs(narrative, model=args.model_stage2, show_prompt=args.show_prompts)
-    en_path = Path(f"{args.output_prefix}_en.json")
-    zh_path = Path(f"{args.output_prefix}_zh.json")
+    en, zh = _stage2_generate_graphs(narrative, model=model_stage2, show_prompt=show_prompts)
+    en_path = Path(f"{output_prefix}_en.json")
+    zh_path = Path(f"{output_prefix}_zh.json")
     en_path.write_text(json.dumps(en, ensure_ascii=False, indent=2), encoding="utf-8")
     zh_path.write_text(json.dumps(zh, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Wrote flowcharts: {en_path}, {zh_path}")
 
-    # Stage 3 — Stage2 conversion
     graph_en = parse_graph(en_path)
     module_en = graph_to_stage2_module(graph_en)
-    (Path(f"{args.output_prefix}_en.stage2.json")).write_text(json.dumps(module_en, indent=2), encoding="utf-8")
+    en_stage2 = Path(f"{output_prefix}_en.stage2.json")
+    en_stage2.write_text(json.dumps(module_en, indent=2), encoding="utf-8")
 
     graph_zh = parse_graph(zh_path)
     module_zh = graph_to_stage2_module(graph_zh)
-    (Path(f"{args.output_prefix}_zh.stage2.json")).write_text(json.dumps(module_zh, indent=2), encoding="utf-8")
+    zh_stage2 = Path(f"{output_prefix}_zh.stage2.json")
+    zh_stage2.write_text(json.dumps(module_zh, indent=2), encoding="utf-8")
     print("Converted flowcharts to Stage2 JSON.")
+    return en_stage2, zh_stage2
 
+
+def _view_pipeline(include_path: Path, *, lang: str, explanation: Path, output_prefix: str, model_stage1: str, model_stage2: str, show_prompts: bool) -> None:
+    # If user passed a Stage2 JSON file directly, use it
+    if str(include_path).endswith(".stage2.json") and include_path.exists():
+        src = include_path
+    else:
+        en_stage2 = Path(f"{output_prefix}_en.stage2.json")
+        zh_stage2 = Path(f"{output_prefix}_zh.stage2.json")
+        if not (en_stage2.exists() and zh_stage2.exists()):
+            _generate_pipeline(include_path, explanation=explanation, output_prefix=output_prefix, model_stage1=model_stage1, model_stage2=model_stage2, show_prompts=show_prompts)
+        src = en_stage2 if lang == "en" else zh_stage2
+
+    # Copy selected language file into Vite public dir for serving
+    public_dir = Path("Archive") / "stage2" / "public"
+    public_dir.mkdir(parents=True, exist_ok=True)
+    dest_name = src.name  # preserve filename
+    dest_path = public_dir / dest_name
+    dest_path.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+    print(f"Placed {src} at {dest_path} for UI serving.")
+
+    # Launch dev server and open browser to auto-load graph
+    import subprocess, time, webbrowser
+
+    proc = subprocess.Popen(["npm", "run", "dev", "--prefix", str(Path("Archive") / "stage2")])
+    url = f"http://localhost:5173/?graph=/{dest_name}"
+    time.sleep(2)
+    try:
+        webbrowser.open(url)
+        print(f"Opened browser at {url}")
+    except Exception:
+        print(f"Please open {url} in your browser.")
+    # Wait for the dev server to keep running until user stops it
+    try:
+        proc.wait()
+    except KeyboardInterrupt:
+        proc.terminate()
+
+
+def main(argv: Optional[list[str]] = None) -> None:
+    # Use provided argv for testability; fall back to real CLI args when None
+    argv_list: list[str] = list(argv) if argv is not None else sys.argv[1:]
+
+    if argv_list and argv_list[0] == "view":
+        parser = build_view_parser()
+        args = parser.parse_args(argv_list[1:])
+        _view_pipeline(args.filename, lang=args.lang, explanation=args.explanation, output_prefix=args.output_prefix, model_stage1=args.model_stage1, model_stage2=args.model_stage2, show_prompts=args.show_prompts)
+        return
+
+    parser = build_generate_parser()
+    args = parser.parse_args(argv_list)
+    _generate_pipeline(args.filename, explanation=args.explanation, output_prefix=args.output_prefix, model_stage1=args.model_stage1, model_stage2=args.model_stage2, show_prompts=args.show_prompts)
     if args.open_ui:
-        # Keep this opt-in and simple; rely on user's environment
-        os.execvp("npm", ["npm", "run", "dev", "--prefix", str(Path("Archive") / "stage2")])
+        _view_pipeline(args.filename, lang="en", explanation=args.explanation, output_prefix=args.output_prefix, model_stage1=args.model_stage1, model_stage2=args.model_stage2, show_prompts=args.show_prompts)
 
 
 if __name__ == "__main__":  # pragma: no cover
     main()
-

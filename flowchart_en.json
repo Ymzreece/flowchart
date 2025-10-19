@@ -1,400 +1,474 @@
 {
   "metadata": {
-    "title": "State-machine flow for FreeRTOS motion-control loop",
-    "summary": "Flowchart of boot calibration, calibrated idle loop, LoRa/Bluetooth command handling, opening/closing control, stall detection, and power management.",
+    "title": "Control loop graph for motorized mechanism (embedded system)",
+    "summary": "Structured flowchart of the main control loop: initialization, calibration handling, inputs (LoRa, Bluetooth, IMU, GPIO), motion control (open/close), stall safety, power management, and persistence.",
     "language": "en"
   },
-  "entry_node": "start",
+  "entry_node": "N1",
   "nodes": [
     {
-      "id": "start",
-      "title": "Start and system boot",
-      "summary": "System boots and begins initialization and calibration persistence.",
+      "id": "N1",
+      "title": "Power-Up and Resume",
+      "summary": "System starts, initializes hardware, and resumes a known state.",
       "detail": null,
       "type": "start"
     },
     {
-      "id": "boot_init",
-      "title": "Init Flash and restore calibration",
-      "summary": "Initialize Flash storage and read last-known calibration: diff_sumup and check_flag.",
-      "detail": "If check_flag is true, calibration is considered complete; otherwise uncalibrated path will be taken.",
+      "id": "N2",
+      "title": "Initialize peripherals and stop motor",
+      "summary": "Set up sensors/IO, ensure motor is idle, and prepare for operation.",
+      "detail": null,
       "type": "process"
     },
     {
-      "id": "calibrated_at_boot?",
-      "title": "Calibrated at boot?",
-      "summary": "Decision: is calibration complete (check_flag == true)?",
-      "detail": "If calibrated, start in idle; if not, enter uncalibrated path.",
+      "id": "N3",
+      "title": "Read calibration data from flash",
+      "summary": "Load diff_sumup and check_flag from flash storage.",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "N4",
+      "title": "Calibration presence check",
+      "summary": "Is the system already calibrated (check_flag true)?",
+      "detail": null,
       "type": "decision"
     },
     {
-      "id": "uncalibrated_loop",
-      "title": "Uncalibrated: wait for LoRa Auto_Check",
-      "summary": "Await a LoRa frame to start Auto_Check calibration/limits.",
-      "detail": "Auto_Check will set check_flag to true on success.",
+      "id": "N6",
+      "title": "Await LoRa frame for Auto_Check",
+      "summary": "If not calibrated, wait for a LoRa frame to trigger Auto_Check.",
+      "detail": null,
+      "type": "loop"
+    },
+    {
+      "id": "N7",
+      "title": "Auto_Check calibration",
+      "summary": "Run Auto_Check to determine limits and maximum yaw (diff_sumup).",
+      "detail": null,
       "type": "process"
     },
     {
-      "id": "auto_check",
-      "title": "Auto_Check (calibration/limit procedure)",
-      "summary": "Run calibration to determine diff_sumup and limits; set check_flag on success.",
-      "detail": "Diff_sumup becomes total open angle; check_flag becomes true.",
+      "id": "N8",
+      "title": "Enter normal operation loop",
+      "summary": "Main 10 ms control loop for normal operation.",
+      "detail": null,
+      "type": "loop"
+    },
+    {
+      "id": "N9",
+      "title": "Bluetooth command parsing",
+      "summary": "Parse commands from XY_MB06BA device.",
+      "detail": null,
       "type": "call"
     },
     {
-      "id": "calibrated_idle",
-      "title": "Calibrated Idle",
-      "summary": "Calibration complete; monitor for idle, motion commands, and keep-power.",
-      "detail": "Main runtime state when calibrated.",
+      "id": "N10",
+      "title": "LoRa frame parsing",
+      "summary": "Process inbound LoRa frames and update lora_rx_buf.",
+      "detail": null,
+      "type": "call"
+    },
+    {
+      "id": "N11",
+      "title": "LoRa/command handling",
+      "summary": "Handle AA00, AAxy, AAOF and AARE command types.",
+      "detail": null,
       "type": "process"
     },
     {
-      "id": "idle_timeout?",
-      "title": "Idle timeout check",
-      "summary": "If idle beyond 15s, check yaw to decide low power or force close.",
-      "detail": "If |yaw| < 10 deg, enter low-power; else force closing.",
-      "type": "decision"
-    },
-    {
-      "id": "low_power_seq",
-      "title": "Enter low-power sequence",
-      "summary": "Power down motor, peripherals, and sleep subsystems to save power.",
-      "detail": "Includes BLE disconnect, IMU sleep, radar save, and yaw reset wait.",
+      "id": "N12",
+      "title": "IMU/Yaw update",
+      "summary": "Update yaw and motion feedback from IMU sensors.",
+      "detail": null,
       "type": "process"
     },
     {
-      "id": "force_close_idle",
-      "title": "Force closing due to idle",
-      "summary": "Set motor_runing_flag_r to 1 to begin closing due to long idle without near-zero yaw.",
-      "detail": "Opens a closing motion path.",
+      "id": "N13",
+      "title": "Bus current read",
+      "summary": "Read motor bus current for safety/diagnostics.",
+      "detail": null,
       "type": "process"
     },
     {
-      "id": "lora_parser",
-      "title": "LoRa command parser (AA..)",
-      "summary": "Parse LoRa frames for control commands.",
-      "detail": "AA00 keeps power; AAxy sets speed/angle; AAOF requests close after open; AARE re-enters calibration.",
+      "id": "N14",
+      "title": "External flags and manual input check",
+      "summary": "Read ahead_flag, back_flag and PB6 edge signals.",
+      "detail": null,
       "type": "io"
     },
     {
-      "id": "aa00_power_on",
-      "title": "AA00: keep motor power on",
-      "summary": "Turn motor power on and set aa00_motor_enabled.",
+      "id": "N15",
+      "title": "AA00 power-hold active?",
+      "summary": "Decision: is the AA00 power-hold state currently active?",
       "detail": null,
-      "type": "process"
-    },
-    {
-      "id": "aaxy_command",
-      "title": "AAxy: set motion/target",
-      "summary": "Set Speed_Level_Lora and Angle_Level_Lora; start opening.",
-      "detail": "Also asserts flags to begin opening and prepares for timed motion.",
-      "type": "process"
-    },
-    {
-      "id": "aaof_command",
-      "title": "AAOF: request close after open",
-      "summary": "Set close_flag so that closing occurs after an open cycle finishes.",
-      "detail": null,
-      "type": "process"
-    },
-    {
-      "id": "aare_command",
-      "title": "AARE: re-enter calibration",
-      "summary": "Reset check_flag to force uncalibrated path on next loop.",
-      "detail": null,
-      "type": "process"
-    },
-    {
-      "id": "pb6_trigger",
-      "title": "PB6 manual trigger",
-      "summary": "Detect edge on PB6 to start opening if no motion is active.",
-      "detail": "Debounced edge increments a small counter and triggers opening when ready.",
-      "type": "io"
-    },
-    {
-      "id": "opening_entry",
-      "title": "Opening: entry condition",
-      "summary": "Determine if opening should start based on commands/triggers.",
-      "detail": "Conditions include commandExecuted, ahead_flag, or motor_runing_flag being set.",
       "type": "decision"
     },
     {
-      "id": "opening_init",
-      "title": "Opening Init",
-      "summary": "Power on, reset accumulators, and enable speed-control for opening.",
+      "id": "N16",
+      "title": "Maintain motor power while AA00 is active",
+      "summary": "Keep motor power on while AA00 is enabling motion or holding power.",
       "detail": null,
       "type": "process"
     },
     {
-      "id": "opening_control",
-      "title": "Opening Control (motion loop)",
-      "summary": "Compute speed from yaw error and send motor drive commands.",
-      "detail": "Looping control using threshold, yaw, and speed limits.",
-      "type": "loop"
-    },
-    {
-      "id": "opening_stop?",
-      "title": "Opening Stop condition",
-      "summary": "Check if target reached, near threshold, or stall detected.",
-      "detail": "If stop, handle stop actions; else continue motion loop.",
-      "type": "decision"
-    },
-    {
-      "id": "opening_stop_action",
-      "title": "Opening Stop Actions",
-      "summary": "Stop RPM, power down, clear flags; possibly queue closing.",
-      "detail": "If close_flag is set, prepare closing path.",
-      "type": "process"
-    },
-    {
-      "id": "closing_entry",
-      "title": "Closing: entry condition",
-      "summary": "Determine if closing should start (close command or pull assist).",
-      "detail": "Requires yaw to be away from zero and motion flags.",
-      "type": "decision"
-    },
-    {
-      "id": "closing_init",
-      "title": "Closing Init",
-      "summary": "Power on, reset, enable speed-control for closing.",
+      "id": "N17",
+      "title": "Open motion decision",
+      "summary": "Should the system start opening now based on commands/flags?",
       "detail": null,
-      "type": "process"
+      "type": "decision"
     },
     {
-      "id": "closing_control",
-      "title": "Closing Control (motion loop)",
-      "summary": "Drive toward zero angle; bias toward closing; cap speed.",
+      "id": "N18",
+      "title": "Open motion loop",
+      "summary": "Open motion loop that drives opening until a stop condition is met.",
       "detail": null,
       "type": "loop"
     },
     {
-      "id": "closing_stop?",
-      "title": "Closing Stop condition",
-      "summary": "Check near-zero yaw, overshoot, stall, or preemption by opening.",
-      "detail": "If stop, perform post-stop actions; else continue loop.",
-      "type": "decision"
-    },
-    {
-      "id": "closing_stop_action",
-      "title": "Closing Stop Actions",
-      "summary": "Handle post-close behavior, possible low-power sequence.",
+      "id": "N19",
+      "title": "Open motion initialization",
+      "summary": "Enable motor power, reset timers, and switch to speed mode for opening.",
       "detail": null,
       "type": "process"
     },
     {
-      "id": "yaw_stall_opening",
-      "title": "Yaw Stall Check (Opening)",
-      "summary": "Detect stall or wrong-direction movement during opening.",
-      "detail": "Used to stop safely if stall is detected.",
-      "type": "decision"
-    },
-    {
-      "id": "yaw_stall_closing",
-      "title": "Yaw Stall Check (Closing)",
-      "summary": "Detect stall or collision during closing.",
-      "detail": "Used to stop safely and handle errors.",
-      "type": "decision"
-    },
-    {
-      "id": "post_move_low_power",
-      "title": "Post-move Low-Power Entry",
-      "summary": "Apply low-power sequence after a move completes.",
+      "id": "N20",
+      "title": "Open target threshold calculation",
+      "summary": "Compute target yaw threshold from diff_sumup and angle level.",
       "detail": null,
       "type": "process"
     },
     {
-      "id": "end",
-      "title": "End of flow",
-      "summary": "End node; represents completion of the modeled sequences.",
+      "id": "N21",
+      "title": "Open speed command calculation",
+      "summary": "speed = Motor_P * (threshold - yaw), clamped to safety limits.",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "N22",
+      "title": "Open stop condition check",
+      "summary": "Evaluate if the opening should stop due to target, overshoot, or stall.",
+      "detail": null,
+      "type": "decision"
+    },
+    {
+      "id": "N23",
+      "title": "Open stop actions",
+      "summary": "Stop motor, clear flags; possibly queue close if AAOF was set.",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "N24",
+      "title": "AAOF triggers close",
+      "summary": "If AAOF was requested, prepare to close after finishing the open.",
+      "detail": null,
+      "type": "decision"
+    },
+    {
+      "id": "N25",
+      "title": "Start close motion",
+      "summary": "Initiate the closing motion loop.",
+      "detail": null,
+      "type": "loop"
+    },
+    {
+      "id": "N26",
+      "title": "Close motion initialization",
+      "summary": "Enable motor power and prepare speed mode for closing.",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "N27",
+      "title": "Close target and speed calculation",
+      "summary": "Compute target (0) and speed for closing with bias.",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "N28",
+      "title": "Close speed calculation and command",
+      "summary": "Compute and send closing speed command to motor.",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "N29",
+      "title": "Close stop condition check",
+      "summary": "Check if closed, undershot, stall, or interrupted.",
+      "detail": null,
+      "type": "decision"
+    },
+    {
+      "id": "N30",
+      "title": "Close stop action",
+      "summary": "Handle close completion or interruption; snug the fit or switch to open.",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "N31",
+      "title": "Open interruption during close",
+      "summary": "If a new open command arrives mid-close, switch to open motion.",
+      "detail": null,
+      "type": "decision"
+    },
+    {
+      "id": "N32",
+      "title": "Switch to open motion",
+      "summary": "Begin opening after interruption during closing.",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "N33",
+      "title": "Post-close power-down and sleep prep",
+      "summary": "Power down peripherals, reset yaw, and save radar threshold.",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "N35",
+      "title": "Idle timeout management",
+      "summary": "Decide between entering sleep or auto-close after idle period.",
+      "detail": null,
+      "type": "decision"
+    },
+    {
+      "id": "N36",
+      "title": "Enter low-power sleep",
+      "summary": "Sleep IMU, Bluetooth, and radar; power down as configured.",
+      "detail": null,
+      "type": "process"
+    },
+    {
+      "id": "N37",
+      "title": "Wake from sleep",
+      "summary": "Wake up on activity and resume normal operation.",
+      "detail": null,
+      "type": "edge"
+    },
+    {
+      "id": "N38",
+      "title": "End",
+      "summary": "Optional termination point for the diagram.",
       "detail": null,
       "type": "end"
     }
   ],
   "edges": [
     {
-      "source": "start",
-      "target": "boot_init",
-      "label": "boot"
+      "source": "N1",
+      "target": "N2",
+      "label": null
     },
     {
-      "source": "boot_init",
-      "target": "calibrated_at_boot?",
-      "label": "read and restore calibration (diff_sumup, check_flag)"
+      "source": "N2",
+      "target": "N3",
+      "label": null
     },
     {
-      "source": "calibrated_at_boot?",
-      "target": "calibrated_idle",
-      "label": "check_flag == true"
+      "source": "N3",
+      "target": "N4",
+      "label": null
     },
     {
-      "source": "calibrated_at_boot?",
-      "target": "uncalibrated_loop",
-      "label": "check_flag == false"
+      "source": "N4",
+      "target": "N8",
+      "label": "calibration_present = true"
     },
     {
-      "source": "uncalibrated_loop",
-      "target": "auto_check",
-      "label": "lora_rx_flag == 1"
+      "source": "N4",
+      "target": "N6",
+      "label": "calibration_present = false"
     },
     {
-      "source": "auto_check",
-      "target": "calibrated_at_boot?",
-      "label": "success / check_flag == true"
+      "source": "N6",
+      "target": "N7",
+      "label": null
     },
     {
-      "source": "calibrated_idle",
-      "target": "idle_timeout?",
-      "label": "every loop cycle"
+      "source": "N7",
+      "target": "N8",
+      "label": null
     },
     {
-      "source": "idle_timeout?",
-      "target": "low_power_seq",
-      "label": "Idle timeout and |yaw| < 10 deg"
+      "source": "N8",
+      "target": "N9",
+      "label": null
     },
     {
-      "source": "idle_timeout?",
-      "target": "force_close_idle",
-      "label": "Idle timeout and |yaw| >= 10 deg"
+      "source": "N9",
+      "target": "N10",
+      "label": null
     },
     {
-      "source": "low_power_seq",
-      "target": "calibrated_idle",
-      "label": "complete low-power wake/sleep"
+      "source": "N10",
+      "target": "N11",
+      "label": null
     },
     {
-      "source": "force_close_idle",
-      "target": "opening_entry",
-      "label": "begin closing by idle preemption"
+      "source": "N11",
+      "target": "N12",
+      "label": null
     },
     {
-      "source": "calibrated_idle",
-      "target": "lora_parser",
-      "label": "loop iteration: poll inputs"
+      "source": "N12",
+      "target": "N13",
+      "label": null
     },
     {
-      "source": "lora_parser",
-      "target": "aa00_power_on",
-      "label": "AA00"
+      "source": "N13",
+      "target": "N14",
+      "label": null
     },
     {
-      "source": "lora_parser",
-      "target": "aaxy_command",
-      "label": "AAxy"
+      "source": "N14",
+      "target": "N15",
+      "label": "AA00 active"
     },
     {
-      "source": "lora_parser",
-      "target": "aaof_command",
-      "label": "AAOF"
+      "source": "N14",
+      "target": "N16",
+      "label": "AA00 inactive"
     },
     {
-      "source": "lora_parser",
-      "target": "aare_command",
-      "label": "AARE"
+      "source": "N15",
+      "target": "N8",
+      "label": null
     },
     {
-      "source": "aa00_power_on",
-      "target": "calibrated_idle",
-      "label": "return to idle after power-on"
+      "source": "N16",
+      "target": "N17",
+      "label": null
     },
     {
-      "source": "aaxy_command",
-      "target": "opening_entry",
-      "label": "start opening (commandExecuted)"
+      "source": "N17",
+      "target": "N18",
+      "label": null
     },
     {
-      "source": "aaof_command",
-      "target": "closing_entry",
-      "label": "set close_flag"
+      "source": "N18",
+      "target": "N19",
+      "label": null
     },
     {
-      "source": "aare_command",
-      "target": "uncalibrated_loop",
-      "label": "re-enter calibration"
+      "source": "N19",
+      "target": "N20",
+      "label": null
     },
     {
-      "source": "pb6_trigger",
-      "target": "opening_entry",
-      "label": "PB6 edge detected and idle cleared"
+      "source": "N20",
+      "target": "N21",
+      "label": null
     },
     {
-      "source": "opening_entry",
-      "target": "opening_init",
-      "label": "entry condition met"
+      "source": "N21",
+      "target": "N22",
+      "label": null
     },
     {
-      "source": "opening_init",
-      "target": "opening_control",
-      "label": "initialize opening motion"
+      "source": "N22",
+      "target": "N23",
+      "label": "stop"
     },
     {
-      "source": "opening_control",
-      "target": "yaw_stall_opening",
-      "label": "per control cycle"
+      "source": "N22",
+      "target": "N21",
+      "label": "continue"
     },
     {
-      "source": "yaw_stall_opening",
-      "target": "opening_stop_action",
-      "label": "stall detected"
+      "source": "N23",
+      "target": "N24",
+      "label": null
     },
     {
-      "source": "yaw_stall_opening",
-      "target": "opening_control",
-      "label": "no stall"
+      "source": "N24",
+      "target": "N25",
+      "label": null
     },
     {
-      "source": "opening_stop_action",
-      "target": "closing_entry",
-      "label": "close_flag == true"
+      "source": "N25",
+      "target": "N26",
+      "label": null
     },
     {
-      "source": "opening_stop_action",
-      "target": "post_move_low_power",
-      "label": "no close_flag; enter low-power after open"
+      "source": "N26",
+      "target": "N27",
+      "label": null
     },
     {
-      "source": "closing_entry",
-      "target": "closing_init",
-      "label": "entry condition met"
+      "source": "N27",
+      "target": "N28",
+      "label": null
     },
     {
-      "source": "closing_init",
-      "target": "closing_control",
-      "label": "initialize closing motion"
+      "source": "N28",
+      "target": "N29",
+      "label": null
     },
     {
-      "source": "closing_control",
-      "target": "yaw_stall_closing",
-      "label": "per control cycle"
+      "source": "N29",
+      "target": "N30",
+      "label": null
     },
     {
-      "source": "yaw_stall_closing",
-      "target": "closing_stop_action",
-      "label": "stall detected"
+      "source": "N30",
+      "target": "N31",
+      "label": null
     },
     {
-      "source": "yaw_stall_closing",
-      "target": "closing_control",
-      "label": "no stall"
+      "source": "N31",
+      "target": "N32",
+      "label": "interrupted_by_open"
     },
     {
-      "source": "closing_stop_action",
-      "target": "post_move_low_power",
-      "label": "normal stop; enter low-power"
+      "source": "N31",
+      "target": "N33",
+      "label": "no_interrupt"
     },
     {
-      "source": "yaw_stall_opening",
-      "target": "opening_stop_action",
-      "label": "emergency stop due to stall"
+      "source": "N32",
+      "target": "N17",
+      "label": "switch_to_open_motion"
     },
     {
-      "source": "post_move_low_power",
-      "target": "calibrated_idle",
-      "label": "low-power sequence complete; return to idle"
+      "source": "N33",
+      "target": "N8",
+      "label": null
     },
     {
-      "source": "start",
-      "target": "end",
-      "label": "end of modeled sequence"
+      "source": "N8",
+      "target": "N35",
+      "label": "idle_timeout"
+    },
+    {
+      "source": "N35",
+      "target": "N36",
+      "label": "sleep"
+    },
+    {
+      "source": "N36",
+      "target": "N9",
+      "label": "wake_on_activity"
+    },
+    {
+      "source": "N36",
+      "target": "N37",
+      "label": "wake_event"
+    },
+    {
+      "source": "N37",
+      "target": "N8",
+      "label": "resume"
+    },
+    {
+      "source": "N18",
+      "target": "N23",
+      "label": "continue_open_after_init"
     }
   ]
 }
