@@ -8,7 +8,8 @@
   If all fail, it prints guidance to install the Python package with pipx.
 */
 
-const { spawn } = require("node:child_process");
+const { spawn, spawnSync } = require("node:child_process");
+const path = require("node:path");
 
 const args = process.argv.slice(2);
 
@@ -24,9 +25,25 @@ function run(cmd, cmdArgs) {
 }
 
 (async () => {
+  // Try delegating to an existing 'flowcode' if it's not this wrapper (avoid recursion)
   try {
-    await run("flowcode", args);
-    return;
+    const whichCmd = process.platform === "win32" ? "where" : "command";
+    const whichArgs = process.platform === "win32" ? ["flowcode"] : ["-v", "flowcode"];
+    const found = spawnSync(whichCmd, whichArgs, { stdio: "pipe" });
+    if (found.status === 0) {
+      const resolved = (() => {
+        const out = (found.stdout || Buffer.from(""))
+          .toString()
+          .split(/\r?\n/)
+          .filter(Boolean)[0] || "";
+        return out.trim();
+      })();
+      const selfPath = path.resolve(process.argv[1]);
+      if (resolved && path.resolve(resolved) !== selfPath) {
+        await run("flowcode", args);
+        return;
+      }
+    }
   } catch (e1) {}
 
   try {
@@ -41,9 +58,8 @@ function run(cmd, cmdArgs) {
 
   console.error(
     "flowcode CLI not found. Install the Python CLI first:\n" +
-      "  pipx install \"git+https://github.com/<your-username>/<repo>.git#subdirectory=flowcode_2\"\n\n" +
+      "  python -m pip install --user \"git+https://github.com/Ymzreece/flowchart.git#subdirectory=flowcode_2\"\n\n" +
       "Then rerun: flowcode " + args.join(" ")
   );
   process.exit(1);
 })();
-

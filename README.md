@@ -6,7 +6,10 @@ This README explains how to install and use the Flowcode CLI on macOS and Window
 
 ## Quick Start
 
-- Install with pipx (recommended)
+- One-line install via npm
+  - `npm install -g @reececantcode/flowcode` (use your published scope/name)
+  - The installer attempts to bootstrap the Python CLI automatically using `python -m pip install --user`. If it cannot, it prints a short hint.
+- Install with pipx (recommended alternative)
   - macOS/Linux
     - `pipx install "git+https://github.com/Ymzreece/flowchart.git#subdirectory=flowcode_2"`
   - Windows (PowerShell)
@@ -37,10 +40,10 @@ Note: Viewing in the browser requires Node 18+ and the `Archive/stage2` frontend
   - Windows PowerShell
     - `python -m venv .venv; .\\.venv\\Scripts\\Activate.ps1`
     - `pip install "git+https://github.com/Ymzreece/flowchart.git#subdirectory=flowcode_2"`
-- npm global wrapper (neat `npm install -g` experience)
-  - `npm install -g @ydtech/flowcode`
+- npm global wrapper (one-line install)
+  - `npm install -g @reececantcode/flowcode` (use your published scope/name)
   - Then use `flowcode ...`
-  - The npm package forwards to the Python CLI. If it can’t find it, it prints a pipx install hint.
+  - The npm package forwards to the Python CLI and attempts to install it during `npm install -g` using pip. If it can’t, it prints a short hint.
   - If your npm package name differs, substitute accordingly.
 
 ## Prerequisites
@@ -111,7 +114,7 @@ Note: Viewing in the browser requires Node 18+ and the `Archive/stage2` frontend
 
 - Python CLI (pipx): `pipx uninstall flowcode-renderer`
 - Python CLI (venv): deactivate and remove the venv
-- npm wrapper: `npm uninstall -g @ydtech/flowcode`
+- npm wrapper: `npm uninstall -g @reececantcode/flowcode`
 
 ## Notes
 
@@ -121,4 +124,3 @@ Note: Viewing in the browser requires Node 18+ and the `Archive/stage2` frontend
 ## License
 
 MIT
-
