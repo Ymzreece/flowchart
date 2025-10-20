@@ -1,6 +1,6 @@
 {
   "name": "@reececantcode/flowcode",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Thin Node wrapper that forwards to the Flowcode Python CLI",
   "bin": {
     "flowcode": "bin/flowcode.js"
